@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+    <a class="brand" th:href="@{/dashboard}">
+        <span class="brand-mark">U</span>
+        <span><strong>QUẢN LÝ ĐỀ TÀI</strong><small>Khoa Công nghệ Thông tin</small></span>
+    </a>
+    <nav>
+        <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? 'active'"><span class="mi">dashboard</span>Bảng điều khiển</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/lecturers}" th:classappend="${active == 'lecturers'} ? 'active'"><span class="mi">person_search</span>Giảng viên phản biện</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/councils}" th:classappend="${active == 'councils'} ? 'active'"><span class="mi">groups</span>Quản lý hội đồng</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/assignments}" th:classappend="${active == 'assignments'} ? 'active'"><span class="mi">assignment_ind</span>Phân công đề tài</a>
+        <a th:href="@{/grading}" th:classappend="${active == 'grading'} ? 'active'"><span class="mi">rate_review</span>Chấm điểm</a>
+    </nav>
+    <div class="sidebar-bottom">
+        <div class="user-chip"><span class="avatar" th:text="${#authentication.name.substring(0,1).toUpperCase()}">A</span><span><strong th:text="${#authentication.name}">admin</strong><small sec:authorize="hasRole('ADMIN')">Quản trị viên</small><small sec:authorize="hasRole('LECTURER')">Giảng viên</small></span></div>
+        <form th:action="@{/logout}" method="post"><button class="logout" type="submit"><span class="mi">logout</span> Đăng xuất</button></form>
+    </div>
+</aside>
+<header class="topbar" th:fragment="topbar(title)">
+    <div><p class="eyebrow">HCM-UTE • Hệ thống quản lý đề tài</p><h1 th:text="${title}">Tiêu đề</h1></div>
+    <div class="top-actions"><span class="term">HK1 • 2026–2027</span><button class="icon-btn" aria-label="Thông báo"><span class="mi">notifications</span></button></div>
+</header>
+<div th:fragment="alerts">
+    <div class="alert success" th:if="${success}"><span class="mi">check_circle</span><span th:text="${success}"></span></div>
+    <div class="alert error" th:if="${error}"><span class="mi">error</span><span th:text="${error}"></span></div>
+</div>
+</body></html>

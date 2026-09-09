@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Đăng nhập | HCM-UTE</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body class="login-page">
+<section class="login-hero">
+    <div class="university"><span class="brand-mark large">U</span><span>TRƯỜNG ĐẠI HỌC<br><strong>SƯ PHẠM KỸ THUẬT TP. HCM</strong></span></div>
+    <div><p class="eyebrow light">CỔNG THÔNG TIN ĐỒ ÁN</p><h1>Quản lý đề tài<br>rõ ràng, minh bạch.</h1><p>Phân công phản biện, tổ chức hội đồng và tổng hợp kết quả trên một hệ thống duy nhất.</p></div>
+    <footer>© 2026 HCMC University of Technology and Education</footer>
+</section>
+<main class="login-panel">
+    <form class="login-card" th:action="@{/login}" method="post">
+        <span class="brand-mark mobile-logo">U</span><p class="eyebrow">CHÀO MỪNG TRỞ LẠI</p><h2>Đăng nhập hệ thống</h2><p class="muted">Sử dụng tài khoản được Khoa CNTT cung cấp.</p>
+        <div class="alert error" th:if="${param.error}">Tài khoản hoặc mật khẩu không đúng.</div><div class="alert success" th:if="${param.logout}">Bạn đã đăng xuất.</div>
+        <label>Tên đăng nhập<input name="username" autocomplete="username" placeholder="Nhập tên đăng nhập" required autofocus></label>
+        <label>Mật khẩu<input type="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required></label>
+        <button class="btn primary wide" type="submit">Đăng nhập <span class="mi">arrow_forward</span></button>
+        <div class="demo-box"><strong>Tài khoản demo</strong><code>admin / Admin@123</code><code>giangvien / Giangvien@123</code></div>
+    </form>
+</main></body></html>

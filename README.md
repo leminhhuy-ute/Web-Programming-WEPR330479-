@@ -87,3 +87,49 @@ Hệ thống áp dụng cho:
      │
      ▼
 💾 MySQL
+```
+
+---
+
+## Module Phản biện – Hội đồng – Chấm điểm
+
+Module hiện có các luồng:
+
+- Quản lý danh sách giảng viên phản biện.
+- Tạo hội đồng, thêm 3–5 thành viên, phân vai trò Chủ tịch/Thư ký/Ủy viên/GVPB.
+- Phân công đề tài và giảng viên phản biện cho hội đồng đã sẵn sàng.
+- Nhập/cập nhật điểm thang 10 và nhận xét của từng thành viên.
+- Tự động tính điểm trung bình và cập nhật trạng thái chấm.
+- Chặn giảng viên hướng dẫn phản biện/chấm đề tài của mình ở cả giao diện và service.
+
+### Chạy nhanh với dữ liệu demo
+
+Yêu cầu Java 17+ và Maven 3.6.3+.
+
+```bash
+mvn spring-boot:run
+```
+
+Mở `http://localhost:8080` và đăng nhập:
+
+| Vai trò | Tài khoản | Mật khẩu |
+|---|---|---|
+| Quản trị | `admin` | `Admin@123` |
+| Giảng viên | `giangvien` | `Giangvien@123` |
+
+Chế độ mặc định dùng H2 in-memory và tự tạo dữ liệu minh họa.
+
+### Chạy với MySQL
+
+```powershell
+$env:DB_URL="jdbc:mysql://localhost:3306/topic_management?createDatabaseIfNotExist=true"
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="your_password"
+mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+### Kiểm thử
+
+```bash
+mvn test
+```
