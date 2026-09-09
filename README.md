@@ -31,13 +31,13 @@ Hệ thống áp dụng cho:
 
 ## 👥 Thành viên nhóm
 
-| 👤 | MSSV | Họ và tên |
-|:---:|:---:|---|
-| 1️⃣ | **24110019** | Lê Minh Huy |
-| 2️⃣ | **24110012** | Trần Hữu Thành Đô |
-| 3️⃣ | **24110033** | Lê Đăng Minh |
-| 4️⃣ | **24162043** | Lê Bảo Huy |
-| 5️⃣ | **24162048** | Nguyễn Quang Huy |
+| 👤  |     MSSV     | Họ và tên         |
+| :-: | :----------: | ----------------- |
+| 1️⃣  | **24110019** | Lê Minh Huy       |
+| 2️⃣  | **24110012** | Trần Hữu Thành Đô |
+| 3️⃣  | **24110033** | Lê Đăng Minh      |
+| 4️⃣  | **24162043** | Lê Bảo Huy        |
+| 5️⃣  | **24162048** | Nguyễn Quang Huy  |
 
 ---
 
@@ -60,14 +60,14 @@ Hệ thống áp dụng cho:
 
 ## 🛠️ Công nghệ sử dụng
 
-| Thành phần | Công nghệ |
-|---|---|
-| ☕ Backend | Java, Spring Boot |
-| 🔐 Security | Spring Security |
-| 💾 Database | MySQL |
-| 🗃️ ORM | Spring Data JPA / Hibernate |
-| 🎨 Frontend | HTML, CSS, JavaScript |
-| 🌿 Version Control | Git & GitHub |
+| Thành phần         | Công nghệ                   |
+| ------------------ | --------------------------- |
+| ☕ Backend         | Java, Spring Boot           |
+| 🔐 Security        | Spring Security             |
+| 💾 Database        | MySQL                       |
+| 🗃️ ORM             | Spring Data JPA / Hibernate |
+| 🎨 Frontend        | HTML, CSS, JavaScript       |
+| 🌿 Version Control | Git & GitHub                |
 
 ---
 
@@ -112,9 +112,9 @@ mvn spring-boot:run
 
 Mở `http://localhost:8080` và đăng nhập:
 
-| Vai trò | Tài khoản | Mật khẩu |
-|---|---|---|
-| Quản trị | `admin` | `Admin@123` |
+| Vai trò    | Tài khoản   | Mật khẩu        |
+| ---------- | ----------- | --------------- |
+| Quản trị   | `admin`     | `Admin@123`     |
 | Giảng viên | `giangvien` | `Giangvien@123` |
 
 Chế độ mặc định dùng H2 in-memory và tự tạo dữ liệu minh họa.
