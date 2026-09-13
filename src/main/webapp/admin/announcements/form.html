@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Soạn thảo thông báo - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body data-admin data-module="announcements" data-view="form">
+    <main class="main-content">
+        <div id="nav"></div>
+        <div class="page-header">
+            <div>
+                <h1>Soạn thảo thông báo</h1>
+                <p class="page-subtitle">Công bố thông tin hướng dẫn và mốc học vụ cho giảng viên và sinh viên.</p>
+            </div>
+            <a class="button secondary" href="list.html">← Quay lại danh sách</a>
+        </div>
+        <p id="message" class="form-error" role="alert"></p>
+        <form id="entity-form" class="card edit-form entity-form">
+            <div class="form-section">
+                <span class="section-title">1. Thông tin chung</span>
+                <div class="form-grid">
+                    <label class="full-width">
+                        Tiêu đề thông báo
+                        <input name="title" placeholder="Nhập tiêu đề thông báo..." required>
+                    </label>
+                    <label class="full-width">
+                        Đối tượng tiếp nhận
+                        <select name="audience">
+                            <option value="ALL">Tất cả (Giảng viên & Sinh viên)</option>
+                            <option value="LECTURER">Chỉ Giảng viên</option>
+                            <option value="STUDENT">Chỉ Sinh viên</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <span class="section-title">2. Nội dung chi tiết</span>
+                <div class="form-grid">
+                    <label class="full-width">
+                        Nội dung thông báo
+                        <textarea name="content" rows="6" placeholder="Nội dung chi tiết thông báo..." required></textarea>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button primary">Lưu thông báo</button>
+                <a class="button secondary" href="list.html">Hủy</a>
+            </div>
+        </form>
+    </main>
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/admin-shell.js"></script>
+    <script src="../../assets/js/admin-crud.js"></script>
+</body>
+
+</html>

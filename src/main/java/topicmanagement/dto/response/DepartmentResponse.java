@@ -1,0 +1,3 @@
+package topicmanagement.dto.response;
+
+public record DepartmentResponse(Long id, String code, String name, String description) {}

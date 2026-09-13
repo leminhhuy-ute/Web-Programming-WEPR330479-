@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thông tin tài khoản - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body data-admin data-module="users" data-view="form">
+    <main class="main-content">
+        <div id="nav"></div>
+        <div class="page-header">
+            <div>
+                <h1>Thông tin tài khoản</h1>
+                <p class="page-subtitle">Tạo mới hoặc cập nhật hồ sơ người dùng trong hệ thống.</p>
+            </div>
+            <a class="button secondary" href="list.html">← Quay lại danh sách</a>
+        </div>
+        <p id="message" class="form-error" role="alert"></p>
+        <form id="entity-form" class="card edit-form entity-form">
+            <div class="form-section">
+                <span class="section-title">1. Thông tin cá nhân & Đăng nhập</span>
+                <div class="form-grid">
+                    <label>
+                        Mã tài khoản / MSSV / MSG
+                        <input name="userCode" placeholder="Ví dụ: 20110001" required>
+                    </label>
+                    <label>
+                        Username
+                        <input name="username" placeholder="Tên đăng nhập" required>
+                    </label>
+                    <label>
+                        Họ và tên
+                        <input name="fullName" placeholder="Nguyễn Văn A" required>
+                    </label>
+                    <label>
+                        Email
+                        <input name="email" type="email" placeholder="example@hcmute.edu.vn" required>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <span class="section-title">2. Phân quyền & Đơn vị trực thuộc</span>
+                <div class="form-grid">
+                    <label>
+                        Vai trò
+                        <select name="role">
+                            <option value="STUDENT">Sinh viên</option>
+                            <option value="LECTURER">Giảng viên</option>
+                            <option value="DEAN">Trưởng khoa</option>
+                        </select>
+                    </label>
+                    <label>
+                        Bộ môn
+                        <select name="departmentId">
+                            <option value="">-- Không chọn --</option>
+                        </select>
+                    </label>
+                    <label>
+                        Trạng thái hoạt động
+                        <select name="status">
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Không hoạt động</option>
+                            <option value="LOCKED">Đã khóa</option>
+                        </select>
+                    </label>
+                    <label>
+                        Mật khẩu
+                        <input name="password" type="password" minlength="8" placeholder="Nhập mật khẩu mới">
+                        <small>Để trống nếu không muốn thay đổi mật khẩu hiện tại.</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button primary">Lưu thông tin</button>
+                <a class="button secondary" href="list.html">Hủy</a>
+            </div>
+        </form>
+    </main>
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/admin-shell.js"></script>
+    <script src="../../assets/js/admin-crud.js"></script>
+</body>
+
+</html>

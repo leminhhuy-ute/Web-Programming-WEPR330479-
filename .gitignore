@@ -1,0 +1,35 @@
+# Maven build
+target/
+*.class
+*.war
+
+# IDE / editor
+.vscode/
+.idea/
+.settings/
+.classpath
+.project
+
+# Runtime / logs
+.runtime/
+*.log
+
+# Local database credentials
+config/db.properties
+src/main/resources/db.properties
+
+# Database backups
+database/backups/
+
+# Generated modernization/tooling logs
+.github/modernize/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

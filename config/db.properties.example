@@ -1,0 +1,8 @@
+# Copy this file to:
+# <CATALINA_BASE>/conf/topic-management/db.properties
+#
+# Never commit the real db.properties file.
+
+db.url=jdbc:mysql://localhost:3306/student_topic_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+db.username=<YOUR_MYSQL_USERNAME>
+db.password=<YOUR_MYSQL_PASSWORD>
