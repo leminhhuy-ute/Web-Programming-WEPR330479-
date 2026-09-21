@@ -21,6 +21,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE LOWER(u.username) = LOWER(:login) OR LOWER(u.email) = LOWER(:login)")
     Optional<User> findByUsernameOrEmail(@Param("login") String login);
 
+    @Query("SELECT u FROM User u WHERE LOWER(u.username) = LOWER(:login) OR LOWER(u.email) = LOWER(:login) OR LOWER(u.userCode) = LOWER(:login)")
+    Optional<User> findByLoginIdentifier(@Param("login") String login);
+
     List<User> findByRole(Role role);
     List<User> findByRoleAndStatus(Role role, UserStatus status);
     List<User> findByDepartment(Department department);
