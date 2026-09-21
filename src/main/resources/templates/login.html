@@ -3,134 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập | Hệ thống Quản lý Đề tài HCMUTE</title>
+    <title>Đăng nhập | Trường Đại học Công nghệ Kỹ thuật - HCM-UTE</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-x-hidden">
 
-<div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-200">
-    <!-- Left Hero Banner -->
-    <div class="bg-gradient-to-br from-blue-800 to-indigo-900 p-8 text-white flex flex-col justify-between relative overflow-hidden">
+<!-- Subtle ambient background glows -->
+<div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+<div class="max-w-5xl w-full bg-white rounded-3xl shadow-2xl shadow-blue-900/10 overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-200/80 relative z-10">
+
+    <!-- Left Hero Branding Panel (5 cols) -->
+    <div class="lg:col-span-5 bg-gradient-to-br from-[#024383] via-[#02509d] to-[#01254a] p-8 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+        <!-- Decorative blur shapes inside banner -->
+        <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-16 -bottom-16 w-56 h-56 bg-blue-400/15 rounded-full blur-2xl pointer-events-none"></div>
+
         <div class="relative z-10">
+            <!-- Top University Badge & Logo -->
             <div class="flex items-center space-x-3 mb-6">
-                <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
-                    <i class="fa-solid fa-graduation-cap text-2xl text-blue-300"></i>
+                <div class="w-16 h-16 rounded-2xl bg-white p-1.5 shadow-lg shadow-black/20 flex items-center justify-center border border-white/40 flex-shrink-0">
+                    <img th:src="@{/images/hcmute-logo.png}" alt="HCM-UTE Logo" class="h-full w-auto object-contain">
                 </div>
                 <div>
-                    <h2 class="text-xs font-semibold tracking-wider text-blue-200 uppercase">HCMUTE - FIT</h2>
-                    <h1 class="text-sm font-bold text-white uppercase">Khoa Công nghệ Thông tin</h1>
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-white/15 text-blue-100 border border-white/20 mb-1">
+                        HCM-UTE FIT
+                    </span>
+                    <h2 class="text-xs font-bold text-white uppercase tracking-tight leading-tight">
+                        TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT
+                    </h2>
+                    <p class="text-[11px] text-blue-200 font-medium">Khoa Công nghệ Thông tin</p>
                 </div>
             </div>
 
-            <div class="mt-8 space-y-4">
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/30 text-blue-200 border border-blue-400/30">
-                    Phiên bản Hợp nhất 2026
-                </span>
-                <h3 class="text-2xl font-bold leading-tight">
-                    Hệ thống Quản lý Khóa luận & Đồ án Tốt nghiệp
-                </h3>
-                <p class="text-sm text-blue-200/90 leading-relaxed">
-                    Nền tảng tích hợp toàn diện quy trình: Đề xuất đề tài, Đăng ký nhóm sinh viên, Báo cáo tiến độ và Hội đồng chấm điểm.
+            <!-- Main Heading -->
+            <div class="mt-6 space-y-3">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug text-white">
+                    Hệ thống Quản lý Khóa luận & Đề tài
+                </h1>
+                <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-normal">
+                    Nền tảng trực tuyến tích hợp toàn diện quy trình nghiên cứu, đăng ký nhóm và đánh giá bảo vệ đồ án tốt nghiệp.
                 </p>
+            </div>
+
+            <!-- Features Highlights -->
+            <div class="mt-8 space-y-3">
+                <div class="flex items-center space-x-3 text-xs text-blue-100/90 bg-white/5 p-2.5 rounded-xl border border-white/10 backdrop-blur-sm">
+                    <div class="w-7 h-7 rounded-lg bg-blue-400/20 text-blue-200 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-file-signature text-sm"></i>
+                    </div>
+                    <span>Đăng ký & xét duyệt đề tài trực tuyến</span>
+                </div>
+                <div class="flex items-center space-x-3 text-xs text-blue-100/90 bg-white/5 p-2.5 rounded-xl border border-white/10 backdrop-blur-sm">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-400/20 text-indigo-200 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-users text-sm"></i>
+                    </div>
+                    <span>Phối hợp làm việc nhóm sinh viên & GVHD</span>
+                </div>
+                <div class="flex items-center space-x-3 text-xs text-blue-100/90 bg-white/5 p-2.5 rounded-xl border border-white/10 backdrop-blur-sm">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-400/20 text-emerald-200 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-chart-line text-sm"></i>
+                    </div>
+                    <span>Báo cáo tiến độ các mốc thời gian</span>
+                </div>
+                <div class="flex items-center space-x-3 text-xs text-blue-100/90 bg-white/5 p-2.5 rounded-xl border border-white/10 backdrop-blur-sm">
+                    <div class="w-7 h-7 rounded-lg bg-purple-400/20 text-purple-200 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-award text-sm"></i>
+                    </div>
+                    <span>Hội đồng thẩm định & Chấm điểm phản biện</span>
+                </div>
             </div>
         </div>
 
-        <div class="relative z-10 pt-8 border-t border-white/10 text-xs text-blue-200/70">
-            © 2026 Nhóm Đồ án Web Programming WEPR330479 - HCMUTE
+        <!-- Footer inside Banner -->
+        <div class="relative z-10 pt-8 mt-6 border-t border-white/15 text-[11px] text-blue-200/80 flex items-center justify-between">
+            <span>© 2026 Trường ĐH Công nghệ Kỹ thuật</span>
+            <span class="font-semibold text-white">HCM-UTE</span>
         </div>
-
-        <!-- Decorative background shapes -->
-        <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-12 -top-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
     </div>
 
-    <!-- Right Login Form -->
-    <div class="p-8 md:p-10 flex flex-col justify-between">
+    <!-- Right Login Form Panel (7 cols) -->
+    <div class="lg:col-span-7 p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
         <div>
+            <!-- Form Title -->
             <div class="mb-6">
-                <h2 class="text-2xl font-bold text-slate-800">Đăng nhập</h2>
-                <p class="text-sm text-slate-500 mt-1">Sử dụng tài khoản Trường hoặc mã sinh viên (MSSV)</p>
+                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Cổng xác thực</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Đăng nhập</h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Sử dụng tài khoản Trường hoặc Mã số sinh viên (MSSV)</p>
             </div>
 
             <!-- Error Notification -->
-            <div th:if="${errorMessage}" class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center space-x-2 text-red-700 text-sm">
-                <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i>
+            <div th:if="${errorMessage}" class="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-center space-x-3 text-rose-700 text-xs sm:text-sm animate-fade-in">
+                <i class="fa-solid fa-circle-exclamation text-base text-rose-600 flex-shrink-0"></i>
                 <span th:text="${errorMessage}">Tên đăng nhập hoặc mật khẩu không chính xác!</span>
             </div>
 
             <!-- Success Notification -->
-            <div th:if="${successMessage}" class="mb-5 p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center space-x-2 text-emerald-700 text-sm">
-                <i class="fa-solid fa-circle-check flex-shrink-0"></i>
-                <span th:text="${successMessage}">Đã đăng xuất thành công.</span>
+            <div th:if="${successMessage}" class="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center space-x-3 text-emerald-700 text-xs sm:text-sm">
+                <i class="fa-solid fa-circle-check text-base text-emerald-600 flex-shrink-0"></i>
+                <span th:text="${successMessage}">Đã đăng xuất thành công khỏi hệ thống.</span>
             </div>
 
+            <!-- Login Form -->
             <form th:action="@{/login}" method="post" class="space-y-4">
                 <div>
-                    <label for="username" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Tài khoản / MSSV / Email</label>
+                    <label for="username" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Tài khoản / MSSV / Email
+                    </label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                            <i class="fa-regular fa-user"></i>
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                            <i class="fa-regular fa-user text-sm"></i>
                         </span>
-                        <input id="username" name="username" type="text" required placeholder="dean, head_cnpm, hoặc MSSV: 24110019"
-                               class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
+                        <input id="username" name="username" type="text" required placeholder="Nhập tên đăng nhập hoặc MSSV"
+                               class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#02509d] focus:border-transparent focus:bg-white transition-all">
                     </div>
                 </div>
 
                 <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label for="password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Mật khẩu</label>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Mật khẩu
+                        </label>
                     </div>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                            <i class="fa-regular fa-lock"></i>
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                            <i class="fa-regular fa-lock text-sm"></i>
                         </span>
-                        <input id="password" name="password" type="password" required placeholder="Nhập mật khẩu"
-                               class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
+                        <input id="password" name="password" type="password" required placeholder="Nhập mật khẩu của bạn"
+                               class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#02509d] focus:border-transparent focus:bg-white transition-all">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors">
+                            <i id="eye-icon" class="fa-regular fa-eye text-sm"></i>
+                        </button>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="remember-me" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                    <label class="flex items-center space-x-2 cursor-pointer select-none">
+                        <input type="checkbox" name="remember-me" class="rounded border-slate-300 text-[#02509d] focus:ring-[#02509d]">
                         <span>Ghi nhớ đăng nhập</span>
                     </label>
-                    <span class="text-blue-600">Mặc định: Password@123</span>
+                    <span class="text-[#02509d] font-medium">Mật khẩu mặc định: <code class="bg-blue-50 text-[#02509d] px-1.5 py-0.5 rounded font-mono font-bold">Password@123</code></span>
                 </div>
 
-                <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm transition-all shadow-md shadow-blue-500/20 flex items-center justify-center space-x-2">
+                <button type="submit" class="w-full py-3 px-5 bg-gradient-to-r from-[#02509d] to-indigo-700 hover:from-[#024383] hover:to-indigo-800 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-blue-800/20 hover:shadow-lg hover:shadow-blue-800/30 flex items-center justify-center space-x-2">
                     <span>Đăng nhập hệ thống</span>
-                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                    <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
                 </button>
             </form>
         </div>
 
         <!-- Quick Demo Switcher -->
-        <div class="mt-6 pt-5 border-t border-slate-200">
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center">
-                <i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i> Tài khoản mẫu dùng thử:
-            </p>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <button type="button" onclick="fillLogin('dean', 'Password@123')" class="p-2 text-left bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg transition-colors">
-                    <span class="font-semibold text-slate-700 block">Trưởng Khoa (Dean)</span>
-                    <span class="text-slate-400">dean</span>
+        <div class="mt-8 pt-6 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center">
+                    <i class="fa-solid fa-bolt text-amber-500 mr-1.5 text-sm"></i> Đăng nhập nhanh tài khoản mẫu:
+                </p>
+                <span class="text-[11px] text-slate-400">Click để chọn vai trò</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 text-xs">
+                <button type="button" onclick="fillLogin('dean', 'Password@123')"
+                        class="p-2.5 text-left bg-slate-50 hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 group-hover:text-[#02509d]">Trưởng Khoa (Dean)</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#02509d] transition-colors"></i>
+                    </div>
+                    <span class="text-slate-400 font-mono text-[11px]">dean</span>
                 </button>
-                <button type="button" onclick="fillLogin('head_cnpm', 'Password@123')" class="p-2 text-left bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg transition-colors">
-                    <span class="font-semibold text-slate-700 block">Trưởng Bộ Môn</span>
-                    <span class="text-slate-400">head_cnpm</span>
+
+                <button type="button" onclick="fillLogin('head_cnpm', 'Password@123')"
+                        class="p-2.5 text-left bg-slate-50 hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 group-hover:text-[#02509d]">Trưởng Bộ Môn</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#02509d] transition-colors"></i>
+                    </div>
+                    <span class="text-slate-400 font-mono text-[11px]">head_cnpm</span>
                 </button>
-                <button type="button" onclick="fillLogin('lecturer1', 'Password@123')" class="p-2 text-left bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg transition-colors">
-                    <span class="font-semibold text-slate-700 block">Giảng viên / Hướng dẫn</span>
-                    <span class="text-slate-400">lecturer1</span>
+
+                <button type="button" onclick="fillLogin('lecturer1', 'Password@123')"
+                        class="p-2.5 text-left bg-slate-50 hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 group-hover:text-[#02509d]">Giảng viên / Hướng dẫn</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#02509d] transition-colors"></i>
+                    </div>
+                    <span class="text-slate-400 font-mono text-[11px]">lecturer1</span>
                 </button>
-                <button type="button" onclick="fillLogin('24110019', 'Password@123')" class="p-2 text-left bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg transition-colors">
-                    <span class="font-semibold text-slate-700 block">Sinh viên (Trưởng nhóm)</span>
-                    <span class="text-slate-400">24110019</span>
+
+                <button type="button" onclick="fillLogin('24110019', 'Password@123')"
+                        class="p-2.5 text-left bg-slate-50 hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 group-hover:text-[#02509d]">Sinh viên (Trưởng nhóm)</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#02509d] transition-colors"></i>
+                    </div>
+                    <span class="text-slate-400 font-mono text-[11px]">24110019</span>
                 </button>
             </div>
         </div>
@@ -138,9 +210,23 @@
 </div>
 
 <script>
-    function fillLogin(u, p) {
-        document.getElementById('username').value = u;
-        document.getElementById('password').value = p;
+    function fillLogin(username, password) {
+        document.getElementById('username').value = username;
+        document.getElementById('password').value = password;
+    }
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eye-icon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
     }
 </script>
 
