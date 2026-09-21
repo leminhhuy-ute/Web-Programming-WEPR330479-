@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết đợt đăng ký - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body data-admin data-module="registration-periods">
+    <main class="main-content">
+        <div id="nav"></div>
+        <div class="page-header">
+            <div>
+                <h1>Chi tiết đợt đăng ký</h1>
+                <p class="page-subtitle">Xem toàn bộ thông tin và các mốc thời gian của đợt đăng ký.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a id="btn-edit" class="button primary" href="list.html" hidden>Sửa đợt này</a>
+                <a class="button secondary" href="list.html">← Quay lại danh sách</a>
+            </div>
+        </div>
+        <p id="message" class="alert error" hidden role="alert"></p>
+        <div class="card detail-card table-scroll">
+            <table class="detail-table">
+                <tbody id="detail">
+                    <tr><td colspan="2" class="loading-cell"><div class="loading-state"><span class="loading-spinner"></span>Đang tải thông tin chi tiết...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/admin-shell.js"></script>
+    <script>
+        const fieldLabels = {
+            name: "Tên đợt đăng ký",
+            typeLabel: "Loại hình đề tài",
+            lecturerStartAt: "Thời gian GV bắt đầu",
+            lecturerEndAt: "Thời gian GV kết thúc",
+            studentStartAt: "Thời gian SV bắt đầu",
+            studentEndAt: "Thời gian SV kết thúc",
+            reviewDeadline: "Hạn nộp nhận xét GVPB",
+            defenseDate: "Ngày tổ chức bảo vệ"
+        };
+        const escape = (value) => String(value ?? "—").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+
+        async function initDetail() {
+            const message = document.querySelector("#message");
+            try {
+                window.mountAdminShell?.();
+                const user = await requireDean();
+                if (typeof window.renderCurrentUser === "function") {
+                    window.renderCurrentUser(user);
+                }
+
+                const id = new URLSearchParams(location.search).get("id");
+                if (!id) throw new Error("Thiếu mã đợt đăng ký.");
+                
+                const editBtn = document.querySelector("#btn-edit");
+                if (editBtn) {
+                    editBtn.href = "form.html?id=" + encodeURIComponent(id);
+                    editBtn.hidden = false;
+                }
+
+                const item = await request("/api/admin/registration-periods/" + encodeURIComponent(id));
+                document.querySelector("#detail").innerHTML = Object.entries(fieldLabels)
+                    .map(([key, label]) => {
+                        let displayVal = item[key];
+                        if (key.endsWith("At") || key === "defenseDate") {
+                            displayVal = formatDateTime(displayVal);
+                        } else if (key === "typeLabel" && displayVal) {
+                            displayVal = `<span class="badge type-badge">${escape(displayVal)}</span>`;
+                        } else {
+                            displayVal = escape(displayVal);
+                        }
+                        return `<tr><th>${escape(label)}</th><td>${displayVal}</td></tr>`;
+                    })
+                    .join("");
+            } catch (error) {
+                message.textContent = error.message || "Không thể tải chi tiết đợt đăng ký.";
+                message.hidden = false;
+                document.querySelector("#detail").innerHTML = `<tr><td colspan="2" class="empty-cell"><div class="empty-state">Không thể tải chi tiết đợt đăng ký.</div></td></tr>`;
+            }
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initDetail);
+        } else {
+            initDetail();
+        }
+    </script>
+</body>
+
+</html>

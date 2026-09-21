@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập hệ thống - Quản lý đề tài HCMUTE</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+
+<body class="login-page">
+    <main class="login-layout">
+        <header class="login-header">
+            <img src="assets/images/logo.png" class="login-logo" alt="HCMUTE" width="92" height="92">
+            <h1>
+                <span class="school-title-main">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT</span>
+                <span class="school-title-location">TP. HỒ CHÍ MINH</span>
+            </h1>
+        </header>
+        <section class="login-card" aria-labelledby="login-title">
+            <h2 id="login-title">Đăng nhập hệ thống</h2>
+            <p class="alert error" id="message" hidden role="alert"></p>
+            <form id="login-form" class="login-form" method="post">
+                <label>
+                    Tên đăng nhập hoặc email
+                    <input name="username" type="text" autocomplete="username" placeholder="Nhập tên đăng nhập hoặc email" required>
+                </label>
+                <label>
+                    Mật khẩu
+                    <input type="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
+                </label>
+                <button type="submit" class="button primary">Đăng nhập</button>
+            </form>
+        </section>
+        <p class="login-motto">Nghiên cứu - Đổi mới - Kiến tạo</p>
+    </main>
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/auth.js"></script>
+</body>
+
+</html>
