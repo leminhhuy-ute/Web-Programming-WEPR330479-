@@ -34,12 +34,17 @@ function showToast(message, type = 'success') {
 
 async function apiFetch(url, options = {}) {
     try {
+        const csrfMeta = document.querySelector('meta[name="_csrf"]');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(csrfMeta && csrfHeader && csrfMeta.content ? { [csrfHeader.content]: csrfMeta.content } : {}),
+            ...options.headers
+        };
+
         const res = await fetch(url, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            },
-            ...options
+            ...options,
+            headers: headers
         });
         const data = await res.json();
         if (!res.ok) {
@@ -56,6 +61,15 @@ function quickSwitchUser(username) {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/login';
+
+    const csrfMeta = document.querySelector('meta[name="_csrf"]');
+    if (csrfMeta && csrfMeta.content) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_csrf';
+        csrfInput.value = csrfMeta.content;
+        form.appendChild(csrfInput);
+    }
 
     const uInput = document.createElement('input');
     uInput.type = 'hidden';

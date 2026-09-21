@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
     <script th:src="@{/js/main.js}" defer></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
@@ -55,103 +57,115 @@
     </div>
 </nav>
 
-<!-- Page Wrapper with Sidebar -->
-<div th:fragment="layout(content, activeTab)" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-    <!-- Sidebar Navigation -->
-    <aside class="md:col-span-1 space-y-4">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-3">
-                Chức năng hệ thống
-            </div>
-
-            <nav class="space-y-1 text-sm font-medium">
-                <!-- Admin Navigation -->
-                <a th:href="@{/admin/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'admin-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-gauge w-5 text-center text-slate-400"></i>
-                    <span>Tổng quan Khoa (Dean)</span>
-                </a>
-                <a th:href="@{/admin/users}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'admin-users'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-users w-5 text-center text-slate-400"></i>
-                    <span>Quản lý Người dùng</span>
-                </a>
-                <a th:href="@{/admin/departments}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'admin-depts'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-building-columns w-5 text-center text-slate-400"></i>
-                    <span>Quản lý Bộ môn</span>
-                </a>
-                <a th:href="@{/admin/registration-periods}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'admin-periods'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-regular fa-calendar-days w-5 text-center text-slate-400"></i>
-                    <span>Đợt đăng ký đề tài</span>
-                </a>
-
-                <div class="pt-3 border-t border-slate-100 my-2"></div>
-
-                <!-- Lecturer Navigation -->
-                <a th:href="@{/lecturer/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'lecturer-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-chalkboard-user w-5 text-center text-slate-400"></i>
-                    <span>Bàn làm việc Giảng viên</span>
-                </a>
-                <a th:href="@{/lecturer/topics}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'lecturer-topics'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-book-bookmark w-5 text-center text-slate-400"></i>
-                    <span>Đề xuất đề tài</span>
-                </a>
-                <a th:href="@{/lecturer/approval}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'lecturer-approval'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-stamp w-5 text-center text-slate-400"></i>
-                    <span>Duyệt đề tài Bộ môn</span>
-                </a>
-                <a th:href="@{/lecturer/student-groups}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'lecturer-groups'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-user-check w-5 text-center text-slate-400"></i>
-                    <span>Duyệt nhóm sinh viên</span>
-                </a>
-
-                <div class="pt-3 border-t border-slate-100 my-2"></div>
-
-                <!-- Student Navigation -->
-                <a th:href="@{/student/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'student-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-user-group w-5 text-center text-slate-400"></i>
-                    <span>Không gian Sinh viên & Nhóm</span>
-                </a>
-                <a th:href="@{/student/topics}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'student-topics'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-list-check w-5 text-center text-slate-400"></i>
-                    <span>Tra cứu & Đăng ký đề tài</span>
-                </a>
-                <a th:href="@{/student/reports}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'student-reports'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-file-arrow-up w-5 text-center text-slate-400"></i>
-                    <span>Báo cáo tiến độ</span>
-                </a>
-
-                <div class="pt-3 border-t border-slate-100 my-2"></div>
-
-                <!-- Council & Grading Navigation -->
-                <a th:href="@{/council/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'council-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-award w-5 text-center text-slate-400"></i>
-                    <span>Hội đồng & Phản biện</span>
-                </a>
-                <a th:href="@{/council/grading}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                   th:classappend="${activeTab == 'council-grading'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
-                    <i class="fa-solid fa-star-half-stroke w-5 text-center text-slate-400"></i>
-                    <span>Chấm điểm bảo vệ</span>
-                </a>
-            </nav>
+<!-- Sidebar Navigation Fragment -->
+<aside th:fragment="sidebar(activeTab)" class="md:col-span-1 space-y-4">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sticky top-20">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-3 flex items-center justify-between">
+            <span>Chức năng hệ thống</span>
+            <i class="fa-solid fa-layer-group text-slate-400"></i>
         </div>
-    </aside>
 
-    <!-- Main Content Area -->
-    <main class="md:col-span-3">
-        <div th:replace="${content}"></div>
-    </main>
-</div>
+        <nav class="space-y-1 text-sm font-medium">
+            <!-- Admin Section -->
+            <div class="px-3 pt-2 pb-1 text-[11px] font-bold text-blue-800 uppercase tracking-wider flex items-center justify-between">
+                <span>Quản trị Khoa (Dean)</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+            </div>
+            <a th:href="@{/admin/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'admin-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-gauge w-5 text-center text-slate-400"></i>
+                <span>Tổng quan Khoa</span>
+            </a>
+            <a th:href="@{/admin/users}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'admin-users'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-users w-5 text-center text-slate-400"></i>
+                <span>Quản lý Người dùng</span>
+            </a>
+            <a th:href="@{/admin/departments}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'admin-depts'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-building-columns w-5 text-center text-slate-400"></i>
+                <span>Quản lý Bộ môn</span>
+            </a>
+            <a th:href="@{/admin/registration-periods}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'admin-periods'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-regular fa-calendar-days w-5 text-center text-slate-400"></i>
+                <span>Đợt đăng ký đề tài</span>
+            </a>
+
+            <div class="pt-3 border-t border-slate-100 my-2"></div>
+
+            <!-- Lecturer Section -->
+            <div class="px-3 pt-1 pb-1 text-[11px] font-bold text-indigo-800 uppercase tracking-wider flex items-center justify-between">
+                <span>Giảng viên & Bộ môn</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+            </div>
+            <a th:href="@{/lecturer/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'lecturer-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-chalkboard-user w-5 text-center text-slate-400"></i>
+                <span>Bàn làm việc Giảng viên</span>
+            </a>
+            <a th:href="@{/lecturer/topics}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'lecturer-topics'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-book-bookmark w-5 text-center text-slate-400"></i>
+                <span>Đề xuất đề tài</span>
+            </a>
+            <a th:href="@{/lecturer/approval}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'lecturer-approval'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-stamp w-5 text-center text-slate-400"></i>
+                <span>Duyệt đề tài Bộ môn</span>
+            </a>
+            <a th:href="@{/lecturer/student-groups}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'lecturer-groups'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-user-check w-5 text-center text-slate-400"></i>
+                <span>Duyệt nhóm sinh viên</span>
+            </a>
+
+            <div class="pt-3 border-t border-slate-100 my-2"></div>
+
+            <!-- Student Section -->
+            <div class="px-3 pt-1 pb-1 text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center justify-between">
+                <span>Sinh viên & Nhóm</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            </div>
+            <a th:href="@{/student/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'student-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-user-group w-5 text-center text-slate-400"></i>
+                <span>Không gian Sinh viên</span>
+            </a>
+            <a th:href="@{/student/topics}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'student-topics'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-list-check w-5 text-center text-slate-400"></i>
+                <span>Tra cứu & Đăng ký đề tài</span>
+            </a>
+            <a th:href="@{/student/reports}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'student-reports'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-file-arrow-up w-5 text-center text-slate-400"></i>
+                <span>Báo cáo tiến độ</span>
+            </a>
+
+            <div class="pt-3 border-t border-slate-100 my-2"></div>
+
+            <!-- Council Section -->
+            <div class="px-3 pt-1 pb-1 text-[11px] font-bold text-purple-800 uppercase tracking-wider flex items-center justify-between">
+                <span>Hội đồng & Chấm điểm</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+            </div>
+            <a th:href="@{/council/dashboard}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'council-dashboard'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-award w-5 text-center text-slate-400"></i>
+                <span>Hội đồng & Phản biện</span>
+            </a>
+            <a th:href="@{/council/grading}" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+               th:classappend="${activeTab == 'council-grading'} ? 'bg-blue-50 text-blue-700 font-semibold' : ''">
+                <i class="fa-solid fa-star-half-stroke w-5 text-center text-slate-400"></i>
+                <span>Chấm điểm bảo vệ</span>
+            </a>
+        </nav>
+    </div>
+</aside>
+
+<!-- Backward-compatibility: if any template calls layout(...), redirect directly to sidebar fragment -->
+<aside th:fragment="layout(content, activeTab)" class="md:col-span-1 space-y-4" th:replace="~{fragments/layout :: sidebar(${activeTab})}"></aside>
 
 <!-- Footer -->
 <footer th:fragment="footer" class="bg-white border-t border-slate-200 mt-auto py-6 text-center text-xs text-slate-500">

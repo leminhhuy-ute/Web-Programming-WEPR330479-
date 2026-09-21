@@ -6,9 +6,8 @@
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
 <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-    <aside class="md:col-span-1" th:replace="~{fragments/layout :: layout(~{::mainContent}, 'council-dashboard')}"></aside>
-
-    <main class="md:col-span-3 space-y-6" th:fragment="mainContent">
+    <aside class="md:col-span-1" th:replace="~{fragments/layout :: sidebar('council-dashboard')}"></aside>
+    <main class="md:col-span-3 space-y-6">
         <div class="bg-gradient-to-r from-purple-900 to-indigo-800 rounded-2xl p-6 text-white shadow-md flex justify-between items-center">
             <div>
                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 text-purple-100 border border-white/20 uppercase tracking-wide">
