@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hệ thống Quản lý đề tài HCMUTE</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+</head>
+<body>
+    <script src="assets/js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await App.getCurrentUser();
+            if (!user) {
+                window.location.href = App.getContextPath() + '/login.html';
+            } else {
+                window.location.href = App.getContextPath() + '/lecturer/dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>

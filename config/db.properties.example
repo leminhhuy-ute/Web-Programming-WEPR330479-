@@ -1,0 +1,6 @@
+# Database configuration for HCMUTE Topic Management - Final_project
+# Place this file in <CATALINA_BASE>/conf/topic-management/db.properties
+
+db.url=jdbc:mysql://localhost:3306/student_topic_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+db.username=root
+db.password=root1234

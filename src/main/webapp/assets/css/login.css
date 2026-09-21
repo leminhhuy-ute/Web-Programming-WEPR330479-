@@ -1,0 +1,76 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #003366 0%, #0056b3 100%);
+}
+
+.login-layout {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.login-header {
+  margin-bottom: 24px;
+}
+
+.login-logo {
+  margin-bottom: 12px;
+}
+
+.school-title-main {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #003366;
+}
+
+.school-title-location {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+}
+
+.login-card h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #111;
+}
+
+.login-form label {
+  display: block;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.login-motto {
+  margin-top: 24px;
+  font-size: 12px;
+  font-style: italic;
+  color: #888;
+}

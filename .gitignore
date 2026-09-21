@@ -1,0 +1,22 @@
+# Maven build directory
+target/
+
+# IDE files
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+.vscode/
+
+# Local configuration & credentials
+db.properties
+
+# Logs & temp files
+*.log
+*.tmp
+*.bak
+
+# OS generated files
+.DS_Store
+Thumbs.db

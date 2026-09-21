@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Giảng viên - HCMUTE Topic Management</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/lecturer.css">
+</head>
+<body>
+    <div class="lecturer-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/images/logo.png" alt="HCMUTE" width="40" height="40">
+                <h2>Quản lý Đề tài<br><span style="font-size:12px; font-weight:normal; color:#94a3b8;">Giảng viên</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="active">📊 Tổng quan Dashboard</a></li>
+                    <li><a href="topics/list.html">📚 Tất cả Đề tài</a></li>
+                    <li><a href="topics/form.html">➕ Đề xuất Đề tài mới</a></li>
+                    <li><a href="topics/student-groups.html">👥 Nhóm SV Đăng ký</a></li>
+                    <li id="nav-approval" style="display:none;"><a href="topics/approval.html">⚡ Duyệt Đề tài Bộ môn</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="page-info">
+                    <h1 style="font-size:18px; font-weight:600; color:#1e293b;">Bảng điều khiển Giảng viên</h1>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" id="shell-user-avatar">GV</div>
+                    <div class="user-info">
+                        <span class="user-name" id="shell-user-name">Giảng viên</span>
+                        <span class="user-role" id="shell-user-role">Giảng viên</span>
+                    </div>
+                    <button id="shell-logout-btn" class="button outline" style="margin-left:12px; padding:4px 10px; font-size:12px;">Đăng xuất</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="label">Đề tài tôi đề xuất</span>
+                        <span class="value" id="stat-my-topics">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Đề tài Chờ duyệt</span>
+                        <span class="value" id="stat-pending-topics" style="color:#eab308;">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Đề tài Đã duyệt</span>
+                        <span class="value" id="stat-approved-topics" style="color:#22c55e;">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Nhóm SV Đăng ký</span>
+                        <span class="value" id="stat-groups" style="color:#6366f1;">0</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h2 style="font-size:18px;">Đề tài đề xuất gần đây</h2>
+                        <a href="topics/form.html" class="button primary">+ Đề xuất Đề tài Mới</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã đề tài</th>
+                                <th>Tên đề tài</th>
+                                <th>Loại đề tài</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-topics-tbody">
+                            <tr><td colspan="5" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/lecturer-shell.js"></script>
+    <script src="../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.initDashboard();
+        });
+    </script>
+</body>
+</html>

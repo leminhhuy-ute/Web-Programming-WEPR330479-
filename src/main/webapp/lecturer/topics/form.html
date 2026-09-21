@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đề xuất / Sửa Đề tài - HCMUTE Topic Management</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+<body>
+    <div class="lecturer-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="HCMUTE" width="40" height="40">
+                <h2>Quản lý Đề tài<br><span style="font-size:12px; font-weight:normal; color:#94a3b8;">Giảng viên</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="../dashboard.html">📊 Tổng quan Dashboard</a></li>
+                    <li><a href="list.html">📚 Tất cả Đề tài</a></li>
+                    <li><a href="form.html" class="active">➕ Đề xuất Đề tài mới</a></li>
+                    <li><a href="student-groups.html">👥 Nhóm SV Đăng ký</a></li>
+                    <li id="nav-approval" style="display:none;"><a href="approval.html">⚡ Duyệt Đề tài Bộ môn</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="page-info">
+                    <h1 style="font-size:18px; font-weight:600; color:#1e293b;" id="form-page-title">Đề xuất Đề tài mới</h1>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" id="shell-user-avatar">GV</div>
+                    <div class="user-info">
+                        <span class="user-name" id="shell-user-name">Giảng viên</span>
+                        <span class="user-role" id="shell-user-role">Giảng viên</span>
+                    </div>
+                    <button id="shell-logout-btn" class="button outline" style="margin-left:12px; padding:4px 10px; font-size:12px;">Đăng xuất</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <div class="card">
+                    <form id="topic-form">
+                        <input type="hidden" id="form-topic-id">
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="form-code">Mã đề tài (Bỏ trống để tự động tạo):</label>
+                                <input type="text" id="form-code" placeholder="VD: DT-CNPM-005">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="form-title">Tên đề tài (*):</label>
+                                <input type="text" id="form-title" placeholder="Nhập tên đề tài nghiên cứu / khóa luận" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="form-type">Loại đề tài (*):</label>
+                                <select id="form-type" required>
+                                    <option value="COURSE">Môn học (COURSE)</option>
+                                    <option value="NCKH">Nghiên cứu khoa học (NCKH)</option>
+                                    <option value="TLCN">Tiểu luận chuyên ngành (TLCN)</option>
+                                    <option value="KLTN">Khóa luận tốt nghiệp (KLTN)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="form-max-students">Số lượng SV tối đa (*):</label>
+                                <input type="number" id="form-max-students" min="1" max="10" value="2" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="form-department">Bộ môn quản lý (*):</label>
+                                <select id="form-department" required></select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="form-period">Đợt đăng ký (*):</label>
+                                <select id="form-period" required></select>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="form-description">Mô tả đề tài:</label>
+                                <textarea id="form-description" rows="4" placeholder="Mô tả chi tiết mục tiêu và phạm vi đề tài..."></textarea>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="form-requirements">Yêu cầu với sinh viên:</label>
+                                <textarea id="form-requirements" rows="3" placeholder="Các kỹ năng, công nghệ hoặc kiến thức sinh viên cần có..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="button primary">Lưu đề tài</button>
+                            <a href="list.html" class="button outline">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadForm();
+        });
+    </script>
+</body>
+</html>
