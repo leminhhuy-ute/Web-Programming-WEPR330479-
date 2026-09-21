@@ -13,7 +13,12 @@ import java.util.Optional;
 @Repository
 public interface CouncilMemberRepository extends JpaRepository<CouncilMember, Long> {
     List<CouncilMember> findByCouncil(Council council);
+    List<CouncilMember> findByCouncilId(Long councilId);
     List<CouncilMember> findByLecturer(User lecturer);
     Optional<CouncilMember> findByCouncilAndLecturer(Council council, User lecturer);
     List<CouncilMember> findByCouncilAndMemberRole(Council council, CouncilRole memberRole);
+
+    long countByCouncilId(Long councilId);
+    boolean existsByCouncilIdAndLecturerId(Long councilId, Long lecturerId);
+    boolean existsByCouncilIdAndMemberRole(Long councilId, CouncilRole memberRole);
 }

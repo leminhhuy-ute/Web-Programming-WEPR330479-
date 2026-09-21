@@ -64,6 +64,8 @@ public class Evaluation {
     public void setScore(Double score) { this.score = score; }
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
+    public String getComment() { return feedback; }
+    public void setComment(String comment) { this.feedback = comment; }
     public LocalDateTime getEvaluatedAt() { return evaluatedAt; }
     public void setEvaluatedAt(LocalDateTime evaluatedAt) { this.evaluatedAt = evaluatedAt; }
 }

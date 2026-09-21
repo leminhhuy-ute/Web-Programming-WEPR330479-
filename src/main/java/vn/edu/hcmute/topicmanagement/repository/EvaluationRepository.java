@@ -14,8 +14,11 @@ import java.util.Optional;
 @Repository
 public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     List<Evaluation> findByTopic(Topic topic);
+    List<Evaluation> findByTopicId(Long topicId);
     List<Evaluation> findByTopicAndEvaluationType(Topic topic, EvaluationType type);
     List<Evaluation> findByCouncil(Council council);
+    List<Evaluation> findByCouncilId(Long councilId);
     List<Evaluation> findByEvaluator(User evaluator);
     Optional<Evaluation> findByTopicAndEvaluatorAndEvaluationType(Topic topic, User evaluator, EvaluationType type);
+    Optional<Evaluation> findByTopicIdAndEvaluatorId(Long topicId, Long evaluatorId);
 }
