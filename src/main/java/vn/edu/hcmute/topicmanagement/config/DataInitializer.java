@@ -26,6 +26,7 @@ public class DataInitializer implements CommandLineRunner {
     private final CouncilRepository councilRepository;
     private final CouncilMemberRepository councilMemberRepository;
     private final EvaluationRepository evaluationRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(DepartmentRepository departmentRepository,
                            UserRepository userRepository,
@@ -39,7 +40,8 @@ public class DataInitializer implements CommandLineRunner {
                            ProgressReportRepository reportRepository,
                            CouncilRepository councilRepository,
                            CouncilMemberRepository councilMemberRepository,
-                           EvaluationRepository evaluationRepository) {
+                           EvaluationRepository evaluationRepository,
+                           PasswordEncoder passwordEncoder) {
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
         this.periodRepository = periodRepository;
@@ -53,6 +55,7 @@ public class DataInitializer implements CommandLineRunner {
         this.councilRepository = councilRepository;
         this.councilMemberRepository = councilMemberRepository;
         this.evaluationRepository = evaluationRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -67,7 +70,7 @@ public class DataInitializer implements CommandLineRunner {
         Department attt = departmentRepository.save(new Department("ATTT", "Bộ môn An toàn Thông tin", "Khoa Công nghệ Thông tin - HCMUTE"));
 
         // BCrypt hash for "Password@123"
-        String defaultHash = "$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a";
+        String defaultHash = passwordEncoder.encode("Password@123");
 
         // 2. Users
         User dean = userRepository.save(new User("DEAN01", "dean", defaultHash, "PGS.TS. Trần Văn Trưởng Khoa", "dean@hcmute.edu.vn", Role.DEAN, cnpm));
