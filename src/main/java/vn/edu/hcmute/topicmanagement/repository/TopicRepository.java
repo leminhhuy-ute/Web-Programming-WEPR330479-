@@ -17,10 +17,14 @@ import java.util.Optional;
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, Long> {
     Optional<Topic> findByTopicCode(String topicCode);
+    boolean existsByTopicCode(String topicCode);
 
     List<Topic> findByDepartment(Department department);
+    List<Topic> findByDepartmentId(Long departmentId);
+    List<Topic> findByDepartmentIdAndStatus(Long departmentId, TopicStatus status);
     List<Topic> findByCreatedBy(User createdBy);
     List<Topic> findByAdvisor1OrAdvisor2(User advisor1, User advisor2);
+    List<Topic> findByCreatedByIdOrAdvisor1IdOrAdvisor2Id(Long createdById, Long advisor1Id, Long advisor2Id);
     List<Topic> findByPeriod(RegistrationPeriod period);
     List<Topic> findByStatus(TopicStatus status);
     List<Topic> findByDepartmentAndStatus(Department department, TopicStatus status);

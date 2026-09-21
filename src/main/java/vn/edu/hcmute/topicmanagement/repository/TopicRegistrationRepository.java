@@ -18,4 +18,12 @@ public interface TopicRegistrationRepository extends JpaRepository<TopicRegistra
     List<TopicRegistration> findByTopic(Topic topic);
     List<TopicRegistration> findByTopicAndStatus(Topic topic, GroupStatus status);
     long countByTopicAndStatus(Topic topic, GroupStatus status);
+
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT tr FROM TopicRegistration tr WHERE " +
+            "tr.topic.advisor1.id = :advisorId OR tr.topic.advisor2.id = :advisorId OR tr.topic.createdBy.id = :advisorId " +
+            "ORDER BY tr.registeredAt DESC")
+    List<TopicRegistration> findByAdvisorId(@org.springframework.data.repository.query.Param("advisorId") Long advisorId);
+
+    List<TopicRegistration> findByTopic_Department_Id(Long departmentId);
 }
