@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Quản lý Bộ môn')}"></head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <aside class="md:col-span-1" th:replace="~{fragments/layout :: layout(~{::mainContent}, 'admin-depts')}"></aside>
+
+    <main class="md:col-span-3 space-y-6" th:fragment="mainContent">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800">Quản lý Danh mục Bộ môn Chuyên ngành</h1>
+                    <p class="text-xs text-slate-500 mt-1">Cơ cấu tổ chức đào tạo thuộc Khoa Công nghệ Thông tin.</p>
+                </div>
+                <button onclick="document.getElementById('modal-create-dept').classList.remove('hidden')"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center space-x-2 transition-colors">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Thêm bộ môn</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div th:each="d : ${departments}" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded bg-blue-100 text-blue-800 font-mono font-bold text-xs" th:text="${d.code}">CNPM</span>
+                            <span class="text-xs text-slate-400 font-mono" th:text="'ID: ' + ${d.id}">ID: 1</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mt-2" th:text="${d.name}">Bộ môn Công nghệ Phần mềm</h3>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed" th:text="${d.description}">Mô tả bộ môn</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Create Dept -->
+        <div id="modal-create-dept" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800">Thêm Bộ môn mới</h3>
+                    <button onclick="document.getElementById('modal-create-dept').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form onsubmit="handleCreateDept(event)" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Mã bộ môn</label>
+                        <input id="dept-code" required class="w-full p-2 border border-slate-300 rounded-lg" placeholder="VD: CNPM, KHMT">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Tên bộ môn</label>
+                        <input id="dept-name" required class="w-full p-2 border border-slate-300 rounded-lg" placeholder="Bộ môn Công nghệ Phần mềm">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Mô tả / Đơn vị</label>
+                        <textarea id="dept-desc" rows="3" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="Khoa Công nghệ Thông tin - HCMUTE"></textarea>
+                    </div>
+                    <div class="pt-3 flex justify-end space-x-2">
+                        <button type="button" onclick="document.getElementById('modal-create-dept').classList.add('hidden')" class="px-4 py-2 border rounded-lg hover:bg-slate-50">Hủy</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">Lưu bộ môn</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            async function handleCreateDept(e) {
+                e.preventDefault();
+                const payload = {
+                    code: document.getElementById('dept-code').value,
+                    name: document.getElementById('dept-name').value,
+                    description: document.getElementById('dept-desc').value
+                };
+                try {
+                    await apiFetch('/api/admin/departments', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    showToast('Đã thêm bộ môn thành công!');
+                    setTimeout(() => window.location.reload(), 800);
+                } catch (err) {}
+            }
+        </script>
+    </main>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

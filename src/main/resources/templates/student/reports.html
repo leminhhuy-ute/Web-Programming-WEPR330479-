@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Báo cáo Tiến độ')}"></head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <aside class="md:col-span-1" th:replace="~{fragments/layout :: layout(~{::mainContent}, 'student-reports')}"></aside>
+
+    <main class="md:col-span-3 space-y-6" th:fragment="mainContent">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800">Cột mốc & Báo cáo Tiến độ Nhóm</h1>
+                    <p class="text-xs text-slate-500 mt-1">Gửi tài liệu báo cáo và theo dõi phản hồi, nhận xét đánh giá từ Giảng viên hướng dẫn.</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div th:if="${#lists.isEmpty(workspace.reports)}" class="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                    <p class="text-xs">Nhóm chưa nộp báo cáo tiến độ nào.</p>
+                </div>
+
+                <div th:each="r : ${workspace.reports}" class="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-1 rounded text-xs font-bold bg-blue-100 text-blue-800" th:text="${r.stage}">Đề cương</span>
+                            <h3 class="font-bold text-slate-800 text-sm" th:text="${r.reportTitle}">Tiêu đề báo cáo</h3>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800" th:text="'Tiến độ: ' + ${r.completionPercentage} + '%'">100%</span>
+                    </div>
+
+                    <p class="text-xs text-slate-600" th:text="${r.contentSummary}">Tóm tắt nội dung</p>
+
+                    <div class="text-xs text-slate-500 flex flex-wrap gap-4 pt-2 border-t border-slate-200/60">
+                        <span><strong>Người nộp:</strong> <span th:text="${r.submittedByName}">SV</span></span>
+                        <span><strong>Thời gian:</strong> <span th:text="${#temporals.format(r.submittedAt, 'dd/MM/yyyy HH:mm')}">--</span></span>
+                        <span th:if="${r.attachmentUrl != null}"><a th:href="${r.attachmentUrl}" target="_blank" class="text-blue-600 hover:underline"><i class="fa-solid fa-link mr-1"></i>Xem tệp đính kèm</a></span>
+                    </div>
+
+                    <div class="p-3 bg-white rounded-lg border border-slate-200 text-xs space-y-1" th:if="${r.supervisorScore != null}">
+                        <div class="flex items-center space-x-2">
+                            <strong class="text-slate-700">Điểm đánh giá GVHD:</strong>
+                            <span class="px-2 py-0.5 rounded font-mono font-bold bg-emerald-100 text-emerald-800 text-xs" th:text="${r.supervisorScore}">9.0</span>
+                        </div>
+                        <div class="text-slate-600 italic" th:if="${r.supervisorFeedback != null}" th:text="'&ldquo;' + ${r.supervisorFeedback} + '&rdquo;'">Nhận xét</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

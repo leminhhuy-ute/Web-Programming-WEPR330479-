@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bàn làm việc Giảng viên')}"></head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <aside class="md:col-span-1" th:replace="~{fragments/layout :: layout(~{::mainContent}, 'lecturer-dashboard')}"></aside>
+
+    <main class="md:col-span-3 space-y-6" th:fragment="mainContent">
+        <!-- Hero -->
+        <div class="bg-gradient-to-r from-indigo-900 to-blue-800 rounded-2xl p-6 text-white shadow-md flex justify-between items-center">
+            <div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 text-blue-100 border border-white/20 uppercase tracking-wide">
+                    Phân hệ Giảng viên & Quản lý Đề tài
+                </span>
+                <h1 class="text-2xl font-bold mt-2">Bàn làm việc Giảng viên</h1>
+                <p class="text-sm text-blue-200 mt-1">Đề xuất đề tài, duyệt đề tài cấp bộ môn và xét duyệt nhóm sinh viên đăng ký.</p>
+            </div>
+            <div class="hidden sm:block text-5xl text-blue-400/30">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+        </div>
+
+        <!-- Metric Summary -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Đề tài tôi hướng dẫn</span>
+                <div class="text-2xl font-bold text-slate-800 mt-2" th:text="${#lists.size(myTopics)}">0</div>
+                <span class="text-xs text-blue-600 font-medium">Đã đăng ký hệ thống</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Chờ bộ môn phê duyệt</span>
+                <div class="text-2xl font-bold text-amber-600 mt-2" th:text="${#lists.size(departmentTopics)}">0</div>
+                <span class="text-xs text-amber-600 font-medium">Thuộc chuyên ngành</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-xs font-semibold text-slate-500 uppercase">Nhóm sinh viên đăng ký</div>
+                <div class="text-2xl font-bold text-emerald-600 mt-2" th:text="${#lists.size(pendingRegistrations)}">0</div>
+                <span class="text-xs text-emerald-600 font-medium">Đơn đăng ký đề tài</span>
+            </div>
+        </div>
+
+        <!-- Topics Table -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-book-open text-blue-600"></i>
+                    <span>Danh sách Đề tài Giảng viên</span>
+                </h2>
+                <a th:href="@{/lecturer/topics}" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm">
+                    <i class="fa-solid fa-plus mr-1"></i> Đề xuất đề tài mới
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase border-y border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3">Mã đề tài</th>
+                            <th class="px-4 py-3">Tên đề tài</th>
+                            <th class="px-4 py-3">Loại</th>
+                            <th class="px-4 py-3">Bộ môn</th>
+                            <th class="px-4 py-3">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr th:each="t : ${myTopics}" class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-4 py-3 font-mono text-xs font-semibold text-blue-700" th:text="${t.topicCode}">KLTN26-001</td>
+                            <td class="px-4 py-3 font-medium text-slate-800">
+                                <div th:text="${t.title}">Tên đề tài</div>
+                                <div class="text-xs text-slate-400 truncate max-w-md" th:text="${t.requirements}">Yêu cầu</div>
+                            </td>
+                            <td class="px-4 py-3 text-xs">
+                                <span class="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700" th:text="${t.topicType}">KLTN</span>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-600" th:text="${t.departmentName}">Bộ môn</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-semibold uppercase"
+                                      th:classappend="${t.status == 'APPROVED'} ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (${t.status == 'PENDING'} ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200')"
+                                      th:text="${t.status}">STATUS</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

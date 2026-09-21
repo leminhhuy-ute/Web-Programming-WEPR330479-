@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Đề xuất Đề tài')}"></head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <aside class="md:col-span-1" th:replace="~{fragments/layout :: layout(~{::mainContent}, 'lecturer-topics')}"></aside>
+
+    <main class="md:col-span-3 space-y-6" th:fragment="mainContent">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800">Đề xuất & Quản lý Đề tài Giảng viên</h1>
+                    <p class="text-xs text-slate-500 mt-1">Gửi đề xuất đề tài mới cho đợt KLTN, TLCN hoặc Đồ án môn học.</p>
+                </div>
+                <button onclick="document.getElementById('modal-create-topic').classList.remove('hidden')"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tạo đề xuất mới</span>
+                </button>
+            </div>
+
+            <!-- List of Topics -->
+            <div class="space-y-3">
+                <div th:each="t : ${myTopics}" class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono text-xs font-bold" th:text="${t.topicCode}">DT01</span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-100 text-purple-800" th:text="${t.topicTypeLabel}">KLTN</span>
+                            <h3 class="font-bold text-slate-800 text-sm" th:text="${t.title}">Tên đề tài</h3>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold uppercase"
+                              th:classappend="${t.status == 'APPROVED'} ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+                              th:text="${t.status}">STATUS</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed" th:text="${t.description}">Mô tả chi tiết</p>
+                    <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-2 border-t border-slate-200/60">
+                        <span><strong class="text-slate-700">Bộ môn:</strong> <span th:text="${t.departmentName}">CNPM</span></span>
+                        <span><strong class="text-slate-700">Tối đa SV:</strong> <span th:text="${t.maxStudents}">3</span> bạn</span>
+                        <span><strong class="text-slate-700">Công nghệ/Yêu cầu:</strong> <span th:text="${t.requirements}">Java, Spring</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Create Topic -->
+        <div id="modal-create-topic" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800">Đề xuất đề tài mới</h3>
+                    <button onclick="document.getElementById('modal-create-topic').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form onsubmit="handleCreateTopic(event)" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Tên đề tài</label>
+                        <input id="t-title" required class="w-full p-2 border border-slate-300 rounded-lg" placeholder="VD: Ứng dụng AI trong nhận dạng thị giác máy tính">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Mô tả mục tiêu & phạm vi đề tài</label>
+                        <textarea id="t-desc" rows="3" required class="w-full p-2 border border-slate-300 rounded-lg" placeholder="Mô tả mục tiêu nghiên cứu, sản phẩm dự kiến..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Yêu cầu kiến thức & công nghệ</label>
+                        <input id="t-req" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="VD: Java Spring Boot, Vue.js, Docker, PyTorch">
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Loại đề tài</label>
+                            <select id="t-type" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option value="KLTN">Khóa luận tốt nghiệp</option>
+                                <option value="TLCN">Tiểu luận chuyên ngành</option>
+                                <option value="COURSE">Đồ án môn học</option>
+                                <option value="NCKH">Nghiên cứu khoa học</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Bộ môn</label>
+                            <select id="t-dept" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}">Bộ môn</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Đợt đăng ký</label>
+                            <select id="t-period" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option th:each="p : ${periods}" th:value="${p.id}" th:text="${p.name}">Đợt</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Số sinh viên tối đa</label>
+                        <input id="t-max" type="number" min="1" max="5" value="3" class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div class="pt-3 flex justify-end space-x-2">
+                        <button type="button" onclick="document.getElementById('modal-create-topic').classList.add('hidden')" class="px-4 py-2 border rounded-lg hover:bg-slate-50">Hủy</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">Gửi đề xuất</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            async function handleCreateTopic(e) {
+                e.preventDefault();
+                const payload = {
+                    title: document.getElementById('t-title').value,
+                    description: document.getElementById('t-desc').value,
+                    requirements: document.getElementById('t-req').value,
+                    topicType: document.getElementById('t-type').value,
+                    departmentId: Number(document.getElementById('t-dept').value),
+                    periodId: Number(document.getElementById('t-period').value),
+                    maxStudents: Number(document.getElementById('t-max').value)
+                };
+                try {
+                    await apiFetch('/api/lecturer/topics', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    showToast('Đã gửi đề xuất đề tài thành công!');
+                    setTimeout(() => window.location.reload(), 800);
+                } catch (err) {}
+            }
+        </script>
+    </main>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

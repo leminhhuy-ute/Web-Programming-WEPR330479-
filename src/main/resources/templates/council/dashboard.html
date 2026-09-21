@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Hội đồng & Phản biện')}"></head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <aside class="md:col-span-1" th:replace="~{fragments/layout :: layout(~{::mainContent}, 'council-dashboard')}"></aside>
+
+    <main class="md:col-span-3 space-y-6" th:fragment="mainContent">
+        <div class="bg-gradient-to-r from-purple-900 to-indigo-800 rounded-2xl p-6 text-white shadow-md flex justify-between items-center">
+            <div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 text-purple-100 border border-white/20 uppercase tracking-wide">
+                    Phân hệ Hội đồng Bảo vệ & Giảng viên Phản biện
+                </span>
+                <h1 class="text-2xl font-bold mt-2">Hội đồng Bảo vệ & Chấm điểm</h1>
+                <p class="text-sm text-purple-200 mt-1">Thành lập hội đồng bảo vệ, phân công GVPB và tổng hợp điểm đánh giá khóa luận.</p>
+            </div>
+            <div class="hidden sm:block text-5xl text-purple-300/30">
+                <i class="fa-solid fa-award"></i>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Tổng số Hội đồng</span>
+                <div class="text-2xl font-bold text-slate-800 mt-2" th:text="${#lists.size(councils)}">0</div>
+                <span class="text-xs text-purple-600 font-medium">Được thành lập</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Đề tài đủ điều kiện</span>
+                <div class="text-2xl font-bold text-blue-600 mt-2" th:text="${#lists.size(approvedTopics)}">0</div>
+                <span class="text-xs text-blue-600 font-medium">Ra hội đồng bảo vệ</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Thao tác nhanh</span>
+                <div class="mt-2">
+                    <button onclick="document.getElementById('modal-create-council').classList.remove('hidden')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-sm w-full text-center">
+                        <i class="fa-solid fa-plus mr-1"></i> Thành lập Hội đồng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Councils List -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-users-rectangle text-purple-600"></i>
+                    <span>Danh sách Hội đồng Bảo vệ</span>
+                </h2>
+                <a th:href="@{/council/grading}" class="text-xs text-purple-600 font-semibold hover:underline">Vào trang Chấm điểm <i class="fa-solid fa-arrow-right ml-1"></i></a>
+            </div>
+
+            <div class="space-y-4">
+                <div th:each="c : ${councils}" class="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-mono text-xs font-bold" th:text="${c.code}">HD-01</span>
+                            <h3 class="font-bold text-slate-800 text-sm" th:text="${c.name}">Tên hội đồng</h3>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase"
+                              th:classappend="${c.status == 'READY' or c.status == 'ACTIVE'} ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+                              th:text="${c.status}">STATUS</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-500 pt-2 border-t border-slate-200/60">
+                        <div><strong>Bộ môn:</strong> <span class="text-slate-700" th:text="${c.departmentName}">CNPM</span></div>
+                        <div><strong>Thời gian:</strong> <span class="text-slate-700" th:text="${c.defenseTime + ' - ' + #temporals.format(c.defenseDate, 'dd/MM/yyyy')}">--</span></div>
+                        <div><strong>Địa điểm:</strong> <span class="text-slate-700" th:text="${c.room != null ? c.room : 'Chưa xếp phòng'}">--</span></div>
+                    </div>
+
+                    <!-- Members Badges -->
+                    <div class="pt-2">
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Thành viên hội đồng:</span>
+                        <div class="flex flex-wrap gap-2">
+                            <span th:each="m : ${c.members}" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs flex items-center space-x-1.5">
+                                <span class="font-semibold text-slate-700" th:text="${m.fullName}">Thầy Nam</span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800" th:text="${m.role}">CHAIR</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="pt-2 flex justify-end space-x-2">
+                        <button class="btn-add-member px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                                th:data-council-id="${c.id}">
+                            <i class="fa-solid fa-user-plus mr-1"></i> Thêm giảng viên
+                        </button>
+                        <button class="btn-mark-ready px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm"
+                                th:if="${c.status == 'PENDING'}"
+                                th:data-council-id="${c.id}">
+                            <i class="fa-solid fa-check-double mr-1"></i> Kích hoạt Sẵn sàng (READY)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Create Council -->
+        <div id="modal-create-council" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800">Thành lập Hội đồng Bảo vệ Mới</h3>
+                    <button onclick="document.getElementById('modal-create-council').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form onsubmit="handleCreateCouncil(event)" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Mã hội đồng</label>
+                        <input id="c-code" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="VD: HD-CNPM-02 (để trống sẽ tạo tự động)">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Tên hội đồng</label>
+                        <input id="c-name" required class="w-full p-2 border border-slate-300 rounded-lg" placeholder="Hội đồng Bảo vệ Khóa luận tốt nghiệp CNPM 02">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Bộ môn</label>
+                            <select id="c-dept" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}">Bộ môn</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Đợt</label>
+                            <select id="c-period" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option th:each="p : ${periods}" th:value="${p.id}" th:text="${p.name}">Đợt</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Ngày bảo vệ</label>
+                            <input id="c-date" type="date" class="w-full p-2 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Giờ bắt đầu</label>
+                            <input id="c-time" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="08:30">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Phòng báo cáo</label>
+                        <input id="c-room" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="Phòng A1-402, Tòa nhà Trung tâm">
+                    </div>
+                    <div class="pt-3 flex justify-end space-x-2">
+                        <button type="button" onclick="document.getElementById('modal-create-council').classList.add('hidden')" class="px-4 py-2 border rounded-lg hover:bg-slate-50">Hủy</button>
+                        <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow">Lưu hội đồng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            async function handleCreateCouncil(e) {
+                e.preventDefault();
+                const payload = {
+                    code: document.getElementById('c-code').value,
+                    name: document.getElementById('c-name').value,
+                    departmentId: Number(document.getElementById('c-dept').value),
+                    periodId: Number(document.getElementById('c-period').value),
+                    defenseDate: document.getElementById('c-date').value || null,
+                    defenseTime: document.getElementById('c-time').value,
+                    room: document.getElementById('c-room').value
+                };
+                try {
+                    await apiFetch('/api/council', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    showToast('Đã tạo hội đồng bảo vệ thành công!');
+                    setTimeout(() => window.location.reload(), 800);
+                } catch (err) {}
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.btn-mark-ready').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-council-id');
+                        try {
+                            await apiFetch(`/api/council/${id}/ready`, { method: 'PUT' });
+                            showToast('Hội đồng đã sẵn sàng (READY)!');
+                            setTimeout(() => window.location.reload(), 800);
+                        } catch (err) {}
+                    });
+                });
+
+                document.querySelectorAll('.btn-add-member').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const councilId = btn.getAttribute('data-council-id');
+                        const lecId = prompt('Nhập ID Giảng viên cần thêm (VD: 3, 4, 5):');
+                        if (!lecId) return;
+                        const role = prompt('Nhập vai trò: CHAIR / SECRETARY / REVIEWER / MEMBER:', 'MEMBER');
+                        if (!role) return;
+
+                        try {
+                            await apiFetch(`/api/council/${councilId}/members`, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    lecturerId: Number(lecId),
+                                    role: role.toUpperCase().trim()
+                                })
+                            });
+                            showToast('Đã thêm thành viên vào hội đồng!');
+                            setTimeout(() => window.location.reload(), 800);
+                        } catch (err) {}
+                    });
+                });
+            });
+        </script>
+    </main>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
