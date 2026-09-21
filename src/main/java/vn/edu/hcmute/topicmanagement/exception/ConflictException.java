@@ -1,0 +1,7 @@
+package vn.edu.hcmute.topicmanagement.exception;
+
+public class ConflictException extends RuntimeException {
+    public ConflictException(String message) {
+        super(message);
+    }
+}

@@ -29,6 +29,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByDepartment(Department department);
     List<User> findByDepartmentAndRole(Department department, Role role);
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.department WHERE (:keyword = '' OR " +
+           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.userCode) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:role IS NULL OR u.role = :role) AND " +
+           "(:departmentId IS NULL OR u.department.id = :departmentId) " +
+           "ORDER BY u.id DESC")
+    List<User> search(@Param("keyword") String keyword,
+                      @Param("role") Role role,
+                      @Param("departmentId") Long departmentId);
+
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    boolean existsByUserCode(String userCode);
+
+    boolean existsByUsernameAndIdNot(String username, Long id);
+    boolean existsByEmailAndIdNot(String email, Long id);
+    boolean existsByUserCodeAndIdNot(String userCode, Long id);
+
     boolean existsByUsernameIgnoreCase(String username);
     boolean existsByEmailIgnoreCase(String email);
     boolean existsByUserCodeIgnoreCase(String userCode);
