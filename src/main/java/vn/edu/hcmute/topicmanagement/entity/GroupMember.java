@@ -47,6 +47,8 @@ public class GroupMember {
     public void setStudent(User student) { this.student = student; }
     public MemberRole getMemberRole() { return memberRole; }
     public void setMemberRole(MemberRole memberRole) { this.memberRole = memberRole; }
+    public MemberRole getRole() { return memberRole; }
+    public void setRole(MemberRole memberRole) { this.memberRole = memberRole; }
     public LocalDateTime getJoinedAt() { return joinedAt; }
     public void setJoinedAt(LocalDateTime joinedAt) { this.joinedAt = joinedAt; }
 }
