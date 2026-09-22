@@ -36,10 +36,12 @@ public class RegistrationPeriod {
   @Column(name = "defense_date")
   private LocalDate defenseDate;
 
-  @Column(name = "created_at", insertable = false, updatable = false)
+  @org.hibernate.annotations.CreationTimestamp
+  @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "updated_at", insertable = false, updatable = false)
+  @org.hibernate.annotations.UpdateTimestamp
+  @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
   public Long getId() {

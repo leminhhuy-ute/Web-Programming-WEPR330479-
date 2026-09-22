@@ -15,7 +15,7 @@ public class GroupMember {
     private StudentGroup group;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id", nullable = false, unique = true)
     private User student;
 
     @Column(name = "member_role", nullable = false, length = 20)

@@ -32,7 +32,7 @@ public class ApiStudentGroupController {
 
     @GetMapping("/topic/{topicId}")
     public ApiResponse<List<StudentGroupResponse>> getGroupsByTopic(@PathVariable Long topicId) {
-        List<StudentGroupResponse> groups = groupService.getGroupsByTopic(topicId);
+        List<StudentGroupResponse> groups = groupService.getGroupsByTopic(topicId, accounts.user());
         return ApiResponse.ok("Lấy danh sách nhóm sinh viên theo đề tài thành công.", groups);
     }
 

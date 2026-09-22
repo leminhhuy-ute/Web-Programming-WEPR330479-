@@ -25,15 +25,14 @@ public class StudentGroupService {
     @Transactional(readOnly = true)
     public List<StudentGroupResponse> getGroupsForLecturer(User lecturer) {
         List<StudentGroup> groups = groupRepository.findGroupsForLecturer(lecturer.getId());
-        if (groups.isEmpty() && lecturer.getDepartment() != null) {
-            groups = groupRepository.findGroupsByDepartment(lecturer.getDepartment().getId());
-        }
+        if (lecturer.getRole() == topicmanagement.enums.Role.DEAN) groups = groupRepository.findAll().stream().filter(g -> g.getTopic() != null).toList();
         return groups.stream().map(StudentGroupResponse::new).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<StudentGroupResponse> getGroupsByTopic(Long topicId) {
+    public List<StudentGroupResponse> getGroupsByTopic(Long topicId, User currentUser) {
         List<StudentGroup> groups = groupRepository.findByTopicId(topicId);
+        for (StudentGroup group : groups) TopicPolicy.advisor(currentUser, group.getTopic());
         return groups.stream().map(StudentGroupResponse::new).collect(Collectors.toList());
     }
 
@@ -42,6 +41,9 @@ public class StudentGroupService {
         StudentGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhóm sinh viên có ID: " + groupId));
 
+        if (group.getTopic() == null) throw new IllegalArgumentException("Nhóm chưa đăng ký đề tài.");
+        TopicPolicy.advisor(currentUser, group.getTopic());
+        if (group.getStatus() != GroupStatus.PENDING) throw new IllegalArgumentException("Chỉ duyệt nhóm đang chờ.");
         GroupStatus newStatus;
         try {
             newStatus = GroupStatus.valueOf(request.getStatus());
@@ -49,6 +51,10 @@ public class StudentGroupService {
             throw new IllegalArgumentException("Trạng thái nhóm không hợp lệ (Phải là APPROVED hoặc REJECTED).");
         }
 
+        if (newStatus != GroupStatus.APPROVED && newStatus != GroupStatus.REJECTED)
+            throw new IllegalArgumentException("Trạng thái duyệt không hợp lệ.");
+        if (newStatus == GroupStatus.REJECTED && (request.getNotes() == null || request.getNotes().isBlank()))
+            throw new IllegalArgumentException("Vui lòng nhập lý do từ chối nhóm.");
         group.setStatus(newStatus);
         if (request.getNotes() != null && !request.getNotes().isBlank()) {
             group.setNotes(request.getNotes());

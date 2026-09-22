@@ -8,6 +8,8 @@ import topicmanagement.enums.TopicStatus;
 @Entity
 @Table(name = "topics")
 public class Topic {
+    @Version
+    private Long version;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

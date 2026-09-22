@@ -39,10 +39,12 @@ public class User {
   @Column(nullable = false, length = 20)
   private UserStatus status;
 
-  @Column(name = "created_at", insertable = false, updatable = false)
+  @org.hibernate.annotations.CreationTimestamp
+  @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "updated_at", insertable = false, updatable = false)
+  @org.hibernate.annotations.UpdateTimestamp
+  @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
   public Long getId() {

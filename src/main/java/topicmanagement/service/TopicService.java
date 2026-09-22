@@ -72,6 +72,9 @@ public class TopicService {
 
     @Transactional
     public TopicResponse createTopic(TopicRequest request, User currentUser) {
+        TopicPolicy.staff(currentUser);
+        if (request.getMaxStudents() == null || request.getMaxStudents() < 1 || request.getMaxStudents() > 3)
+            throw new IllegalArgumentException("Nhóm phải có từ 1 đến 3 sinh viên.");
         Department dept = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bộ môn."));
         RegistrationPeriod period = periodRepository.findById(request.getPeriodId())
@@ -91,9 +94,12 @@ public class TopicService {
             throw new IllegalArgumentException("Loại đề tài không hợp lệ: " + request.getTopicType());
         }
 
+        TopicPolicy.registration(period, type, false);
+        if (currentUser.getDepartment() == null || !currentUser.getDepartment().getId().equals(dept.getId()))
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ đề xuất cho bộ môn của mình.");
         Topic topic = new Topic();
         topic.setTopicCode(code);
-        topic.setTitle(request.getTitle());
+        topic.setTitle(request.getTitle().trim());
         topic.setDescription(request.getDescription());
         topic.setRequirements(request.getRequirements());
         topic.setMaxStudents(request.getMaxStudents());
@@ -109,13 +115,16 @@ public class TopicService {
 
     @Transactional
     public TopicResponse updateTopic(Long id, TopicRequest request, User currentUser) {
+        TopicPolicy.staff(currentUser);
+        if (request.getMaxStudents() == null || request.getMaxStudents() < 1 || request.getMaxStudents() > 3)
+            throw new IllegalArgumentException("Nhóm phải có từ 1 đến 3 sinh viên.");
         Topic topic = topicRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề tài có ID: " + id));
 
-        // Ownership or department check
-        if (!topic.getCreatedBy().getId().equals(currentUser.getId()) &&
-            (currentUser.getDepartment() == null || !currentUser.getDepartment().getId().equals(topic.getDepartment().getId()))) {
-            throw new IllegalArgumentException("Bạn không có quyền chỉnh sửa đề tài này.");
+        if (topic.getStatus() == TopicStatus.APPROVED)
+            throw new ConflictException("Không thể sửa đề tài đã được duyệt.");
+        if (!topic.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Bạn không có quyền chỉnh sửa đề tài này.");
         }
 
         Department dept = departmentRepository.findById(request.getDepartmentId())
@@ -130,7 +139,12 @@ public class TopicService {
             throw new IllegalArgumentException("Loại đề tài không hợp lệ: " + request.getTopicType());
         }
 
-        topic.setTitle(request.getTitle());
+        TopicPolicy.registration(period, type, false);
+        if (currentUser.getDepartment() == null || !currentUser.getDepartment().getId().equals(dept.getId()))
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ đề xuất cho bộ môn của mình.");
+        topic.setStatus(TopicStatus.PENDING);
+        topic.setRejectionReason(null);
+        topic.setTitle(request.getTitle().trim());
         topic.setDescription(request.getDescription());
         topic.setRequirements(request.getRequirements());
         topic.setMaxStudents(request.getMaxStudents());
@@ -144,6 +158,7 @@ public class TopicService {
 
     @Transactional
     public void deleteTopic(Long id, User currentUser) {
+        TopicPolicy.staff(currentUser);
         Topic topic = topicRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề tài có ID: " + id));
 

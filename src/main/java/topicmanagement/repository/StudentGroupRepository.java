@@ -14,7 +14,7 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
 
     List<StudentGroup> findByTopicId(Long topicId);
     
-    @Query("SELECT g FROM StudentGroup g WHERE g.topic.createdBy.id = :lecturerId OR g.topic.advisor1.id = :lecturerId OR g.topic.advisor2.id = :lecturerId")
+    @Query("SELECT g FROM StudentGroup g JOIN g.topic t LEFT JOIN t.advisor1 a1 LEFT JOIN t.advisor2 a2 WHERE a1.id = :lecturerId OR a2.id = :lecturerId")
     List<StudentGroup> findGroupsForLecturer(@Param("lecturerId") Long lecturerId);
 
     @Query("SELECT g FROM StudentGroup g WHERE g.topic.department.id = :departmentId")

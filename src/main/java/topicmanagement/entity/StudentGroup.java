@@ -9,6 +9,8 @@ import topicmanagement.enums.GroupStatus;
 @Entity
 @Table(name = "student_groups")
 public class StudentGroup {
+    @Version
+    private Long version;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,7 +22,7 @@ public class StudentGroup {
     private String groupName;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "topic_id", nullable = false)
+    @JoinColumn(name = "topic_id")
     private Topic topic;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -32,9 +34,9 @@ public class StudentGroup {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private GroupStatus status = GroupStatus.PENDING;
+    private GroupStatus status = GroupStatus.DRAFT;
 
-    @Column(name = "registered_at", nullable = false, updatable = false)
+    @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt = LocalDateTime.now();
 
     @Column(columnDefinition = "TEXT")
