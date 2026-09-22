@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hội đồng & kết quả · HCM-UTE</title>
+  <link rel="stylesheet" href="/css/app.css"><link rel="stylesheet" href="/css/councils.css">
+  <script src="/js/councils.js" defer></script>
+</head>
+<body>
+<header class="council-header">
+  <a href="/" class="brand"><img src="/images/logo.png" alt="Logo HCM-UTE" width="40"><strong>QUẢN LÝ ĐỀ TÀI</strong></a>
+  <nav aria-label="Điều hướng"><a id="back-link" href="/lecturer/dashboard.html">Tổng quan</a><button id="logout">Đăng xuất</button></nav>
+</header>
+<main class="council-main">
+  <div class="page-heading"><div><span class="eyebrow">HCM-UTE / PHẢN BIỆN</span><h1>Hội đồng & kết quả</h1><p>Phân công rõ ràng. Đánh giá độc lập. Công bố đúng thẩm quyền.</p></div></div>
+  <p id="feedback" role="status" hidden></p>
+  <div id="admin-actions" class="actions" hidden><button class="primary" id="create-council">+ Thành lập hội đồng</button><button id="assign-group">Phân công nhóm & phản biện</button></div>
+  <section class="panel section-gap"><div class="panel-head"><h2>Hội đồng phản biện</h2><span id="council-count" class="muted"></span></div><div id="council-list">Đang tải…</div></section>
+  <section class="panel section-gap"><div class="panel-head"><h2>Đề tài được phân công</h2></div><div id="defense-list">Đang tải…</div></section>
+  <p class="muted section-gap">Chủ tịch tổng hợp khi đủ điểm của 3–5 thành viên. Trưởng khoa công bố kết quả để sinh viên xem.</p>
+</main>
+<dialog id="council-dialog" aria-labelledby="dialog-title"></dialog>
+</body>
+</html>
