@@ -73,3 +73,16 @@ Mật khẩu chung: `Demo@12345`
 | `hod01` | Trưởng bộ môn |
 | `lecturer01` đến `lecturer05` | Giảng viên |
 | `student01` đến `student06` | Sinh viên |
+
+## Chạy dự án
+
+Yêu cầu: **JDK 21**.
+
+```powershell
+.\mvnw.cmd clean test
+.\mvnw.cmd spring-boot:run
+```
+
+Sau khi ứng dụng khởi động, truy cập: [http://localhost:8080/](http://localhost:8080/)
+
+Dữ liệu demo được lưu bằng H2 tại `data/integrated-project.mv.db`.
