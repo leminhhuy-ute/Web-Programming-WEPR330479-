@@ -42,4 +42,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByUserCodeAndIdNot(String userCode, Long id);
 
   long countByRoleAndStatus(Role role, UserStatus status);
+
+  List<User> findByRole(Role role);
+
+  List<User> findByDepartmentIdAndRoleIn(Long departmentId, List<Role> roles);
 }

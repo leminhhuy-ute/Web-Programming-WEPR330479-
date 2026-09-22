@@ -1,6 +1,7 @@
 package topicmanagement.dto.response;
 
 import java.time.LocalDateTime;
+import topicmanagement.entity.User;
 
 public record UserResponse(
     Long id,
@@ -13,4 +14,11 @@ public record UserResponse(
     String departmentName,
     String status,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {}
+    LocalDateTime updatedAt) {
+    public UserResponse(User u) {
+        this(u.getId(), u.getUserCode(), u.getUsername(), u.getFullName(), u.getEmail(),
+                u.getRole().name(), u.getDepartment() == null ? null : u.getDepartment().getId(),
+                u.getDepartment() == null ? null : u.getDepartment().getName(),
+                u.getStatus().name(), u.getCreatedAt(), u.getUpdatedAt());
+    }
+}

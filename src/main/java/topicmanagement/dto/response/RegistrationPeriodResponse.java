@@ -2,6 +2,7 @@ package topicmanagement.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import topicmanagement.entity.RegistrationPeriod;
 
 public record RegistrationPeriodResponse(
     Long id,
@@ -15,4 +16,11 @@ public record RegistrationPeriodResponse(
     LocalDateTime reviewDeadline,
     LocalDate defenseDate,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {}
+    LocalDateTime updatedAt) {
+    public RegistrationPeriodResponse(RegistrationPeriod p) {
+        this(p.getId(), p.getName(), p.getType().name(), p.getType().name(),
+                p.getLecturerStartAt(), p.getLecturerEndAt(), p.getStudentStartAt(),
+                p.getStudentEndAt(), p.getReviewDeadline(), p.getDefenseDate(),
+                p.getCreatedAt(), p.getUpdatedAt());
+    }
+}
