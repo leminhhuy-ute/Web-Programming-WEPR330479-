@@ -12,6 +12,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
+@org.springframework.context.annotation.Profile("legacy-tomcat")
 @EnableTransactionManagement
 @EnableJpaRepositories("topicmanagement.repository")
 public class JpaConfig {

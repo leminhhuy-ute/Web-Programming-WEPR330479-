@@ -33,3 +33,6 @@ database/backups/
 .DS_Store
 Thumbs.db
 desktop.ini
+data/
+.tools/
+output/
