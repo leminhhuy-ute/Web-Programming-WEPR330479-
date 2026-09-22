@@ -15,6 +15,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userNameEl = document.getElementById('shell-user-name');
     const userRoleEl = document.getElementById('shell-user-role');
     const userAvatarEl = document.getElementById('shell-user-avatar');
+    const moduleLabelEl = document.getElementById('shell-module-label');
+    const pageTitleEl = document.getElementById('shell-page-title');
+
+    // The lecturer module is also available to heads of department and deans.
+    // Keep the shell label aligned with the authenticated role so users do not
+    // mistake the topic-management module for a second application.
+    const moduleLabel = user.role === 'DEAN'
+        ? 'Trưởng khoa'
+        : user.role === 'HEAD_OF_DEPT'
+            ? 'Trưởng bộ môn'
+            : 'Giảng viên';
+    if (moduleLabelEl) moduleLabelEl.textContent = moduleLabel;
+    if (pageTitleEl && pageTitleEl.textContent.includes('Giảng viên')) {
+        pageTitleEl.textContent = pageTitleEl.textContent.replace('Giảng viên', moduleLabel);
+    }
+    document.title = document.title.replace('Giảng viên', moduleLabel);
 
     if (userNameEl) userNameEl.textContent = user.fullName;
     if (userRoleEl) {
