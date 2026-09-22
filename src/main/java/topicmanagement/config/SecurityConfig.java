@@ -35,12 +35,15 @@ public class SecurityConfig {
   }
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository contexts)
+  SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository contexts,
+      topicmanagement.repository.UserRepository users)
       throws Exception {
     CookieCsrfTokenRepository csrf = CookieCsrfTokenRepository.withHttpOnlyFalse();
     csrf.setCookiePath("/");
     CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
     http
+        .addFilterBefore(new topicmanagement.security.AccountRefreshFilter(users, contexts),
+            org.springframework.security.web.access.intercept.AuthorizationFilter.class)
         .securityContext(c -> c.securityContextRepository(contexts).requireExplicitSave(false))
         .csrf(
             c -> c.csrfTokenRepository(csrf).csrfTokenRequestHandler(csrfHandler))
@@ -50,7 +53,8 @@ public class SecurityConfig {
                         "/",
                         "/index.html",
                         "/login.html",
-                        "/assets/**",
+                        "/login",
+                        "/assets/**", "/css/**", "/js/**", "/images/**", "/error",
                         "/api/auth/login",
                         "/api/auth/csrf")
                     .permitAll()
@@ -58,21 +62,30 @@ public class SecurityConfig {
                     .hasRole("DEAN")
                     .requestMatchers("/api/admin/**")
                     .hasRole("DEAN")
+                    .requestMatchers("/lecturer/**", "/api/lecturer/**", "/councils/**", "/api/councils/**")
+                    .hasAnyRole("DEAN", "HEAD_OF_DEPT", "LECTURER")
+                    .requestMatchers("/student", "/api/student/**")
+                    .hasRole("STUDENT")
                     .requestMatchers("/api/**")
                     .authenticated()
                     .anyRequest()
-                    .permitAll())
+                    .authenticated())
         .exceptionHandling(
             e ->
-                e.defaultAuthenticationEntryPointFor(
-                        new HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED),
-                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/**"))
+                e.authenticationEntryPoint((req, res, ex) -> {
+                      if (req.getRequestURI().startsWith(req.getContextPath() + "/api/")) {
+                        res.setStatus(401);
+                        res.setContentType("application/json;charset=UTF-8");
+                        res.getWriter().write("{\"success\":false,\"message\":\"Phiên đăng nhập đã hết hạn.\"}");
+                      } else res.sendRedirect(req.getContextPath() + "/login.html");
+                    })
                     .defaultAccessDeniedHandlerFor(
                         jsonDenied(),
                         new org.springframework.security.web.util.matcher.AntPathRequestMatcher(
                             "/api/**")))
         .sessionManagement(
-            s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).maximumSessions(1));
+            s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/login.html"));
     return http.build();
   }
 

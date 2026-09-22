@@ -32,6 +32,7 @@ public class ApiAuthController {
     Authentication result =
         auth.authenticate(
             UsernamePasswordAuthenticationToken.unauthenticated(body.username(), body.password()));
+    if (req.getSession(false) != null) req.changeSessionId();
     SecurityContext context = SecurityContextHolder.createEmptyContext();
     context.setAuthentication(result);
     SecurityContextHolder.setContext(context);

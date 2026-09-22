@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest()
         .body(
             ApiResponse.fail(
-                "Dữ liệu không hợp lệ.",
+                e instanceof IllegalArgumentException ? e.getMessage() : "Dữ liệu không hợp lệ.",
                 e instanceof IllegalArgumentException ? e.getMessage() : null));
   }
 
@@ -46,6 +46,30 @@ public class GlobalExceptionHandler {
   ResponseEntity<ApiResponse<Void>> integrity(DataIntegrityViolationException e) {
     return ResponseEntity.status(409)
         .body(ApiResponse.fail("Dữ liệu vi phạm ràng buộc cơ sở dữ liệu.", null));
+  }
+
+  @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
+  ResponseEntity<ApiResponse<Void>> concurrent(Exception e) {
+    return ResponseEntity.status(409).body(ApiResponse.fail("Dữ liệu vừa được thay đổi. Vui lòng tải lại trang.", null));
+  }
+
+  @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+  ResponseEntity<ApiResponse<Void>> oversized(Exception e) {
+    return ResponseEntity.status(413).body(ApiResponse.fail("Tệp vượt quá giới hạn 10 MB.", null));
+  }
+
+  @ExceptionHandler({
+      org.springframework.http.converter.HttpMessageNotReadableException.class,
+      org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+      org.springframework.web.bind.MissingServletRequestParameterException.class
+  })
+  ResponseEntity<ApiResponse<Void>> malformed(Exception e) {
+    return ResponseEntity.badRequest().body(ApiResponse.fail("Dữ liệu gửi lên không đúng định dạng.", null));
+  }
+
+  @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+  ResponseEntity<ApiResponse<Void>> noResource(Exception e) {
+    return ResponseEntity.status(404).body(ApiResponse.fail("Không tìm thấy trang hoặc tài nguyên.", null));
   }
 
   @ExceptionHandler(AccessDeniedException.class)

@@ -10,6 +10,10 @@ import topicmanagement.enums.Role;
 import topicmanagement.enums.UserStatus;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+  @Override
+  @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "department")
+  Optional<User> findById(Long id);
+
   Optional<User> findByUsername(String username);
 
   Optional<User> findByUsernameIgnoreCaseOrEmailIgnoreCase(String username, String email);
