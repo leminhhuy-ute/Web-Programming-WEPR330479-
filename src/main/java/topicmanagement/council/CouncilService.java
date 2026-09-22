@@ -72,6 +72,8 @@ public class CouncilService {
     @Transactional public void assign(Long groupId,Long councilId,Long reviewerId) {
         dean();var g=em.find(StudentGroup.class,groupId,LockModeType.PESSIMISTIC_WRITE);
         if(g==null||g.getStatus()!=GroupStatus.APPROVED)throw new IllegalArgumentException("Nhóm phải được giảng viên chấp thuận.");
+        em.lock(g.getTopic(),LockModeType.PESSIMISTIC_WRITE);
+        em.refresh(g.getTopic());
         if(defenses.findByGroupId(groupId).isPresent())throw new IllegalArgumentException("Nhóm đã được phân công.");
         var c=councils.findById(councilId).orElseThrow(()->new IllegalArgumentException("Không tìm thấy hội đồng."));
         if(c.getMembers().stream().noneMatch(m->m.getLecturer().getId().equals(reviewerId)))throw new IllegalArgumentException("GVPB phải thuộc hội đồng.");

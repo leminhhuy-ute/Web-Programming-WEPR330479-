@@ -10,6 +10,9 @@ import topicmanagement.enums.RegistrationPeriodType;
 import topicmanagement.enums.TopicStatus;
 
 public interface TopicRepository extends JpaRepository<Topic, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select t from Topic t where t.id=:id")
+    Optional<Topic> lockById(@Param("id") Long id);
     Optional<Topic> findByTopicCode(String topicCode);
     boolean existsByTopicCode(String topicCode);
 

@@ -80,12 +80,12 @@ public class DepartmentTopicService {
 
     @Transactional
     public TopicResponse assignAdvisors(Long topicId, AssignAdvisorsRequest request, User currentUser) {
-        if (defenses.existsByGroupTopicId(topicId))
-            throw new ConflictException("Không đổi GVHD sau khi đã phân công hội đồng.");
-        Topic topic = topicRepository.findById(topicId)
+        Topic topic = topicRepository.lockById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề tài có ID: " + topicId));
 
         TopicPolicy.departmentManager(currentUser, topic.getDepartment().getId());
+        if (defenses.existsByGroupTopicId(topicId))
+            throw new ConflictException("Không đổi GVHD sau khi đã phân công hội đồng.");
         if (topic.getStatus() != TopicStatus.APPROVED) {
             throw new ConflictException("Chỉ có thể phân công GVHD cho đề tài đã được duyệt (APPROVED).");
         }
