@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết Đề tài - HCMUTE Topic Management</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+<body>
+    <div class="lecturer-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="HCMUTE" width="40" height="40">
+                <h2>Quản lý Đề tài<br><span style="font-size:12px; font-weight:normal; color:#94a3b8;">Giảng viên</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="../dashboard.html">📊 Tổng quan Dashboard</a></li>
+                    <li><a href="list.html" class="active">📚 Tất cả Đề tài</a></li>
+                    <li><a href="form.html">➕ Đề xuất Đề tài mới</a></li>
+                    <li><a href="student-groups.html">👥 Nhóm SV Đăng ký</a></li>
+                    <li id="nav-approval" style="display:none;"><a href="approval.html">⚡ Duyệt Đề tài Bộ môn</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="page-info">
+                    <h1 style="font-size:18px; font-weight:600; color:#1e293b;">Chi tiết Đề tài</h1>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" id="shell-user-avatar">GV</div>
+                    <div class="user-info">
+                        <span class="user-name" id="shell-user-name">Giảng viên</span>
+                        <span class="user-role" id="shell-user-role">Giảng viên</span>
+                    </div>
+                    <button id="shell-logout-btn" class="button outline" style="margin-left:12px; padding:4px 10px; font-size:12px;">Đăng xuất</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
+                        <div>
+                            <span id="detail-code" style="font-weight:700; color:#64748b; font-size:14px;"></span>
+                            <h2 id="detail-title" style="font-size:22px; color:#0f172a; margin-top:4px;"></h2>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <span id="detail-type" class="badge"></span>
+                            <span id="detail-status" class="badge"></span>
+                        </div>
+                    </div>
+
+                    <div id="detail-reject-box" class="alert error" style="display:none;">
+                        <strong>Lý do từ chối:</strong> <span id="detail-reject-reason"></span>
+                    </div>
+
+                    <div class="form-grid" style="margin-bottom:24px;">
+                        <div><strong>Giảng viên đề xuất:</strong> <span id="detail-creator"></span></div>
+                        <div><strong>Bộ môn quản lý:</strong> <span id="detail-dept"></span></div>
+                        <div><strong>Đợt đăng ký:</strong> <span id="detail-period"></span></div>
+                        <div><strong>Số lượng SV tối đa:</strong> <span id="detail-max"></span></div>
+                        <div><strong>GV Hướng dẫn 1:</strong> <span id="detail-adv1" style="color:#0284c7; font-weight:600;"></span></div>
+                        <div><strong>GV Hướng dẫn 2:</strong> <span id="detail-adv2" style="color:#0284c7; font-weight:600;"></span></div>
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <h3 style="font-size:16px; margin-bottom:8px; color:#334155;">Mô tả đề tài:</h3>
+                        <p id="detail-desc" style="white-space:pre-line; color:#475569; background:#f8fafc; padding:16px; border-radius:6px;"></p>
+                    </div>
+
+                    <div style="margin-bottom:24px;">
+                        <h3 style="font-size:16px; margin-bottom:8px; color:#334155;">Yêu cầu đối với sinh viên:</h3>
+                        <p id="detail-req" style="white-space:pre-line; color:#475569; background:#f8fafc; padding:16px; border-radius:6px;"></p>
+                    </div>
+
+                    <div class="form-actions">
+                        <a id="btn-edit" href="#" class="button primary">Chỉnh sửa thông tin</a>
+                        <a href="list.html" class="button outline">Quay lại danh sách</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadDetail();
+        });
+    </script>
+</body>
+</html>
