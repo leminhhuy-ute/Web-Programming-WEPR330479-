@@ -1,140 +1,140 @@
-# System Architecture: HCM-UTE Student Topic Management System
+# Kiến trúc hệ thống: Hệ thống Quản lý Đề tài Sinh viên HCM-UTE
 
-## 1. Architectural Overview
+## 1. Mô hình kiến trúc tổng quan
 
-The **HCM-UTE Student Topic Management System** follows a clean **Layered Architecture (N-Tier)** pattern, emphasizing separation of concerns, testability, security, and loose coupling.
+**Hệ thống Quản lý Đề tài Sinh viên HCM-UTE** được xây dựng theo mô hình **Kiến trúc phân tầng (N-Tier / Layered Architecture)** chuẩn công nghiệp, bảo đảm tính độc lập, khả năng mở rộng, khả năng kiểm thử và mức độ bảo mật cao giữa các thành phần.
 
 ```mermaid
 graph TD
-    Client["Client Tier<br/>(Modern Web Browser / Fetch API / Responsive UI)"]
+    Client["Tầng Client<br/>(Trình duyệt Web hiện đại / Fetch API / Giao diện Responsive)"]
     
-    subgraph SpringBootApp ["Spring Boot Application (Executable JAR)"]
-        subgraph WebLayer ["Presentation & Security Layer"]
-            Filter["Security Filter Chain<br/>(AccountRefreshFilter, CSRF, SessionMgmt)"]
-            Controllers["Spring MVC / REST Controllers<br/>(AdminController, StudentController, CouncilController, etc.)"]
+    subgraph SpringBootApp ["Ứng dụng Spring Boot (Executable Fat JAR)"]
+        subgraph WebLayer ["Tầng Giao diện & Bảo mật (Web & Security Layer)"]
+            Filter["Chuỗi bộ lọc bảo mật (Security Filter Chain)<br/>(AccountRefreshFilter, CSRF Filter, Session Management)"]
+            Controllers["Bộ điều hướng Spring MVC & REST Controllers<br/>(AdminController, StudentController, CouncilController, v.v.)"]
         end
 
-        subgraph ServiceLayer ["Service & Business Domain Layer"]
-            Services["Business Services<br/>(TopicService, StudentService, CouncilService, etc.)"]
-            SecurityServices["Security Providers<br/>(DatabaseAuthenticationProvider, LoginAttemptService)"]
-            Validators["Domain Validators<br/>(PdfValidator, LifecycleGuards)"]
+        subgraph ServiceLayer ["Tầng Dịch vụ & Nghiệp vụ (Service & Business Domain)"]
+            Services["Dịch vụ nghiệp vụ (Business Domain Services)<br/>(TopicService, StudentService, CouncilService, v.v.)"]
+            SecurityServices["Dịch vụ bảo mật (Security Providers)<br/>(DatabaseAuthenticationProvider, LoginAttemptService)"]
+            Validators["Bộ kiểm tra hợp lệ (Domain Validators)<br/>(PdfValidator, LifecycleGuards)"]
         end
 
-        subgraph DataLayer ["Persistence & Data Access Layer"]
-            Repositories["Spring Data JPA Repositories<br/>(TopicRepository, GroupMemberRepository, etc.)"]
-            Entities["JPA Domain Entities<br/>(User, Topic, StudentGroup, Defense, Report, etc.)"]
+        subgraph DataLayer ["Tầng Truy xuất & Lưu trữ dữ liệu (Data Access Layer)"]
+            Repositories["Spring Data JPA Repositories<br/>(TopicRepository, GroupMemberRepository, v.v.)"]
+            Entities["Thực thể cơ sở dữ liệu (JPA Entities)<br/>(User, Topic, StudentGroup, Defense, Report, v.v.)"]
         end
     end
 
-    subgraph DatabaseTier ["Database Layer"]
-        DB[("MySQL 8.0+ / H2 Embedded")]
-        Migrations["Flyway Migrations (V2..V5)"]
+    subgraph DatabaseTier ["Tầng Cơ sở dữ liệu"]
+        DB[("MySQL Server 8.0+ / H2 Database")]
+        Migrations["Bộ quản lý phiên bản Flyway (V2..V5)"]
     end
 
-    Client -->|HTTP / HTTPS + JSON/HTML| Filter
+    Client -->|HTTP / HTTPS + JSON / HTML| Filter
     Filter --> Controllers
     Controllers --> Services
     Services --> Validators
     Services --> Repositories
     Repositories --> Entities
     Repositories --> DB
-    Migrations -.->|Schema Versioning| DB
+    Migrations -.->|Kiểm soát phiên bản Schema| DB
 ```
 
 ---
 
-## 2. Layer Responsibilities
+## 2. Trách nhiệm của từng tầng kiến trúc
 
-### 2.1 Presentation & Web Layer
-- **Thymeleaf Template Controllers**: Render server-side HTML views with shared layouts (`login.html`, `admin.html`, `lecturer.html`, `student.html`, `council.html`).
-- **RESTful API Controllers**: Expose JSON-based REST endpoints under `/api/**` with standard HTTP verbs (`GET`, `POST`, `PUT`, `DELETE`).
-- **Input Validation**: JSR-380 (`jakarta.validation`) annotations (`@Valid`, `@NotNull`, `@Size`, `@NotBlank`) validate inbound payload formats before reaching business logic.
-- **Unified Error Handling**: Global exception interceptors format standard JSON error structures with meaningful HTTP status codes (400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Internal Server Error).
+### 2.1 Tầng Giao diện & Web (Presentation Layer)
+- **Thymeleaf Template Controllers**: Xử lý điều hướng và kết xuất giao diện HTML phía máy chủ với hệ thống bố cục dùng chung (`login.html`, `admin.html`, `lecturer.html`, `student.html`, `councils/index.html`).
+- **RESTful API Controllers**: Cung cấp các endpoint REST trả về dữ liệu định dạng JSON theo tiền tố `/api/**` với các phương thức HTTP chuẩn (`GET`, `POST`, `PUT`, `DELETE`).
+- **Xác thực dữ liệu đầu vào (Input Validation)**: Ứng dụng các annotation chuẩn JSR-380 (`jakarta.validation`) như `@Valid`, `@NotNull`, `@Size`, `@NotBlank` để sàng lọc dữ liệu ngay từ controller trước khi chuyển vào tầng dịch vụ.
+- **Xử lý ngoại lệ tập trung (Unified Error Handling)**: Bắt và chuẩn hóa các lỗi nghiệp vụ hoặc hệ thống thành cấu trúc JSON thống nhất với mã trạng thái HTTP chuẩn (400, 401, 403, 404, 409, 500).
 
-### 2.2 Security & Authentication Layer
-- **Spring Security Filter Chain**: Intercepts every inbound request to enforce role authorization and session validity.
-- **`CurrentUser` Principal**: Injects thread-safe contextual user identity (`id`, `username`, `role`, `departmentId`, `authenticatedAt`).
-- **`DatabaseAuthenticationProvider`**: Performs case-insensitive credential resolution and BCrypt hash verification.
-- **`AccountRefreshFilter`**: Evaluates each authenticated request against the database `password_changed_at` timestamp. If a password was updated after session creation, the filter immediately invalidates the active session and redirects to the login screen.
-- **`LoginAttemptService`**: Tracks failed login attempts per client IP/username to mitigate brute-force credential stuffing.
-- **CSRF & Session Security**: Employs `CookieCsrfTokenRepository` with `SameSite=Lax`, `HttpOnly=true`, and configurable `Secure` flags. Enforces session rotation upon login.
+### 2.2 Tầng Bảo mật & Xác thực (Security Layer)
+- **Spring Security Filter Chain**: Chặn và kiểm tra mọi yêu cầu HTTP để kiểm soát quyền hạn theo vai trò và tính hợp lệ của phiên đăng nhập.
+- **Đối tượng định danh `CurrentUser`**: Đại diện phiên người dùng an toàn luồng (thread-safe), chứa các thông tin ngữ cảnh: `id`, `username`, `role`, `departmentId`, `authenticatedAt`.
+- **`DatabaseAuthenticationProvider`**: Thực hiện truy vấn tài khoản không phân biệt hoa thường và đối soát mật khẩu với giải thuật băm BCrypt.
+- **Bộ lọc kiểm tra phiên `AccountRefreshFilter`**: Trên mỗi yêu cầu được xác thực, bộ lọc so sánh thời điểm đăng nhập của session với trường `password_changed_at` trong cơ sở dữ liệu. Nếu mật khẩu đã bị đổi sau thời điểm đăng nhập, phiên lập tức bị hủy bỏ và chuyển hướng về trang đăng nhập.
+- **Kiểm soát đăng nhập thất bại `LoginAttemptService`**: Theo dõi số lần đăng nhập sai theo IP/Username trong cửa sổ 15 phút để chủ động ngăn chặn tấn công brute-force.
+- **Bảo vệ CSRF & Cookie**: Sử dụng `CookieCsrfTokenRepository` với các cờ bảo mật `HttpOnly=true`, `SameSite=Lax`, cơ chế tự động đổi Session ID khi đăng nhập thành công.
 
-### 2.3 Business Domain & Service Layer
-- Encapsulates all domain policies, temporal rules, and business logic:
-  - **Period Service (`RegistrationPeriodServiceV2`)**: Enforces two-phase proposal and registration time windows. Prevents deletion or alteration of periods with existing dependencies.
-  - **Topic Service (`TopicService`, `DepartmentTopicService`)**: Validates topic quotas, creator status, and departmental alignment.
-  - **Student Group Service (`StudentService`)**: Controls group forming, period-scoped memberships, member removal, and safe group disbanding.
-  - **Registration Service (`TopicRegistrationService`)**: Governs topic registration approvals, advisor assignments, and cancellation blocks.
-  - **Report Service (`ReportService`)**: Enforces strict linear progression (`Đề cương` $\rightarrow$ `Giữa kỳ` $\rightarrow$ `Cuối kỳ`) and structural byte inspection for PDFs and DOCX archives.
-  - **Council Management Service (`CouncilManagementService`, `CouncilService`, `DefenseService`)**: Enforces council role distributions, conflict-of-interest prevention (advisors cannot judge their own topics), score collection, and chairperson arithmetic synthesis.
-  - **Student Result Service (`StudentResultService`)**: Implements deterministic multi-period resolution, prioritizing the active period while supporting historical period inspection.
+### 2.3 Tầng Dịch vụ Nghiệp vụ (Business Service Layer)
+- Đóng gói toàn bộ các chính sách, quy tắc đào tạo và máy trạng thái nghiệp vụ:
+  - **`RegistrationPeriodServiceV2`**: Thực thi quy tắc 4 mốc thời gian, kiểm soát vòng đời đợt đăng ký; ngăn chặn việc thay đổi loại đợt hoặc xóa đợt khi đã có đề tài hoặc nhóm sinh viên phát sinh.
+  - **`TopicService` & `DepartmentTopicService`**: Quản lý đề xuất đề tài, phân bổ chỉ tiêu giảng viên hướng dẫn, kiểm tra tính hợp lệ của người tạo và bộ môn của đề tài.
+  - **`StudentService`**: Xử lý tạo nhóm, gửi lời mời, chuyển quyền nhóm trưởng, rời nhóm, xóa thành viên và giải tán nhóm với phạm vi giới hạn theo từng đợt đăng ký.
+  - **`TopicRegistrationService`**: Điều phối luồng đăng ký đề tài, duyệt đăng ký và kích hoạt cơ chế khóa hủy đăng ký khi nhóm đã bắt đầu nộp báo cáo.
+  - **`ReportService`**: Ràng buộc nộp báo cáo tuần tự theo 3 giai đoạn (`Đề cương` $\rightarrow$ `Giữa kỳ` $\rightarrow$ `Cuối kỳ`), kiểm tra cấu trúc byte của tệp PDF và DOCX.
+  - **`CouncilManagementService`, `CouncilService`, `DefenseService`**: Thực thi cơ cấu thành viên hội đồng (3-5 người), ngăn ngừa xung đột lợi ích (giảng viên hướng dẫn không được chấm đề tài mình), thu thập điểm số và tổng hợp điểm trung bình cộng.
+  - **`StudentResultService`**: Thực hiện cơ chế phân giải kết quả đa đợt: ưu tiên đợt đang hoạt động hoặc cho phép chọn tra cứu chính xác các đợt lịch sử đã kết thúc.
 
-### 2.4 Persistence & Data Access Layer
-- **Spring Data JPA**: Automates type-safe database queries, pagination, and derived query methods.
-- **Hibernate ORM**: Manages entity lifecycles, dirty checking, lazy loading proxies, and optimistic locking.
-- **Flyway Database Migrations**: Tracks database versioning from `V2` through `V5`, guaranteeing deterministic schema evolutions across environments.
+### 2.4 Tầng Truy xuất & Lưu trữ Dữ liệu (Persistence Layer)
+- **Spring Data JPA**: Cung cấp các giao diện repository trừu tượng hóa truy vấn, hỗ trợ phân trang và các phương thức truy vấn suy diễn (derived queries).
+- **Hibernate ORM**: Quản lý vòng đời thực thể, cơ chế dirty-checking, khóa lạc quan (`@Version`) và ánh xạ quan hệ bảng.
+- **Flyway Migrations**: Quản lý lịch sử tiến hóa cấu trúc cơ sở dữ liệu từ phiên bản `V2` đến `V5`, bảo đảm tính đồng nhất giữa môi trường phát triển và môi trường thực tế.
 
 ---
 
-## 3. End-to-End Request Lifecycle
+## 3. Vòng đời xử lý yêu cầu End-to-End
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Client Browser
-    participant Filter as Security & AccountRefreshFilter
+    actor User as Trình duyệt Client
+    participant Filter as Chuỗi lọc bảo mật & AccountRefreshFilter
     participant Controller as REST Controller
-    participant Service as Domain Service
+    participant Service as Dịch vụ nghiệp vụ (Service)
     participant Repo as JPA Repository
-    participant DB as MySQL Database
+    participant DB as Cơ sở dữ liệu MySQL
 
-    User->>Filter: HTTP POST /api/student/registration (Cookie, CSRF)
-    Filter->>Filter: Validate CSRF & Session Timestamp vs password_changed_at
-    Filter->>Controller: Forward authenticated request with CurrentUser
-    Controller->>Controller: Validate DTO (@Valid RequestBody)
-    Controller->>Service: invoke registerTopic(currentUser, topicId)
-    Service->>Repo: findActiveRegistrationPeriod(), findGroup(), findTopic()
-    Repo->>DB: SQL Queries
-    DB-->>Repo: Return Entities
-    Service->>Service: Assert student is Leader, Assert period window active, Assert quota available
-    Service->>Repo: save(TopicRegistration)
-    Repo->>DB: INSERT INTO topic_registrations
-    DB-->>Repo: Success
-    Service-->>Controller: Return RegistrationResponse DTO
-    Controller-->>User: HTTP 200 OK (JSON)
+    User->>Filter: Gửi request POST /api/student/registrations (kèm Cookie, CSRF)
+    Filter->>Filter: Kiểm tra CSRF & kiểm tra thời điểm session vs password_changed_at
+    Filter->>Controller: Chuyển tiếp request kèm đối tượng CurrentUser
+    Controller->>Controller: Xác thực dữ liệu payload (@Valid RequestBody)
+    Controller->>Service: Gọi hàm register(currentUser, topicId)
+    Service->>Repo: Truy vấn đợt đăng ký, nhóm sinh viên, đề tài
+    Repo->>DB: Thực thi các câu lệnh SELECT SQL
+    DB-->>Repo: Trả về các thực thể dữ liệu
+    Service->>Service: Kiểm tra quyền nhóm trưởng, thời hạn đợt, chỉ tiêu đề tài
+    Service->>Repo: Lưu thực thể TopicRegistration mới
+    Repo->>DB: Thực thi INSERT INTO topic_registrations
+    DB-->>Repo: Ghi nhận thành công
+    Service-->>Controller: Trả về DTO thông báo thành công
+    Controller-->>User: Phản hồi mã HTTP 200 OK (JSON)
 ```
 
 ---
 
-## 4. Cross-Cutting Concerns & Security Design
+## 4. Các giải pháp an ninh chuyên sâu
 
-### 4.1 Case-Insensitive Credential Protection
-User lookup during authentication and user registration enforces case-insensitive collation and explicit repository methods (`findByUsernameIgnoreCase`, `findByEmailIgnoreCase`). This eliminates credential spoofing and duplicate account confusion (e.g., `Student01` vs `student01`).
+### 4.1 Chống xung đột định danh không phân biệt hoa thường
+Tại tầng cơ sở dữ liệu và repository, việc tìm kiếm và tạo mới tài khoản sử dụng các phương thức tường minh (`findByUsernameIgnoreCase`, `findByEmailIgnoreCase`) kết hợp collation `utf8mb4_unicode_ci`. Điều này triệt tiêu hoàn toàn nguy cơ giả mạo định danh hoặc tạo tài khoản trùng lặp (ví dụ: `Student01` và `student01`).
 
-### 4.2 Document Inspection Engine (`ReportService`)
-To prevent malicious file uploads:
-1. **MIME-Type & Extension Inspection**: Accepts only `.pdf` and `.docx` extensions.
-2. **Byte Magic-Number Verification**: Validates `%PDF-` at the file header and `%%EOF` at the trailer for PDF files.
-3. **Internal Structure Verification**: Inspects PDF byte buffers for valid object streams (`obj` / `endobj`).
-4. **ZIP Bomb / XML Bomb Protection**: Validates OpenXML structures with bounded decompressed payload checks for `.docx`.
-5. **File Size Limits**: Strictly bounded to 10 MB.
+### 4.2 Động cơ kiểm tra cấu trúc tệp an toàn (`ReportService`)
+Để ngăn ngừa việc tải lên mã độc hoặc tệp độc hại:
+1. **Kiểm tra phần mở rộng & MIME-Type**: Chỉ chấp nhận đuôi `.pdf` và `.docx`.
+2. **Kiểm tra chữ ký byte (Magic Numbers)**: Kiểm tra chuỗi định danh `%PDF-` ở đầu tệp và `%%EOF` ở cuối tệp đối với PDF.
+3. **Kiểm tra cấu trúc đối tượng nội tại**: Quét mảng byte để bảo đảm có các khối đối tượng hợp lệ (`obj` / `endobj`).
+4. **Phòng chống ZIP Bomb / XML Bomb**: Phân tích luồng nén OpenXML của tệp `.docx` với giới hạn tỷ lệ bung nén nghiêm ngặt.
+5. **Giới hạn kích thước tệp**: Chặn tuyệt đối các tệp vượt quá 10 MB.
 
-### 4.3 Defense Conflict-of-Interest Safeguard
-When a defense council is assigned to evaluate a topic:
-- The system checks if `topic.advisor1.id` or `topic.advisor2.id` matches any `council_members.lecturer_id`.
-- If a match is detected, the council assignment is rejected, maintaining academic objectivity.
+### 4.3 Cơ chế ngăn ngừa xung đột lợi ích trong hội đồng bảo vệ
+Khi Trưởng khoa thực hiện phân công hội đồng cho một nhóm sinh viên:
+- Hệ thống kiểm tra mã giảng viên của `advisor1_id` và `advisor2_id` của đề tài.
+- Nếu bất kỳ giảng viên hướng dẫn nào trùng khớp với danh sách thành viên trong hội đồng được chọn, thao tác phân công sẽ bị từ chối, bảo đảm tính khách quan tuyệt đối khi đánh giá.
 
 ---
 
-## 5. Deployment Topology
+## 5. Cấu hình môi trường & Đóng gói triển khai
 
-The application is packaged as a standalone **Executable Spring Boot JAR** with an embedded Apache Tomcat 10 container:
+Ứng dụng được đóng gói thành một tệp **Executable JAR** duy nhất chứa máy chủ Apache Tomcat nhúng:
 
-- **Demo / Local Testing Profile (`default`)**:
-  - Embedded H2 file database (`data/integrated-project.mv.db`) or in-memory database (`jdbc:h2:mem:...`).
-  - Rapid zero-dependency startup with Hibernate `ddl-auto=update`.
-- **Production Profile (`mysql`)**:
-  - Connects to an external MySQL 8.0+ server.
-  - Enforces `ddl-auto=validate` to prevent runtime schema modifications.
-  - Requires database credentials supplied via environment variables (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`).
-  - Enforces HTTPS cookie security (`SESSION_COOKIE_SECURE=true`).
+- **Profile Mặc định / Demo (`default`)**:
+  - Cơ sở dữ liệu nhúng H2 (dạng file hoặc in-memory).
+  - Tự động đồng bộ schema (`ddl-auto=update`), khởi chạy tức thì phục vụ demo và kiểm thử tự động.
+- **Profile Triển khai Thực tế (`mysql`)**:
+  - Kết nối với máy chủ MySQL Server 8.0+.
+  - Chế độ kiểm tra schema nghiêm ngặt (`ddl-auto=validate`), không tự ý sửa đổi cấu trúc bảng đang hoạt động.
+  - Tiếp nhận thông tin kết nối qua các biến môi trường (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`).
+  - Bật cờ bảo mật cookie HTTPS (`SESSION_COOKIE_SECURE=true`).

@@ -1,96 +1,98 @@
-# Production Deployment Guide: HCM-UTE Student Topic Management System
+# Hướng dẫn triển khai Production: Hệ thống Quản lý Đề tài Sinh viên HCM-UTE
 
-## 1. Prerequisites & System Requirements
+## 1. Yêu cầu hệ thống & Môi trường vận hành
 
-### 1.1 Hardware Specifications
-- **CPU**: 2 vCPUs minimum (4 vCPUs recommended).
-- **RAM**: 2 GB minimum (4 GB+ recommended for concurrent defense periods).
-- **Disk Storage**: 20 GB SSD minimum (accounting for student PDF/DOCX report submissions).
+### 1.1 Yêu cầu cấu hình phần cứng
+- **CPU**: Tối thiểu 2 vCPUs (Khuyến nghị 4 vCPUs cho môi trường có nhiều lượt bảo vệ đồng thời).
+- **RAM**: Tối thiểu 2 GB RAM (Khuyến nghị 4 GB trở lên để vận hành ổn định).
+- **Ổ cứng**: Tối thiểu 20 GB SSD khả dụng (đảm bảo không gian lưu trữ cho các tệp báo cáo PDF/DOCX của sinh viên).
 
-### 1.2 Software Requirements
-- **Operating System**: Linux (Ubuntu 22.04 LTS / Debian 12 / RHEL 9) or Windows Server.
-- **Java Runtime**: OpenJDK 21 LTS (`java --version` $\ge 21$).
-- **Database**: MySQL Server 8.0.30+ with InnoDB engine.
-- **Reverse Proxy**: Nginx 1.20+ or Apache HTTP Server 2.4+ (for SSL/TLS termination).
+### 1.2 Yêu cầu phần mềm & Môi trường chạy
+- **Hệ điều hành**: Linux (Ubuntu Server 22.04 LTS, Debian 12 hoặc RHEL 9) hoặc Windows Server.
+- **Java Runtime**: OpenJDK 21 LTS trở lên (`java -version` $\ge 21$).
+- **Hệ quản trị CSDL**: MySQL Server 8.0.30+ với Storage Engine InnoDB.
+- **Máy chủ Reverse Proxy**: Nginx 1.20+ hoặc Apache HTTP Server 2.4+ (đảm nhiệm xử lý mã hóa SSL/TLS).
 
 ---
 
-## 2. MySQL Database Setup
+## 2. Cài đặt & Cấu hình Cơ sở dữ liệu MySQL
 
-### 2.1 Database Creation & Character Set
-Log into MySQL as an administrative user:
+### 2.1 Khởi tạo Database và Tài khoản ứng dụng
+Đăng nhập vào MySQL với quyền quản trị viên:
 ```bash
 mysql -u root -p
 ```
 
-Execute database initialization:
+Thực thi các câu lệnh khởi tạo cơ sở dữ liệu chuẩn UTF-8:
 ```sql
 CREATE DATABASE student_topic_management 
     CHARACTER SET utf8mb4 
     COLLATE utf8mb4_unicode_ci;
 
--- Create dedicated least-privilege application user
+-- Tạo tài khoản ứng dụng riêng biệt tuân thủ nguyên tắc đặc quyền tối thiểu
 CREATE USER 'topic_app'@'localhost' IDENTIFIED BY 'StrongProductionPassword#2026';
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER 
     ON student_topic_management.* TO 'topic_app'@'localhost';
 FLUSH PRIVILEGES;
+EXIT;
 ```
 
-### 2.2 Schema Initialization
-Apply the baseline schema:
+### 2.2 Nạp cấu trúc Schema ban đầu
+Nạp schema chuẩn từ tệp kịch bản của dự án:
 ```bash
 mysql -u topic_app -p student_topic_management < database/schema.sql
 ```
 
-*(Optional for staging / verification environments)*:
+*(Tùy chọn dành cho môi trường Staging / Kiểm thử thử nghiệm)*:
 ```bash
 mysql -u topic_app -p student_topic_management < database/seed.sql
 ```
 
 > [!NOTE]
-> On production startup with profile `mysql`, Hibernate operates in `ddl-auto=validate` mode. It validates the schema without altering tables automatically. Future schema updates are managed deterministically via Flyway migrations in `database/migration/`.
+> Khi khởi chạy ở môi trường Production với profile `mysql`, Hibernate được cấu hình ở chế độ `ddl-auto=validate`. Ứng dụng sẽ kiểm tra tính toàn vẹn của schema mà không tự động chỉnh sửa cấu trúc bảng. Toàn bộ các thay đổi kiến trúc tiếp theo được quản lý tự động bởi Flyway Migration trong thư mục `database/migration/`.
 
 ---
 
-## 3. Application Build & Packaging
+## 3. Đóng gói ứng dụng thành file thực thi JAR
 
-Build the standalone executable JAR from source using the Maven wrapper:
+Biên dịch và đóng gói ứng dụng bằng công cụ Maven Wrapper có sẵn:
 
-### Linux / macOS:
+### Trên Linux / macOS:
 ```bash
+chmod +x ./mvnw
 ./mvnw clean package -DskipTests
 ```
 
-### Windows (PowerShell):
+### Trên Windows (PowerShell):
 ```powershell
 .\mvnw.cmd clean package -DskipTests
 ```
 
-The build artifact will be generated at:
+Tệp thực thi độc lập (Fat JAR) sẽ được tạo tại đường dẫn:
 ```text
 target/topic-management-1.0.0.jar
 ```
 
 ---
 
-## 4. Production Configuration & Environment Variables
+## 4. Cấu hình biến môi trường Production
 
-Configure application settings using standard environment variables:
+Cấu hình các tham số vận hành thông qua biến môi trường hệ thống:
 
-| Variable | Recommended Production Value | Description |
+| Tên biến môi trường | Giá trị khuyến nghị Production | Mô tả ý nghĩa |
 | :--- | :--- | :--- |
-| `SPRING_PROFILES_ACTIVE` | `mysql` | Activates MySQL persistence profile |
-| `DB_URL` | `jdbc:mysql://localhost:3306/student_topic_management?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh` | JDBC Connection String |
-| `DB_USERNAME` | `topic_app` | Dedicated database user |
-| `DB_PASSWORD` | `StrongProductionPassword#2026` | Database password |
-| `SERVER_PORT` | `8080` | Local port bound by embedded Tomcat |
-| `SESSION_COOKIE_SECURE` | `true` | Enforces HTTPS-only transmission of session cookies |
+| `SPRING_PROFILES_ACTIVE` | `mysql` | Kích hoạt cấu hình lưu trữ với MySQL |
+| `DB_URL` | `jdbc:mysql://localhost:3306/student_topic_management?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh` | Chuỗi kết nối JDBC MySQL |
+| `DB_USERNAME` | `topic_app` | Tên tài khoản kết nối CSDL |
+| `DB_PASSWORD` | `StrongProductionPassword#2026` | Mật khẩu tài khoản CSDL |
+| `SERVER_PORT` | `8080` | Cổng mạng của máy chủ Tomcat nhúng |
+| `SESSION_COOKIE_SECURE` | `true` | Bắt buộc truyền cookie session qua kênh HTTPS an toàn |
 
 ---
 
-## 5. Linux Service Deployment (systemd)
+## 5. Cấu hình dịch vụ máy chủ Linux (systemd)
 
-Create a dedicated system user:
+Tạo tài khoản dịch vụ chuyên dụng trên máy chủ:
 ```bash
 sudo useradd -r -s /bin/false topicapp
 sudo mkdir -p /opt/topic-management
@@ -98,7 +100,7 @@ sudo cp target/topic-management-1.0.0.jar /opt/topic-management/app.jar
 sudo chown -R topicapp:topicapp /opt/topic-management
 ```
 
-Create environment configuration file `/opt/topic-management/app.env`:
+Tạo tệp cấu hình biến môi trường an toàn `/opt/topic-management/app.env`:
 ```ini
 SPRING_PROFILES_ACTIVE=mysql
 DB_URL=jdbc:mysql://127.0.0.1:3306/student_topic_management?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh
@@ -108,16 +110,16 @@ SESSION_COOKIE_SECURE=true
 SERVER_PORT=8080
 JAVA_OPTS=-Xms512m -Xmx2048m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError
 ```
-Secure permissions on the environment file:
+Thiết lập phân quyền nghiêm ngặt cho tệp cấu hình:
 ```bash
 sudo chmod 600 /opt/topic-management/app.env
 sudo chown topicapp:topicapp /opt/topic-management/app.env
 ```
 
-Create systemd unit file `/etc/systemd/system/topic-management.service`:
+Khởi tạo tệp cấu hình dịch vụ `/etc/systemd/system/topic-management.service`:
 ```ini
 [Unit]
-Description=HCM-UTE Student Topic Management Application
+Description=HCM-UTE Student Topic Management System
 After=network.target mysql.service
 
 [Service]
@@ -137,7 +139,7 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-Reload systemd and start the service:
+Kích hoạt và khởi chạy dịch vụ:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now topic-management
@@ -146,9 +148,9 @@ sudo systemctl status topic-management
 
 ---
 
-## 6. Reverse Proxy & SSL Configuration (Nginx)
+## 6. Cấu hình Reverse Proxy Nginx & Chứng chỉ SSL
 
-Install Nginx and configure SSL termination:
+Cài đặt Nginx và thiết lập chuyển hướng HTTPS kèm chứng chỉ SSL/TLS:
 
 ```nginx
 server {
@@ -166,7 +168,7 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
-    # Maximum file upload size for student project reports
+    # Dung lượng tối đa cho phép tải lên đối với tệp báo cáo sinh viên
     client_max_body_size 15M;
 
     location / {
@@ -177,12 +179,12 @@ server {
         proxy_set_header X-Forwarded-Proto https;
         proxy_set_header X-Forwarded-Port 443;
 
-        # WebSocket & Long-polling support
+        # Hỗ trợ truyền thông tin phiên làm việc
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        # Timeouts for large report uploads
+        # Thời gian chờ đối với các tệp tải lên dung lượng lớn
         proxy_connect_timeout 60s;
         proxy_send_timeout 120s;
         proxy_read_timeout 120s;
@@ -192,10 +194,10 @@ server {
 
 ---
 
-## 7. Operational Maintenance & Backup Strategy
+## 7. Chiến lược vận hành & Sao lưu dữ liệu định kỳ
 
-### 7.1 Automated Database Backup Script
-Create `/usr/local/bin/backup-topic-management.sh`:
+### 7.1 Kịch bản tự động sao lưu CSDL hàng ngày
+Tạo tệp script sao lưu `/usr/local/bin/backup-topic-management.sh`:
 ```bash
 #!/bin/bash
 BACKUP_DIR="/var/backups/student_topic_management"
@@ -206,17 +208,17 @@ mysqldump --single-transaction --quick --routines --triggers \
     -u topic_app -pStrongProductionPassword#2026 student_topic_management \
     | gzip > "$BACKUP_DIR/db_backup_$TIMESTAMP.sql.gz"
 
-# Retain backups for 30 days
+# Tự động dọn dẹp các bản sao lưu cũ hơn 30 ngày
 find "$BACKUP_DIR" -type f -name "*.sql.gz" -mtime +30 -delete
 ```
-Make executable and schedule in cron:
+Cấp quyền thực thi và đưa vào cron job chạy lúc 02:00 sáng mỗi ngày:
 ```bash
 chmod +x /usr/local/bin/backup-topic-management.sh
 (crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/backup-topic-management.sh") | crontab -
 ```
 
-### 7.2 Database Restore Procedure
-To restore from backup:
+### 7.2 Quy trình phục hồi dữ liệu từ bản sao lưu
+Trong tình huống cần phục hồi dữ liệu:
 ```bash
 gunzip < /var/backups/student_topic_management/db_backup_TIMESTAMP.sql.gz | mysql -u topic_app -p student_topic_management
 ```

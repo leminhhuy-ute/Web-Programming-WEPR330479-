@@ -1,44 +1,44 @@
-# Business Workflow: HCM-UTE Student Topic Management System
+# Quy trình nghiệp vụ: Hệ thống Quản lý Đề tài Sinh viên HCM-UTE
 
-## 1. End-to-End Workflow Diagram
+## 1. Sơ đồ luồng nghiệp vụ toàn diện (End-to-End Workflow)
 
 ```mermaid
 flowchart TD
-    subgraph P1["Phase 1: Period Creation (Dean)"]
-        A1[Dean configures Registration Period] --> A2[Validate 4-point temporal window]
-        A2 --> A3[Period Activated]
+    subgraph P1["Giai đoạn 1: Khởi tạo đợt đăng ký (Trưởng khoa)"]
+        A1[Trưởng khoa thiết lập đợt đăng ký mới] --> A2[Hệ thống kiểm tra 4 mốc thời gian tuần tự]
+        A2 --> A3[Kích hoạt đợt đăng ký]
     end
 
-    subgraph P2["Phase 2: Topic Proposal & Review (Lecturers & HOD)"]
-        B1[Lecturer/Dean proposes Topic] --> B2[Status: PENDING]
-        B2 --> B3{HOD Review}
-        B3 -->|Approved| B4[Assign Advisor 1 & 2<br/>Status: APPROVED]
-        B3 -->|Rejected| B5[Record Reason<br/>Status: REJECTED]
+    subgraph P2["Giai đoạn 2: Đề xuất & Phê duyệt đề tài (Giảng viên & Trưởng bộ môn)"]
+        B1[Giảng viên / Trưởng khoa đề xuất đề tài] --> B2[Trạng thái: PENDING]
+        B2 --> B3{Trưởng bộ môn thẩm định}
+        B3 -->|Chấp thuận| B4[Gán 1-2 GVHD<br/>Trạng thái: APPROVED]
+        B3 -->|Từ chối| B5[Nhập lý do từ chối<br/>Trạng thái: REJECTED]
     end
 
-    subgraph P3["Phase 3: Group Formation & Registration (Students & HOD)"]
-        C1[Student creates Group] --> C2[Invite peers: max 3 students]
-        C2 --> C3[Leader registers Approved Topic]
-        C3 --> C4{HOD/Advisor Review}
-        C4 -->|Approved| C5[Group Topic Assigned<br/>Status: APPROVED]
-        C4 -->|Rejected| C6[Status: REJECTED]
+    subgraph P3["Giai đoạn 3: Thành lập nhóm & Đăng ký đề tài (Sinh viên & Bộ môn)"]
+        C1[Sinh viên tạo nhóm: Nhóm trưởng] --> C2[Mời bạn qua MSSV: tối đa 3 thành viên]
+        C2 --> C3[Nhóm trưởng chọn đề tài đã công bố]
+        C3 --> C4{Trưởng bộ môn / GVHD duyệt}
+        C4 -->|Chấp thuận| C5[Đề tài chính thức giao cho nhóm<br/>Trạng thái: APPROVED]
+        C4 -->|Từ chối| C6[Trạng thái: REJECTED]
     end
 
-    subgraph P4["Phase 4: Progress Reporting (Students)"]
-        D1[Submit Đề cương Proposal] --> D2[Submit Giữa kỳ Midterm]
-        D2 --> D3[Submit Cuối kỳ Final]
-        D3 --> D4[Validate Structural PDF & Deadline]
+    subgraph P4["Giai đoạn 4: Báo cáo tiến độ (Nhóm sinh viên)"]
+        D1[Nộp báo cáo Đề cương] --> D2[Nộp báo cáo Giữa kỳ]
+        D2 --> D3[Nộp báo cáo Cuối kỳ]
+        D3 --> D4[Xác thực cấu trúc tệp PDF/DOCX & Hạn nộp]
     end
 
-    subgraph P5["Phase 5: Defense Council & Evaluation (Faculty & Dean)"]
-        E1[Dean creates Council: 3-5 Faculty] --> E2[Assign Council to Group & Select Reviewer]
-        E2 --> E3[Council Members submit Individual Grades]
-        E3 --> E4[Chairperson synthesizes Final Score]
-        E4 --> E5[Dean publishes Results]
+    subgraph P5["Giai đoạn 5: Hội đồng đánh giá & Chấm điểm (Khoa & Hội đồng)"]
+        E1[Trưởng khoa lập Hội đồng: 3-5 thành viên] --> E2[Phân công Hội đồng cho nhóm & Chỉ định Phản biện]
+        E2 --> E3[Từng thành viên hội đồng nhập điểm độc lập]
+        E3 --> E4[Chủ tịch hội đồng tổng hợp điểm trung bình]
+        E4 --> E5[Trưởng khoa phê duyệt công bố điểm]
     end
 
-    subgraph P6["Phase 6: Result Publication (Students)"]
-        F1[Students view Final Score & Feedback]
+    subgraph P6["Giai đoạn 6: Công bố kết quả (Sinh viên)"]
+        F1[Sinh viên tra cứu điểm chính thức & nhận xét]
     end
 
     A3 --> B1
@@ -50,123 +50,123 @@ flowchart TD
 
 ---
 
-## 2. Phase 1: Registration Period Lifecycle
+## 2. Giai đoạn 1: Vòng đời đợt đăng ký & Quy tắc thời gian
 
-### 2.1 Four-Point Temporal Window
-Every registration period enforces a strict chronological sequence:
+### 2.1 Bốn mốc thời gian tuần tự
+Mỗi đợt đăng ký bắt buộc tuân thủ thứ tự thời gian nghiêm ngặt:
 $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_at} < \text{student\_end\_at}$$
 
-1. **Lecturer Proposal Window** (`lecturer_start_at` $\rightarrow$ `lecturer_end_at`):
-   - Lecturers and Deans create, update, or withdraw topic proposals.
-   - Department Heads review and approve topics.
-2. **Student Registration Window** (`student_start_at` $\rightarrow$ `student_end_at`):
-   - Topic modifications by lecturers are locked.
-   - Student groups can browse approved topics and submit registrations.
-3. **Review Deadline & Defense Date**:
-   - For `TLCN` and `KLTN`, a `review_deadline` is required after `student_end_at`.
-   - For `KLTN`, a `defense_date` must be scheduled after `review_deadline`.
+1. **Cửa sổ đề xuất của Giảng viên** (`lecturer_start_at` $\rightarrow$ `lecturer_end_at`):
+   - Giảng viên và Trưởng khoa khởi tạo, chỉnh sửa hoặc rút lại các đề xuất đề tài.
+   - Trưởng bộ môn tiến hành thẩm định và duyệt đề tài.
+2. **Cửa sổ đăng ký của Sinh viên** (`student_start_at` $\rightarrow$ `student_end_at`):
+   - Chức năng chỉnh sửa đề tài của giảng viên tự động bị khóa.
+   - Danh mục đề tài đã duyệt (`APPROVED`) hiển thị công khai cho sinh viên tìm kiếm và đăng ký.
+3. **Hạn chót báo cáo & Ngày bảo vệ**:
+   - Đối với loại hình `TLCN` và `KLTN`, hệ thống yêu cầu cấu hình `review_deadline` sau thời điểm sinh viên kết thúc đăng ký.
+   - Đối với `KLTN`, ngày tổ chức hội đồng bảo vệ (`defense_date`) phải diễn ra sau hạn chót nộp báo cáo.
 
-### 2.2 Period Mutation Guards
-- **Updating Period Type**: Forbidden (`409 Conflict`) if topics are already associated with the period.
-- **Deleting Period**: Forbidden (`409 Conflict`) if any topics or student groups belong to the period.
-
----
-
-## 3. Phase 2: Topic Proposal & Department Review
-
-### 3.1 Topic Proposal Rules
-- **Lecturers (`ROLE_LECTURER`)**: Can only propose topics assigned to their own registered department (`department_id`).
-- **Deans (`ROLE_DEAN`)**: Possess cross-departmental authority and can propose topics for any department.
-- **Topic Fields**: Topic title, description ($\ge 10$ characters), requirements, capacity (1–3 students), and category.
-
-### 3.2 Department Head Review (`ROLE_HEAD_OF_DEPT`)
-- The Department Head views all `PENDING` topics in their department.
-- **Approval (`APPROVE`)**:
-  - Requires the topic creator to be an active user.
-  - Primary advisor (`advisor1_id`) must belong to the department.
-  - Secondary advisor (`advisor2_id`) is optional, but if present, must differ from `advisor1_id`.
-  - Once approved, the topic becomes visible to students for registration.
-- **Rejection (`REJECT`)**: Requires a qualitative `rejection_reason` explaining why the proposal was turned down.
+### 2.2 Quy tắc bảo vệ toàn vẹn đợt đăng ký
+- **Ngăn chặn đổi loại hình đợt**: Trả về lỗi `409 Conflict` nếu người dùng cố gắng đổi loại hình của đợt (`COURSE`, `NCKH`, `TLCN`, `KLTN`) khi đợt đó đã có đề tài phát sinh.
+- **Ngăn chặn xóa đợt đăng ký**: Trả về lỗi `409 Conflict` nếu xóa đợt đăng ký đang chứa đề tài hoặc nhóm sinh viên.
 
 ---
 
-## 4. Phase 3: Student Group Formation & Registration
+## 3. Giai đoạn 2: Đề xuất & Thẩm định đề tài
 
-### 4.1 Group Creation & Member Scoping
-1. A student creates a group and automatically becomes the **Leader** (`ROLE_LEADER`).
-2. **Period Scoping**: A student can only belong to **one group per registration period** (enforced by `uk_group_member_period_student`).
-3. **Invitation Flow**:
-   - The Leader invites other students by Student Code (MSSV).
-   - Maximum team size is 3 students.
-   - Invited students can **Accept** (joining the group) or **Decline**.
+### 3.1 Quy tắc đề xuất đề tài
+- **Giảng viên (`ROLE_LECTURER`)**: Chỉ được đề xuất đề tài thuộc đúng bộ môn chuyên môn mà tài khoản được phân công (`department_id`).
+- **Trưởng khoa (`ROLE_DEAN`)**: Có thẩm quyền đề xuất đề tài liên ngành hoặc cấp khoa cho bất kỳ bộ môn nào.
+- **Thông tin đề tài**: Tên đề tài, mô tả chi tiết ($\ge 10$ ký tự), yêu cầu đầu vào, số lượng sinh viên tối đa (1–3 sinh viên) và hình thức đề tài.
 
-### 4.2 Group Modifications & Disband Safeguards
-- **Leave Group (`POST /api/student/groups/leave`)**: A non-leader member can leave if no topic registration exists.
-- **Remove Member (`POST /api/student/groups/members/remove`)**: The leader can remove a member if no topic registration exists.
-- **Disband Group (`POST /api/student/groups/disband`)**: The leader can disband the group if no topic registration exists.
-
-### 4.3 Topic Registration & Cancellation Safeguards
-- Only the Group Leader can register an approved topic during the active student window.
-- The Department Head or Advisor approves the registration.
-- **Cancellation Safeguards (`assertCanCancel`)**:
-  - Registration cancellation is strictly forbidden (`409 Conflict`) if:
-    1. The group has already submitted one or more progress reports.
-    2. A defense has already been scheduled or graded by a council.
+### 3.2 Quy trình thẩm định của Trưởng bộ môn (`ROLE_HEAD_OF_DEPT`)
+- Trưởng bộ môn theo dõi các đề tài có trạng thái `PENDING` trong bộ môn mình phụ trách.
+- **Phê duyệt (`APPROVE`)**:
+  - Người tạo đề tài phải đang ở trạng thái hoạt động (`ACTIVE`).
+  - Giảng viên hướng dẫn chính (`advisor1`) phải thuộc đúng bộ môn.
+  - Giảng viên hướng dẫn phụ (`advisor2`) là tùy chọn, nhưng nếu có thì phải khác với giảng viên hướng dẫn chính.
+  - Sau khi duyệt, đề tài tự động chuyển sang trạng thái sẵn sàng để sinh viên đăng ký.
+- **Từ chối (`REJECT`)**: Yêu cầu nhập lý do từ chối cụ thể (`rejection_reason`) để phản hồi cho giảng viên đề xuất.
 
 ---
 
-## 5. Phase 4: Progress Reporting & Document Validation
+## 4. Giai đoạn 3: Thành lập nhóm & Đăng ký đề tài
 
-### 5.1 Linear Stage Progression
-Deliverables must be submitted sequentially. Jumping stages is rejected with `400 Bad Request`:
-1. **Stage 1**: Outline / Proposal (**Đề cương**)
-2. **Stage 2**: Midterm Progress (**Giữa kỳ**) — requires completed Stage 1.
-3. **Stage 3**: Final Thesis / Deliverable (**Cuối kỳ**) — requires completed Stage 2.
+### 4.1 Quy tắc thành lập nhóm & Phạm vi theo đợt
+1. Sinh viên khởi tạo nhóm sẽ tự động đảm nhiệm vai trò **Nhóm trưởng** (`ROLE_LEADER`).
+2. **Cô lập theo đợt (`Period Scoping`)**: Một sinh viên chỉ được tham gia tối đa **một nhóm trong một đợt đăng ký cụ thể** (ràng buộc bằng khóa duy nhất `uk_group_member_period_student`).
+3. **Quy trình mời thành viên**:
+   - Nhóm trưởng gửi lời mời qua Mã số sinh viên (MSSV).
+   - Quy mô nhóm tối đa là 3 sinh viên.
+   - Sinh viên được mời có thể bấm **Đồng ý** (gia nhập nhóm) hoặc **Từ chối**.
 
-### 5.2 Document Structural Validation
-Uploaded files undergo byte-level validation before acceptance:
-- **Allowed Formats**: PDF (`application/pdf`) and DOCX (`application/vnd.openxmlformats-officedocument.wordprocessingml.document`).
-- **PDF Structure**: Checks for `%PDF-` header, `%%EOF` trailer, and internal `obj` markers.
-- **File Size**: Strictly limited to 10 MB.
-- **Deadline Guard**: Must be submitted prior to the period's `review_deadline`. Submissions after the deadline are flagged as `late = true` or rejected.
+### 4.2 Thao tác quản lý nhóm & Cơ chế an toàn
+- **Rời nhóm (`POST /api/student/groups/leave`)**: Thành viên thường có thể rời nhóm nếu nhóm chưa đăng ký đề tài.
+- **Xóa thành viên (`POST /api/student/groups/members/remove`)**: Nhóm trưởng có quyền xóa thành viên ra khỏi nhóm khi nhóm chưa đăng ký đề tài.
+- **Giải tán nhóm (`POST /api/student/groups/disband`)**: Nhóm trưởng có quyền giải tán toàn bộ nhóm khi chưa đăng ký đề tài.
 
----
-
-## 6. Phase 5: Defense Council & Evaluation
-
-### 6.1 Council Formation Requirements
-- Created by the Dean (`ROLE_DEAN`).
-- Must contain between **3 and 5 faculty members**.
-- Mandatory roles:
-  - Exactly 1 **Chairperson (`CHAIRPERSON`)**
-  - Exactly 1 **Secretary (`SECRETARY`)**
-  - At least 1 **Reviewer (`REVIEWER`)**
-  - 0 to 2 **General Members (`MEMBER`)**
-- Members can be updated in-place as long as grading has not commenced.
-
-### 6.2 Defense Assignment & Conflict-of-Interest Prevention
-- The Dean assigns a Council and an designated Reviewer (`GVPB`) to a student group.
-- **Conflict of Interest**: If any assigned council member is the primary or secondary advisor of the topic, assignment is blocked.
-
-### 6.3 Independent Scoring & Chairperson Synthesis
-1. Each council member submits an independent score ($0.00 \le \text{score} \le 10.00$) and qualitative remarks.
-2. The Chairperson verifies that all members have submitted their grades.
-3. The Chairperson triggers score synthesis:
-   $$\text{Final Score} = \frac{1}{N} \sum_{i=1}^N \text{Score}_i \quad (\text{rounded to 2 decimal places})$$
-4. The defense record is marked `finalized = true`.
+### 4.3 Đăng ký đề tài & Khóa bảo vệ hủy đăng ký
+- Chỉ Nhóm trưởng mới có quyền đại diện nhóm đăng ký đề tài trong cửa sổ thời gian quy định.
+- Trưởng bộ môn hoặc Giảng viên hướng dẫn duyệt đơn đăng ký của nhóm.
+- **Khóa bảo vệ hủy đăng ký (`assertCanCancel`)**:
+  - Nhóm bị nghiêm cấm hủy đăng ký (`409 Conflict`) nếu rơi vào một trong hai trường hợp:
+    1. Nhóm đã nộp ít nhất một báo cáo tiến độ.
+    2. Đề tài của nhóm đã được phân công hoặc lên lịch chấm hội đồng bảo vệ.
 
 ---
 
-## 7. Phase 6: Grade Publication & Multi-Period Resolution
+## 5. Giai đoạn 4: Báo cáo tiến độ & Xác thực tài liệu
 
-### 7.1 Official Publication
-- The Dean reviews finalized defenses and clicks **Publish Results** (`published = true`).
-- Grades and council feedback become visible to the student group.
+### 5.1 Tiến trình 3 giai đoạn tuyến tính
+Hệ thống yêu cầu nộp báo cáo theo đúng thứ tự logic. Mọi nỗ lực nhảy cóc giai đoạn sẽ bị từ chối với mã lỗi `400 Bad Request`:
+1. **Giai đoạn 1**: Đề cương chi tiết (**Đề cương**)
+2. **Giai đoạn 2**: Báo cáo tiến độ giữa kỳ (**Giữa kỳ**) — Yêu cầu đã hoàn thành Giai đoạn 1.
+3. **Giai đoạn 3**: Khóa luận / Báo cáo hoàn chỉnh (**Cuối kỳ**) — Yêu cầu đã hoàn thành Giai đoạn 2.
 
-### 7.2 Multi-Period Student Defense Resolution
-When a student visits their defense evaluation screen (`GET /api/student/result`):
-- If the student was enrolled in multiple periods historically, the system:
-  1. Checks for an active ongoing registration period.
-  2. If none is active, selects the most recent completed period based on period end date, defense date, and period ID descending.
-  3. Never returns an arbitrary or random historical group.
-  4. Allows explicit inspection of any past period via `?periodId={id}`.
+### 5.2 Xác thực cấu trúc tệp an toàn
+Các tệp đính kèm được kiểm tra cấu trúc byte trước khi chấp nhận lưu trữ:
+- **Định dạng cho phép**: Tệp PDF (`application/pdf`) và tệp Word OpenXML (`.docx`).
+- **Cấu trúc PDF**: Kiểm tra chuỗi byte định danh `%PDF-`, ký hiệu kết thúc `%%EOF`, và các khối đối tượng `obj`.
+- **Dung lượng tối đa**: Không vượt quá 10 MB.
+- **Kiểm soát hạn nộp**: So sánh thời điểm nộp với mốc `review_deadline` của đợt. Bài nộp sau thời hạn sẽ bị đánh dấu `late = true` hoặc từ chối theo cấu hình.
+
+---
+
+## 6. Giai đoạn 5: Hội đồng đánh giá & Tổng hợp điểm số
+
+### 6.1 Cơ cấu hội đồng đánh giá
+- Do Trưởng khoa (`ROLE_DEAN`) thành lập.
+- Số lượng thành viên: Từ **3 đến 5 giảng viên**.
+- Phân bổ chức danh bắt buộc:
+  - Đúng 1 **Chủ tịch hội đồng (`CHAIRPERSON`)**
+  - Đúng 1 **Thư ký hội đồng (`SECRETARY`)**
+  - Ít nhất 1 **Giảng viên phản biện (`REVIEWER`)**
+  - Từ 0 đến 2 **Ủy viên (`MEMBER`)**
+- Cho phép điều chỉnh thành viên hội đồng tại chỗ khi chưa có điểm số nào được nhập.
+
+### 6.2 Phân công bảo vệ & Phòng ngừa xung đột lợi ích
+- Trưởng khoa phân công Hội đồng chấm và chỉ định Giảng viên phản biện (`GVPB`) cho từng nhóm sinh viên.
+- **Kiểm tra xung đột lợi ích**: Nếu bất kỳ thành viên nào trong hội đồng là giảng viên hướng dẫn của đề tài, hệ thống lập tức ngăn chặn việc phân công.
+
+### 6.3 Chấm điểm độc lập & Tổng hợp tự động
+1. Từng thành viên hội đồng nhập điểm số cá nhân ($0.00 \le \text{điểm} \le 10.00$) kèm nhận xét đánh giá chi tiết.
+2. Chủ tịch hội đồng kiểm tra trạng thái nhập điểm của toàn bộ thành viên.
+3. Khi đã thu thập đủ điểm, Chủ tịch bấm nút **Tổng hợp điểm**:
+   $$\text{Điểm chung cuộc} = \frac{1}{N} \sum_{i=1}^N \text{Điểm}_i \quad (\text{làm tròn 2 chữ số thập phân})$$
+4. Bản ghi bảo vệ chuyển sang trạng thái hoàn tất (`finalized = true`).
+
+---
+
+## 7. Giai đoạn 6: Công bố kết quả & Cơ chế tra cứu đa đợt
+
+### 7.1 Công bố kết quả học tập
+- Trưởng khoa kiểm tra danh sách các nhóm đã hoàn tất đánh giá và bấm **Công bố kết quả** (`published = true`).
+- Toàn bộ điểm số tổng hợp và nhận xét của từng thành viên hội đồng sẽ hiển thị công khai trên giao diện của sinh viên thuộc nhóm.
+
+### 7.2 Cơ chế phân giải kết quả đa đợt của sinh viên
+Khi sinh viên truy cập màn hình kết quả đánh giá (`GET /api/student/result`):
+- Trong trường hợp sinh viên có lịch sử tham gia nhiều nhóm ở các đợt khác nhau, hệ thống:
+  1. Tự động kiểm tra và ưu tiên hiển thị kết quả của đợt đăng ký đang hoạt động.
+  2. Nếu không có đợt nào đang mở, hệ thống tự động chọn đợt hoàn thành gần nhất theo tiêu chí: ngày kết thúc đợt, ngày bảo vệ, và ID đợt giảm dần.
+  3. Tuyệt đối không trả về ngẫu nhiên nhóm đầu tiên trong cơ sở dữ liệu.
+  4. Hỗ trợ sinh viên chủ động chọn xem lại kết quả của bất kỳ đợt lịch sử nào qua tham số `?periodId={id}`.

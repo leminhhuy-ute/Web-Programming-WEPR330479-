@@ -55,29 +55,6 @@
                     <span aria-hidden="true">→</span>
                 </button>
             </form>
-
-            <!-- Quick Demo Accounts Helper -->
-            <div class="demo-accounts-box">
-                <span class="demo-label">Chọn nhanh tài khoản theo vai trò:</span>
-                <div class="demo-chips">
-                    <button type="button" class="demo-chip" onclick="fillDemo('dean01', 'Demo@12345')">
-                        <strong>Trưởng khoa</strong>
-                        <small>dean01</small>
-                    </button>
-                    <button type="button" class="demo-chip" onclick="fillDemo('hod01', 'Demo@12345')">
-                        <strong>Trưởng bộ môn</strong>
-                        <small>hod01</small>
-                    </button>
-                    <button type="button" class="demo-chip" onclick="fillDemo('lecturer01', 'Demo@12345')">
-                        <strong>Giảng viên</strong>
-                        <small>lecturer01</small>
-                    </button>
-                    <button type="button" class="demo-chip" onclick="fillDemo('student01', 'Demo@12345')">
-                        <strong>Sinh viên</strong>
-                        <small>student01</small>
-                    </button>
-                </div>
-            </div>
         </section>
 
         <p class="login-motto">Nghiên cứu - Đổi mới - Kiến tạo</p>
@@ -85,17 +62,6 @@
 
     <script src="assets/js/common.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script>
-        function fillDemo(username, password) {
-            const u = document.getElementById('input-username');
-            const p = document.getElementById('input-password');
-            if (u && p) {
-                u.value = username;
-                p.value = password;
-                u.focus();
-            }
-        }
-    </script>
 </body>
 
 </html>

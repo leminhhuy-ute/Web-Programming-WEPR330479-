@@ -1,51 +1,51 @@
-# REST API Documentation: HCM-UTE Student Topic Management System
+# Tài liệu REST API: Hệ thống Quản lý Đề tài Sinh viên HCM-UTE
 
-## 1. Overview & Conventions
+## 1. Tổng quan & Quy ước kỹ thuật
 
-The system exposes a secure RESTful API under the `/api/**` prefix. All endpoints communicate using standard JSON formats and standard HTTP status codes.
+Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn qua tiền tố `/api/**`. Toàn bộ dữ liệu trao đổi sử dụng định dạng JSON chuẩn và phản hồi theo các mã trạng thái HTTP tiêu chuẩn.
 
-### 1.1 Base URL & Security Headers
-- **Base URL**: `http://localhost:8080/api` (or configured host/port)
-- **Content-Type**: `application/json` (or `multipart/form-data` for file uploads)
-- **CSRF Token**: Non-GET state-modifying requests require a CSRF token passed either as an HTTP header (`X-XSRF-TOKEN`) or form parameter.
-- **Session Cookie**: `JSESSIONID` (HttpOnly, SameSite=Lax).
+### 1.1 Địa chỉ cơ sở & Tiêu đề bảo mật
+- **Địa chỉ cơ sở (Base URL)**: `http://localhost:8080/api` (hoặc domain/port được cấu hình triển khai)
+- **Định dạng dữ liệu**: `application/json` (hoặc `multipart/form-data` đối với API nộp tệp báo cáo)
+- **Token chống CSRF**: Các yêu cầu thay đổi trạng thái (POST, PUT, DELETE) bắt buộc gửi kèm token CSRF qua tiêu đề HTTP `X-XSRF-TOKEN` hoặc trường form `_csrf`.
+- **Cookie phiên làm việc**: `JSESSIONID` (HttpOnly, SameSite=Lax).
 
-### 1.2 Unified Response Format
+### 1.2 Cấu trúc phản hồi chuẩn (Standard JSON Response)
 ```json
 {
   "success": true,
-  "message": "Operation description / user message",
+  "message": "Mô tả kết quả thực hiện / Thông báo người dùng",
   "data": { ... }
 }
 ```
 
-### 1.3 Standard Error Codes
-| HTTP Status | Meaning | Typical Trigger |
+### 1.3 Bảng mã trạng thái HTTP tiêu chuẩn
+| Mã HTTP | Ý nghĩa | Tình huống kích hoạt |
 | :--- | :--- | :--- |
-| `200 OK` | Request succeeded | Successful GET, PUT, POST |
-| `201 Created` | Resource created | Successful entity creation |
-| `400 Bad Request` | Validation failure | Missing fields, invalid date sequences, malformed payloads |
-| `401 Unauthorized` | Unauthenticated | Missing or expired session cookie |
-| `403 Forbidden` | Access denied | Insufficient role permissions or department mismatch |
-| `404 Not Found` | Resource not found | Invalid entity ID or URI |
-| `409 Conflict` | Domain rule violation | Duplicate username/email, deleting period with topics, cancelling active registration |
-| `500 Internal Error` | Server error | Unexpected exception |
+| `200 OK` | Yêu cầu thành công | Thực hiện thành công các thao tác GET, PUT, POST |
+| `201 Created` | Đã khởi tạo tài nguyên | Khởi tạo thành công đợt đăng ký, tài khoản, v.v. |
+| `400 Bad Request` | Dữ liệu không hợp lệ | Thiếu trường bắt buộc, sai mốc thời gian, vi phạm quy tắc validation |
+| `401 Unauthorized` | Chưa xác thực | Phiên đăng nhập hết hạn hoặc chưa cung cấp cookie phiên |
+| `403 Forbidden` | Không có quyền | Truy cập trái vai trò hoặc can thiệp đề tài sai bộ môn |
+| `404 Not Found` | Không tìm thấy | Không tồn tại ID đối tượng hoặc đường dẫn không hợp lệ |
+| `409 Conflict` | Vi phạm quy tắc nghiệp vụ | Trùng tên đăng nhập/email, xóa đợt có đề tài, hủy đăng ký khi đã nộp báo cáo |
+| `500 Internal Error` | Lỗi máy chủ nội bộ | Ngoại lệ hệ thống chưa được kiểm soát |
 
 ---
 
-## 2. Authentication & Session APIs (`/api/auth`)
+## 2. Nhóm API Xác thực & Phiên làm việc (`/api/auth`)
 
-### 2.1 Login
+### 2.1 Đăng nhập hệ thống
 - **Endpoint**: `POST /api/auth/login`
-- **Access**: Public
-- **Request Body**:
+- **Quyền truy cập**: Công khai (Public)
+- **Payload yêu cầu**:
   ```json
   {
     "username": "dean01",
     "password": "Demo@12345"
   }
   ```
-- **Response** (`200 OK`):
+- **Phản hồi thành công** (`200 OK`):
   ```json
   {
     "success": true,
@@ -62,113 +62,106 @@ The system exposes a secure RESTful API under the `/api/**` prefix. All endpoint
   }
   ```
 
-### 2.2 Logout
+### 2.2 Đăng xuất hệ thống
 - **Endpoint**: `POST /api/auth/logout`
-- **Access**: Authenticated users
-- **Response** (`200 OK`):
-  ```json
-  {
-    "success": true,
-    "message": "Đã đăng xuất.",
-    "data": null
-  }
-  ```
+- **Quyền truy cập**: Người dùng đã xác thực
+- **Phản hồi** (`200 OK`): Hủy phiên làm việc và xóa cookie `JSESSIONID`.
 
-### 2.3 Current User Info
+### 2.3 Lấy thông tin tài khoản hiện hành
 - **Endpoint**: `GET /api/auth/me`
-- **Access**: Authenticated users
-- **Response** (`200 OK`): Returns `CurrentUser` details.
+- **Quyền truy cập**: Người dùng đã xác thực
+- **Phản hồi** (`200 OK`): Trả về thông tin chi tiết của đối tượng `CurrentUser`.
 
-### 2.4 CSRF Token Initialization
+### 2.4 Khởi tạo Token CSRF
 - **Endpoint**: `GET /api/auth/csrf`
-- **Access**: Public / Authenticated
+- **Quyền truy cập**: Công khai / Đã xác thực
 
 ---
 
-## 3. User Administration APIs (`/api/users`)
+## 3. Nhóm API Quản trị Người dùng (`/api/users`)
 
-*Authorization: `ROLE_DEAN` only.*
+*Thẩm quyền: Chỉ dành cho `ROLE_DEAN`.*
 
-| Method | Endpoint | Description |
+| Phương thức | Endpoint | Mô tả chức năng |
 | :--- | :--- | :--- |
-| `GET` | `/api/users` | List users with optional `keyword`, `role`, `departmentId`, `status`. |
-| `GET` | `/api/users/{id}` | Retrieve specific user account details. |
-| `POST` | `/api/users` | Create user account. Validates case-insensitive uniqueness and role-department constraints. |
-| `PUT` | `/api/users/{id}` | Update profile details (full name, email, department). |
-| `PUT` | `/api/users/{id}/status` | Activate, deactivate, or lock user account. |
-| `PUT` | `/api/users/{id}/password` | Reset user password (8–72 characters). Updates `password_changed_at`. |
+| `GET` | `/api/users` | Lấy danh sách tài khoản kèm bộ lọc `keyword`, `role`, `departmentId`, `status`. |
+| `GET` | `/api/users/{id}` | Lấy thông tin chi tiết của một tài khoản theo ID. |
+| `POST` | `/api/users` | Tạo tài khoản mới. Kiểm tra trùng lặp không phân biệt hoa thường và bắt buộc bộ môn cho giảng viên. |
+| `PUT` | `/api/users/{id}` | Cập nhật thông tin tài khoản (họ tên, email, bộ môn). |
+| `PUT` | `/api/users/{id}/status` | Đổi trạng thái tài khoản (`ACTIVE`, `INACTIVE`, `LOCKED`). |
+| `PUT` | `/api/users/{id}/password` | Đặt lại mật khẩu tài khoản (8–72 ký tự) và ghi nhận thời điểm đổi để hủy phiên cũ. |
 
 ---
 
-## 4. Registration Period APIs (`/api/admin/registration-periods`)
+## 4. Nhóm API Quản trị Đợt đăng ký (`/api/admin/registration-periods`)
 
-*Authorization: `ROLE_DEAN` only.*
+*Thẩm quyền: Chỉ dành cho `ROLE_DEAN`.*
 
-| Method | Endpoint | Description |
+| Phương thức | Endpoint | Mô tả chức năng |
 | :--- | :--- | :--- |
-| `GET` | `/api/admin/registration-periods` | List periods with optional `keyword` and `type` filter. |
-| `GET` | `/api/admin/registration-periods/{id}` | Get registration period by ID. |
-| `POST` | `/api/admin/registration-periods` | Create new period. Validates 4-point temporal window. |
-| `PUT` | `/api/admin/registration-periods/{id}` | Update period details. Rejects type mutation if topics exist. |
-| `DELETE` | `/api/admin/registration-periods/{id}` | Delete period. Rejects with `409 Conflict` if topics or registrations exist. |
+| `GET` | `/api/admin/registration-periods` | Lấy danh sách các đợt đăng ký kèm bộ lọc `keyword` và `type`. |
+| `GET` | `/api/admin/registration-periods/{id}` | Lấy thông tin chi tiết của một đợt đăng ký. |
+| `POST` | `/api/admin/registration-periods` | Khởi tạo đợt đăng ký mới. Kiểm tra tính hợp lệ của 4 mốc thời gian. |
+| `PUT` | `/api/admin/registration-periods/{id}` | Cập nhật thông tin đợt. Chặn đổi loại đợt nếu đã có đề tài phát sinh. |
+| `DELETE` | `/api/admin/registration-periods/{id}` | Xóa đợt đăng ký. Trả về `409 Conflict` nếu đợt đã có đề tài hoặc nhóm sinh viên. |
 
 ---
 
-## 5. Topic Management APIs (`/api/topics` & `/api/department/topics`)
+## 5. Nhóm API Quản lý Đề tài (`/api/topics` & `/api/department/topics`)
 
-| Method | Endpoint | Authorization | Description |
+| Phương thức | Endpoint | Quyền truy cập | Mô tả chức năng |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/topics` | Authenticated | List topics filtered by period, department, type, status. |
-| `GET` | `/api/topics/{id}` | Authenticated | Get detailed topic proposal. |
-| `POST` | `/api/topics` | `LECTURER`, `DEAN` | Propose new topic. Dean can propose across departments. |
-| `PUT` | `/api/topics/{id}` | `LECTURER`, `DEAN` | Update topic within lecturer proposal window. |
-| `DELETE` | `/api/topics/{id}` | `LECTURER`, `DEAN` | Delete topic proposal before approval. |
-| `POST` | `/api/department/topics/{id}/approve` | `HEAD_OF_DEPT` | Approve topic, assigning primary & secondary advisors. |
-| `POST` | `/api/department/topics/{id}/reject` | `HEAD_OF_DEPT` | Reject topic with reason note. |
+| `GET` | `/api/topics` | Đã xác thực | Danh sách đề tài lọc theo đợt, bộ môn, hình thức và trạng thái. |
+| `GET` | `/api/topics/{id}` | Đã xác thực | Xem chi tiết nội dung và yêu cầu của đề tài. |
+| `POST` | `/api/topics` | `LECTURER`, `DEAN` | Đề xuất đề tài mới. Trưởng khoa có quyền đề xuất liên bộ môn. |
+| `PUT` | `/api/topics/{id}` | `LECTURER`, `DEAN` | Chỉnh sửa đề tài trong cửa sổ thời gian đề xuất của giảng viên. |
+| `DELETE` | `/api/topics/{id}` | `LECTURER`, `DEAN` | Xóa đề tài đề xuất khi chưa được phê duyệt. |
+| `POST` | `/api/department/topics/{id}/approve` | `HEAD_OF_DEPT` | Duyệt đề tài bộ môn và phân công 1–2 GVHD. |
+| `POST` | `/api/department/topics/{id}/reject` | `HEAD_OF_DEPT` | Từ chối đề tài kèm lý do phản hồi. |
 
 ---
 
-## 6. Student Group & Registration APIs (`/api/student`)
+## 6. Nhóm API Nhóm sinh viên & Báo cáo tiến độ (`/api/student`)
 
-*Authorization: `ROLE_STUDENT` only.*
+*Thẩm quyền: Dành riêng cho `ROLE_STUDENT`.*
 
-### 6.1 Group Formation & Management
-| Method | Endpoint | Description |
+### 6.1 Quản lý Nhóm sinh viên
+| Phương thức | Endpoint | Mô tả chức năng |
 | :--- | :--- | :--- |
-| `GET` | `/api/student/me` | Fetch active state (student profile, current group, current registration, invitations). |
-| `POST` | `/api/student/groups` | Create student group. Caller becomes Leader (`LEADER`). Body: `{"name": "Team Alpha"}` |
-| `POST` | `/api/student/groups/invitations` | Invite peer by student code. Body: `{"studentId": "22110002"}` |
-| `POST` | `/api/student/invitations/{id}/response` | Accept or decline invitation. Body: `{"accept": true}` |
-| `POST` | `/api/student/groups/leader` | Transfer leadership to another member. Body: `{"studentId": "22110002"}` |
-| `POST` | `/api/student/groups/leave` | Member leaves group (allowed only if no topic registered). |
-| `POST` | `/api/student/groups/members/remove` | Leader removes member (allowed only if no topic registered). Body: `{"studentId": "22110002"}` |
-| `POST` | `/api/student/groups/disband` | Leader disbands group (allowed only if no topic registered). |
+| `GET` | `/api/student/me` | Lấy trạng thái tổng hợp (thông tin cá nhân, nhóm hiện tại, đăng ký hiện tại, lời mời). |
+| `POST` | `/api/student/groups` | Tạo nhóm sinh viên mới, người tạo là Nhóm trưởng. Body: `{"name": "Nhóm Kỹ thuật 01"}` |
+| `POST` | `/api/student/groups/invitations` | Nhóm trưởng gửi lời mời thành viên qua MSSV. Body: `{"studentId": "22110002"}` |
+| `POST` | `/api/student/invitations/{id}/response` | Thành viên phản hồi lời mời gia nhập nhóm. Body: `{"accept": true}` |
+| `POST` | `/api/student/groups/leader` | Nhóm trưởng chuyển quyền lãnh đạo cho thành viên khác. Body: `{"studentId": "22110002"}` |
+| `POST` | `/api/student/groups/leave` | Thành viên rời nhóm (chỉ cho phép khi chưa đăng ký đề tài). |
+| `POST` | `/api/student/groups/members/remove` | Nhóm trưởng xóa thành viên khỏi nhóm (chỉ cho phép khi chưa đăng ký đề tài). Body: `{"studentId": "22110002"}` |
+| `POST` | `/api/student/groups/disband` | Nhóm trưởng giải tán nhóm (chỉ cho phép khi chưa đăng ký đề tài). |
 
-### 6.2 Topic Registration & Deliverables
-| Method | Endpoint | Description |
+### 6.2 Đăng ký Đề tài & Nộp Báo cáo
+| Phương thức | Endpoint | Mô tả chức năng |
 | :--- | :--- | :--- |
-| `GET` | `/api/student/topics` | Browse published topics eligible for student registration. |
-| `GET` | `/api/student/topics/page` | Paginated catalog search with query, department, type filters. |
-| `POST` | `/api/student/registrations` | Leader registers topic. Body: `{"topicId": "1"}` |
-| `POST` | `/api/student/registrations/cancel` | Cancel registration. Blocked (`409`) if reports or defenses exist. Body: `{"note": "Reason"}` |
-| `POST` | `/api/student/reports` | Multipart upload for progress report (`stage`, `note`, `file`). |
-| `GET` | `/api/student/reports/{id}/download` | Download report file attachment. |
-| `GET` | `/api/student/result?periodId={id}` | View defense evaluation score and feedback. Supports multi-period resolution. |
+| `GET` | `/api/student/topics` | Tra cứu danh mục đề tài đã công bố để sinh viên lựa chọn. |
+| `GET` | `/api/student/topics/page` | Tra cứu đề tài phân trang kèm từ khóa, bộ môn, loại hình. |
+| `POST` | `/api/student/registrations` | Nhóm trưởng gửi yêu cầu đăng ký đề tài. Body: `{"topicId": "1"}` |
+| `POST` | `/api/student/registrations/cancel` | Hủy đăng ký đề tài. Bị chặn (`409`) nếu đã có báo cáo hoặc lịch bảo vệ. Body: `{"note": "Lý do hủy"}` |
+| `POST` | `/api/student/reports` | Nộp tệp báo cáo tiến độ đa phần (multipart: `stage`, `note`, `file`). |
+| `GET` | `/api/student/reports/{id}/download` | Tải về tệp báo cáo đính kèm đã nộp. |
+| `GET` | `/api/student/result?periodId={id}` | Tra cứu bảng điểm và nhận xét của hội đồng bảo vệ. Hỗ trợ chọn đợt qua `periodId`. |
 
 ---
 
-## 7. Council Management & Defense APIs (`/api/councils`)
+## 7. Nhóm API Quản lý Hội đồng & Đánh giá bảo vệ (`/api/councils`)
 
-*Authorization: `ROLE_DEAN`, `ROLE_HEAD_OF_DEPT`, `ROLE_LECTURER`.*
+*Thẩm quyền: `ROLE_DEAN`, `ROLE_HEAD_OF_DEPT`, `ROLE_LECTURER`.*
 
-| Method | Endpoint | Authorization | Description |
+| Phương thức | Endpoint | Thẩm quyền | Mô tả chức năng |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/councils` | Faculty | List councils, assigned defenses, and eligible groups. |
-| `GET` | `/api/councils/page` | Faculty | Paginated list of councils. |
-| `POST` | `/api/councils` | `DEAN` | Create council with 3–5 members (Chairperson, Secretary, Reviewer, Member). |
-| `PUT` | `/api/councils/{id}` | `DEAN` | In-place update of council details and member roles. |
-| `DELETE` | `/api/councils/{id}` | `DEAN` | Delete council. Blocked (`409`) if assigned defenses exist. |
-| `POST` | `/api/councils/assignments` | `DEAN` | Assign council and reviewer to student group. Blocks if conflict of interest exists. |
-| `POST` | `/api/councils/defenses/{id}/grade` | Council Member | Submit individual score (0.00–10.00) and comment. |
-| `POST` | `/api/councils/defenses/{id}/finalize` | `CHAIRPERSON` | Synthesize arithmetic average when all members submitted. |
-| `POST` | `/api/councils/defenses/{id}/publish` | `DEAN` | Officially publish defense results for students. |
+| `GET` | `/api/councils` | Giảng viên | Lấy danh sách hội đồng, danh sách đề tài bảo vệ và nhóm đủ điều kiện. |
+| `GET` | `/api/councils/page` | Giảng viên | Lấy danh sách hội đồng phân trang. |
+| `POST` | `/api/councils` | `DEAN` | Thành lập hội đồng bảo vệ (3–5 thành viên: Chủ tịch, Thư ký, Phản biện, Ủy viên). |
+| `PUT` | `/api/councils/{id}` | `DEAN` | Cập nhật thông tin hội đồng và điều chỉnh thành viên tại chỗ. |
+| `DELETE` | `/api/councils/{id}` | `DEAN` | Xóa hội đồng. Bị chặn (`409`) nếu đã phân công nhóm bảo vệ. |
+| `POST` | `/api/councils/assignments` | `DEAN` | Phân công nhóm sinh viên cho hội đồng và chỉ định phản biện. Chặn nếu xung đột lợi ích GVHD. |
+| `POST` | `/api/councils/defenses/{id}/grade` | Thành viên HĐ | Nhập điểm đánh giá (0.00–10.00) và nhận xét cá nhân. |
+| `POST` | `/api/councils/defenses/{id}/finalize` | `CHAIRPERSON` | Chủ tịch tổng hợp điểm trung bình cộng khi toàn bộ thành viên đã nhập điểm. |
+| `POST` | `/api/councils/defenses/{id}/publish` | `DEAN` | Trưởng khoa chính thức phê duyệt công bố điểm cho sinh viên. |
