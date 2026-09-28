@@ -2,7 +2,7 @@
 
 ## Giới thiệu
 
-Dự án môn học **Lập trình Web (Web Programming - WEPR330479)** của Khoa Công nghệ Thông tin — Trường Đại học Sư phạm Kỹ thuật TP. Hồ Chí Minh (HCM-UTE).
+Dự án môn học **Lập trình Web (Web Programming - WEPR330479)** của Khoa Công nghệ Thông tin — Trường Đại học Công nghệ Kỹ thuật Thành phố Hồ Chí Minh (HCM-UTE).
 
 Hệ thống nhằm số hóa và tự động hóa toàn bộ vòng đời quản lý đề tài học thuật của sinh viên qua các hình thức:
 - **Môn học chuyên ngành (`COURSE`)**
