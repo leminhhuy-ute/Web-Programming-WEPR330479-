@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập hệ thống - Quản lý đề tài HCM-UTE</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+
+<body class="login-page">
+    <div class="login-back-bar">
+        <a href="/" class="login-back-link">
+            <span aria-hidden="true">←</span>
+            <span>Trang chủ HCM-UTE</span>
+        </a>
+    </div>
+
+    <main class="login-layout">
+        <header class="login-header">
+            <img src="assets/images/logo.png" class="login-logo" alt="HCMUTE" width="88" height="88">
+            <h1 class="school-heading">
+                <span class="school-title-main">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT</span>
+                <span class="school-title-location">TP. HỒ CHÍ MINH</span>
+            </h1>
+            <p class="login-system-title">HỆ THỐNG QUẢN LÝ ĐỀ TÀI & HỌC VỤ</p>
+        </header>
+
+        <section class="login-card" aria-labelledby="login-title">
+            <h2 id="login-title">Đăng nhập tài khoản</h2>
+            <p class="login-subtitle">Nhập thông tin tài khoản được cấp để tiếp tục</p>
+
+            <p class="alert error" id="message" hidden role="alert"></p>
+
+            <form id="login-form" class="login-form" method="post">
+                <label>
+                    <span>Tên đăng nhập hoặc email</span>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input id="input-username" name="username" type="text" autocomplete="username" placeholder="Ví dụ: dean01, student01..." required>
+                    </div>
+                </label>
+
+                <label>
+                    <span>Mật khẩu</span>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input id="input-password" type="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu..." required>
+                    </div>
+                </label>
+
+                <button type="submit" class="button primary btn-login">
+                    <span>Đăng nhập hệ thống</span>
+                    <span aria-hidden="true">→</span>
+                </button>
+            </form>
+
+            <!-- Quick Demo Accounts Helper -->
+            <div class="demo-accounts-box">
+                <span class="demo-label">Chọn nhanh tài khoản theo vai trò:</span>
+                <div class="demo-chips">
+                    <button type="button" class="demo-chip" onclick="fillDemo('dean01', 'Demo@12345')">
+                        <strong>Trưởng khoa</strong>
+                        <small>dean01</small>
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('hod01', 'Demo@12345')">
+                        <strong>Trưởng bộ môn</strong>
+                        <small>hod01</small>
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('lecturer01', 'Demo@12345')">
+                        <strong>Giảng viên</strong>
+                        <small>lecturer01</small>
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('student01', 'Demo@12345')">
+                        <strong>Sinh viên</strong>
+                        <small>student01</small>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <p class="login-motto">Nghiên cứu - Đổi mới - Kiến tạo</p>
+    </main>
+
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        function fillDemo(username, password) {
+            const u = document.getElementById('input-username');
+            const p = document.getElementById('input-password');
+            if (u && p) {
+                u.value = username;
+                p.value = password;
+                u.focus();
+            }
+        }
+    </script>
+</body>
+
+</html>

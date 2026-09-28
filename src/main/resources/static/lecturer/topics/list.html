@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Danh sách đề tài - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="../dashboard.html" aria-label="Trang tổng quan giảng viên">
+                <img class="brand-logo" src="../../assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Giảng viên</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Giảng viên">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="../dashboard.html">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="list.html" class="active">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="form.html">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="student-groups.html">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="approval.html" id="nav-approval" style="display:none;">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="../../councils/index.html">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Danh sách đề tài</h1>
+                    <p class="page-subtitle">Tra cứu, quản lý và theo dõi trạng thái đề tài nghiên cứu, khóa luận tốt nghiệp.</p>
+                </div>
+                <a href="form.html" class="button primary">+ Đề xuất đề tài mới</a>
+            </div>
+
+            <div class="toolbar filter-bar">
+                <input type="text" id="filter-search" placeholder="Nhập tên đề tài, mã đề tài..." autocomplete="off">
+                <select id="filter-dept"></select>
+                <select id="filter-period"></select>
+                <select id="filter-type">
+                    <option value="">Tất cả loại hình</option>
+                    <option value="COURSE">Môn học</option>
+                    <option value="NCKH">Nghiên cứu khoa học</option>
+                    <option value="TLCN">Tiểu luận chuyên ngành</option>
+                    <option value="KLTN">Khóa luận tốt nghiệp</option>
+                </select>
+                <select id="filter-status">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="PENDING">Chờ duyệt</option>
+                    <option value="APPROVED">Đã duyệt</option>
+                    <option value="REJECTED">Từ chối</option>
+                </select>
+                <label class="filter-checkbox" for="filter-my-only">
+                    <input type="checkbox" id="filter-my-only">
+                    <span>Chỉ đề tài của tôi</span>
+                </label>
+            </div>
+
+            <div class="card table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 130px;">Mã đề tài</th>
+                            <th style="min-width: 280px;">Tên đề tài</th>
+                            <th style="width: 180px;">GV đề xuất</th>
+                            <th style="width: 125px;">Loại</th>
+                            <th style="width: 165px;">Bộ môn</th>
+                            <th style="width: 115px;">Trạng thái</th>
+                            <th style="width: 155px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topics-tbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải danh sách đề tài...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadTopicList();
+        });
+    </script>
+</body>
+
+</html>

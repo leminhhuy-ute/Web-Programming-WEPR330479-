@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết đề tài - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="../dashboard.html" aria-label="Trang tổng quan giảng viên">
+                <img class="brand-logo" src="../../assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Giảng viên</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Giảng viên">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="../dashboard.html">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="list.html" class="active">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="form.html">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="student-groups.html">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="approval.html" id="nav-approval" style="display:none;">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="../../councils/index.html">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Chi tiết đề tài</h1>
+                    <p class="page-subtitle">Xem thông tin chi tiết, phân công giảng viên hướng dẫn và trạng thái kiểm duyệt.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a id="btn-edit" href="#" class="button primary" hidden>Chỉnh sửa thông tin</a>
+                    <a href="list.html" class="button secondary">← Quay lại danh sách</a>
+                </div>
+            </div>
+
+            <div class="card detail-card" style="max-width: 960px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 1px solid var(--border-light); padding-bottom: 18px;">
+                    <div>
+                        <span id="detail-code" class="badge type-badge" style="font-size: 12px; margin-bottom: 8px;"></span>
+                        <h2 id="detail-title" style="font-size: 20px; font-weight: 750; color: var(--navy); margin-top: 6px;"></h2>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <span id="detail-type" class="badge"></span>
+                        <span id="detail-status" class="badge"></span>
+                    </div>
+                </div>
+
+                <div id="detail-reject-box" class="alert error" style="display: none; margin-bottom: 20px;">
+                    <strong>Lý do từ chối:</strong>&nbsp;<span id="detail-reject-reason"></span>
+                </div>
+
+                <div class="table-scroll" style="margin-bottom: 24px;">
+                    <table class="detail-table">
+                        <tbody>
+                            <tr>
+                                <th style="width: 220px;">Giảng viên đề xuất</th>
+                                <td id="detail-creator">—</td>
+                            </tr>
+                            <tr>
+                                <th>Bộ môn quản lý</th>
+                                <td id="detail-dept">—</td>
+                            </tr>
+                            <tr>
+                                <th>Đợt đăng ký</th>
+                                <td id="detail-period">—</td>
+                            </tr>
+                            <tr>
+                                <th>Số lượng SV tối đa</th>
+                                <td id="detail-max">—</td>
+                            </tr>
+                            <tr>
+                                <th>Giảng viên hướng dẫn 1</th>
+                                <td id="detail-adv1" style="color: var(--primary); font-weight: 600;">—</td>
+                            </tr>
+                            <tr>
+                                <th>Giảng viên hướng dẫn 2</th>
+                                <td id="detail-adv2" style="color: var(--primary); font-weight: 600;">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">Mô tả đề tài</h3>
+                    <p id="detail-desc" style="white-space: pre-line; color: var(--text-secondary); background: var(--surface-alt); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); line-height: 1.6; margin: 0;"></p>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">Yêu cầu đối với sinh viên</h3>
+                    <p id="detail-req" style="white-space: pre-line; color: var(--text-secondary); background: var(--surface-alt); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); line-height: 1.6; margin: 0;"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadDetail();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nhóm sinh viên hướng dẫn - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="../dashboard.html" aria-label="Trang tổng quan giảng viên">
+                <img class="brand-logo" src="../../assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Giảng viên</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Giảng viên">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="../dashboard.html">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="list.html">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="form.html">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="student-groups.html" class="active">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="approval.html" id="nav-approval" style="display:none;">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="../../councils/index.html">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Nhóm sinh viên hướng dẫn</h1>
+                    <p class="page-subtitle">Theo dõi các nhóm thuộc phạm vi hướng dẫn, xét duyệt đăng ký đề tài và tải báo cáo tiến độ.</p>
+                </div>
+            </div>
+
+            <div class="card table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 130px;">Mã nhóm</th>
+                            <th style="min-width: 220px;">Tên nhóm</th>
+                            <th style="min-width: 280px;">Đề tài đăng ký</th>
+                            <th style="width: 180px;">Trưởng nhóm</th>
+                            <th style="width: 120px;">Số thành viên</th>
+                            <th style="width: 115px;">Trạng thái</th>
+                            <th style="width: 150px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="groups-tbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải danh sách nhóm sinh viên...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadStudentGroups();
+        });
+    </script>
+</body>
+
+</html>

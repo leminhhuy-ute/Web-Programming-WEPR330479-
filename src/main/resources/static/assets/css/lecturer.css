@@ -1,0 +1,387 @@
+/* ==========================================================================
+   LECTURER & HEAD OF DEPT DESIGN SYSTEM - HCMUTE TOPIC MANAGEMENT
+   Standardized to match Admin Design System (/admin/dashboard.html)
+   ========================================================================== */
+
+@import url("common.css");
+
+.lecturer-layout {
+  display: flex;
+  min-height: calc(100vh - var(--topbar-height, 68px));
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   1. STATS / METRIC CARDS
+   -------------------------------------------------------------------------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 32px;
+}
+
+.stat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 120px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.08);
+  border-color: var(--primary-border);
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  opacity: 0.85;
+}
+
+.stat-card:nth-child(2)::before { background: #eab308; }
+.stat-card:nth-child(3)::before { background: #22c55e; }
+.stat-card:nth-child(4)::before { background: #6366f1; }
+
+.stat-card .label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-card .value {
+  color: var(--navy);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.card-header {
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.card-header h2 {
+  font-size: 17px;
+  font-weight: 750;
+  color: var(--navy);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   2. FILTER / TOOLBAR
+   -------------------------------------------------------------------------- */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  background: #ffffff;
+}
+
+.filter-bar + .data-table,
+.filter-bar + table,
+.filter-bar + .table-scroll {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.filter-bar input,
+.filter-bar select,
+.filter-bar .button {
+  height: 40px;
+  min-height: 40px;
+}
+
+.filter-bar input[type="text"] {
+  min-width: 160px;
+  max-width: 280px;
+  flex: 1 1 180px;
+}
+
+.filter-bar select {
+  width: auto;
+  min-width: 115px;
+  max-width: 180px;
+  flex: 0 1 auto;
+}
+
+.filter-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  background: var(--surface-alt, #f8fafc);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.filter-checkbox:hover {
+  border-color: var(--primary-border, #93c5fd);
+  background: #f1f5f9;
+}
+
+.filter-checkbox input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+@media (min-width: 1024px) {
+  .filter-bar {
+    flex-wrap: nowrap;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. TABLES
+   -------------------------------------------------------------------------- */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+table.data-table th {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+table.data-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+table.data-table tbody tr:hover {
+  background: #f8fafd;
+}
+
+/* --------------------------------------------------------------------------
+   4. FORMS
+   -------------------------------------------------------------------------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.edit-form,
+.entity-form {
+  max-width: 860px;
+  padding: 30px 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-xs);
+  margin: 0;
+}
+
+.form-section {
+  margin-bottom: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 8px;
+  padding-bottom: 0;
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 14px;
+  color: #0f2742;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+}
+
+.form-grid label,
+.entity-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-grid small,
+.entity-form small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.entity-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Detail Card */
+.detail-card {
+  max-width: 960px;
+  padding: 28px 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-xs);
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-table th {
+  width: 220px;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  text-align: left;
+}
+
+.detail-table td {
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  font-weight: 500;
+}
+
+/* Announcement Panel */
+.announcement-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.announcement-panel .card-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.announcement-body {
+  padding: 20px 24px;
+}
+
+.announcement-item {
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 14px;
+}
+
+.announcement-item:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-bar input,
+  .filter-bar select {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}

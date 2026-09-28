@@ -1,0 +1,668 @@
+@import url("../assets/css/style.css");
+
+/* ==========================================================================
+   LANDING PAGE STYLES (HOME) - HCMUTE TOPIC MANAGEMENT
+   ========================================================================== */
+
+.home-page {
+    min-height: 100vh;
+    background-color: #ffffff;
+    color: var(--text);
+    overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   1. HEADER
+   -------------------------------------------------------------------------- */
+.home-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 74px;
+    padding: 12px clamp(20px, 4vw, 48px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none !important;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    color: var(--navy);
+    line-height: 1.2;
+}
+
+.brand-school {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.home-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: color var(--transition);
+}
+
+.nav-link:hover {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.login-cta {
+    padding: 8px 18px;
+    font-size: 13.5px;
+    box-shadow: 0 2px 8px rgba(0, 89, 148, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   2. MAIN CONTAINER
+   -------------------------------------------------------------------------- */
+.home-main {
+    width: min(1280px, 100%);
+    margin: 0 auto;
+    padding: 0 clamp(20px, 4vw, 40px);
+}
+
+/* --------------------------------------------------------------------------
+   3. HERO SECTION
+   -------------------------------------------------------------------------- */
+.hero-section {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 48px;
+    align-items: center;
+    padding: clamp(48px, 7vw, 84px) 0 clamp(40px, 6vw, 64px);
+    position: relative;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 20%;
+    left: -150px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(0, 89, 148, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background: var(--primary-soft);
+    border: 1px solid var(--primary-border);
+    color: var(--primary);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+
+.badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 89, 148, 0.2);
+}
+
+.hero-title {
+    font-size: clamp(32px, 3.8vw, 50px);
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: -0.8px;
+    color: var(--navy);
+    margin-bottom: 20px;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #005994 0%, #0088db 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-lead {
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    max-width: 580px;
+    margin-bottom: 32px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+}
+
+.btn-hero {
+    min-height: 46px;
+    padding: 10px 24px;
+    font-size: 14.5px;
+    border-radius: var(--radius-md);
+}
+
+.hero-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.feat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.feat-check {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--success-bg);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Campus Photo Frame */
+.campus-card {
+    border-radius: var(--radius-xl);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.1);
+    overflow: hidden;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.campus-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15);
+}
+
+.campus-image-wrap {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--navy);
+}
+
+.campus-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.campus-card:hover .campus-img {
+    transform: scale(1.03);
+}
+
+.campus-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(15, 39, 66, 0.75) 100%);
+    pointer-events: none;
+}
+
+.campus-chip {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    background: rgba(15, 39, 66, 0.75);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.campus-stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+}
+
+.c-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.c-stat strong {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1.1;
+}
+
+.c-stat small {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-weight: 500;
+}
+
+.c-stat-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+}
+
+/* --------------------------------------------------------------------------
+   4. WORKFLOW SECTION
+   -------------------------------------------------------------------------- */
+.workflow-section {
+    padding: clamp(54px, 7vw, 84px) 0;
+    border-top: 1px solid var(--border);
+}
+
+.section-header {
+    margin-bottom: 48px;
+}
+
+.text-center {
+    text-align: center;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-tag {
+    display: inline-block;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+}
+
+.section-subtitle {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    position: relative;
+}
+
+.workflow-step {
+    position: relative;
+    padding: 24px 18px;
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.workflow-step:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-border);
+}
+
+.step-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--primary-border);
+}
+
+.step-icon {
+    font-size: 26px;
+    margin-bottom: 14px;
+}
+
+.workflow-step h3 {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.workflow-step p {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. ROLES SECTION
+   -------------------------------------------------------------------------- */
+.roles-section {
+    padding: clamp(54px, 7vw, 84px) 0;
+    border-top: 1px solid var(--border);
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.role-card {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    border-radius: var(--radius-xl);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.role-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.1);
+}
+
+.role-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.role-code {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: var(--primary);
+}
+
+.role-pill {
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: var(--surface-alt);
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.role-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.role-card h3 {
+    font-size: 19px;
+    font-weight: 750;
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.role-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.role-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+    margin-top: auto;
+}
+
+.role-list li {
+    position: relative;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.role-list li::before {
+    content: "•";
+    position: absolute;
+    left: 4px;
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* Card accent borders on hover */
+.student-role:hover { border-color: #38bdf8; }
+.lecturer-role:hover { border-color: #818cf8; }
+.admin-role:hover { border-color: #34d399; }
+
+/* --------------------------------------------------------------------------
+   6. CTA SECTION
+   -------------------------------------------------------------------------- */
+.cta-section {
+    padding: 32px 0 80px;
+}
+
+.cta-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: clamp(32px, 5vw, 48px);
+    border-radius: var(--radius-xl);
+    background: var(--navy-gradient);
+    color: #ffffff;
+    box-shadow: 0 16px 36px -8px rgba(15, 39, 66, 0.35);
+}
+
+.cta-copy h2 {
+    color: #ffffff;
+    font-size: clamp(22px, 2.5vw, 30px);
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin-bottom: 8px;
+}
+
+.cta-copy p {
+    color: #cbd5e1;
+    font-size: 14.5px;
+    margin: 0;
+}
+
+.btn-cta-large {
+    min-height: 48px;
+    padding: 12px 28px;
+    font-size: 15px;
+    background: #ffffff;
+    color: var(--navy) !important;
+    border-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-cta-large:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark) !important;
+    transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   7. FOOTER
+   -------------------------------------------------------------------------- */
+.home-footer {
+    border-top: 1px solid var(--border);
+    background: #f8fafc;
+    padding: 48px clamp(20px, 4vw, 48px) 32px;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    max-width: 1280px;
+    margin: 0 auto 36px;
+    flex-wrap: wrap;
+}
+
+.footer-brand {
+    max-width: 440px;
+}
+
+.footer-desc {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.footer-meta {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+}
+
+.meta-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 320px;
+}
+
+.meta-col strong {
+    font-size: 13px;
+    color: var(--navy);
+}
+
+.meta-col span {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.footer-bottom {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   8. RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+    .workflow-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .hero-section {
+        grid-template-columns: 1fr;
+        gap: 36px;
+        padding-top: 36px;
+    }
+    .roles-grid {
+        grid-template-columns: 1fr;
+    }
+    .workflow-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .cta-box {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .home-header {
+        padding: 10px 16px;
+    }
+    .brand-title {
+        font-size: 15px;
+    }
+    .brand-school {
+        display: none;
+    }
+    .home-nav .nav-link {
+        display: none;
+    }
+    .workflow-grid {
+        grid-template-columns: 1fr;
+    }
+    .footer-top {
+        flex-direction: column;
+        gap: 24px;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

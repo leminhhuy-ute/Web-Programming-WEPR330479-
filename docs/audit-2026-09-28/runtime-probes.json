@@ -1,0 +1,492 @@
+[
+  {
+    "label": "Create valid period",
+    "method": "POST",
+    "path": "/api/admin/registration-periods",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Đã tạo đợt đăng ký.",
+      "data": {
+        "id": 4,
+        "name": "Audit period",
+        "type": "COURSE",
+        "typeLabel": "Môn học",
+        "lecturerStartAt": "2026-09-26T09:28:14",
+        "lecturerEndAt": "2026-09-29T09:28:14",
+        "studentStartAt": "2026-09-30T09:28:14",
+        "studentEndAt": "2026-10-03T09:28:14",
+        "reviewDeadline": null,
+        "defenseDate": null,
+        "createdAt": "2026-09-28T09:28:14.069857",
+        "updatedAt": "2026-09-28T09:28:14.069857"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Invalid period dates",
+    "method": "POST",
+    "path": "/api/admin/registration-periods",
+    "status": 400,
+    "response": {
+      "success": false,
+      "message": "Thời gian kết thúc phải sau thời gian bắt đầu.",
+      "data": null,
+      "errors": "Thời gian kết thúc phải sau thời gian bắt đầu."
+    }
+  },
+  {
+    "label": "Create audit lecturer",
+    "method": "POST",
+    "path": "/api/admin/users",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Đã tạo tài khoản.",
+      "data": {
+        "id": 15,
+        "userCode": "AUDIT_LECT",
+        "username": "audit_lect",
+        "fullName": "Audit lecturer",
+        "email": "audit-lect@lecturer.hcmute.edu.vn",
+        "role": "LECTURER",
+        "departmentId": 1,
+        "departmentName": "Công nghệ phần mềm",
+        "status": "ACTIVE",
+        "createdAt": "2026-09-28T09:28:14.227031",
+        "updatedAt": "2026-09-28T09:28:14.227031"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Create topic with zero supervisors",
+    "method": "POST",
+    "path": "/api/lecturer/topics",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Đăng ký / đề xuất đề tài mới thành công.",
+      "data": {
+        "id": 7,
+        "topicCode": "AUDIT-TOPIC",
+        "title": "Audit topic",
+        "description": "Meaningful audit topic description",
+        "requirements": null,
+        "maxStudents": 3,
+        "topicType": "COURSE",
+        "status": "PENDING",
+        "rejectionReason": null,
+        "department": {
+          "id": 1,
+          "code": "CNPM",
+          "name": "Công nghệ phần mềm",
+          "description": "Bộ môn Kỹ thuật phần mềm & hệ thống thông minh"
+        },
+        "period": {
+          "id": 4,
+          "name": "Audit period",
+          "type": "COURSE",
+          "typeLabel": "COURSE",
+          "lecturerStartAt": "2026-09-26T09:28:14",
+          "lecturerEndAt": "2026-09-29T09:28:14",
+          "studentStartAt": "2026-09-30T09:28:14",
+          "studentEndAt": "2026-10-03T09:28:14",
+          "reviewDeadline": null,
+          "defenseDate": null,
+          "createdAt": "2026-09-28T09:28:14.069857",
+          "updatedAt": "2026-09-28T09:28:14.069857"
+        },
+        "createdBy": {
+          "id": 15,
+          "userCode": "AUDIT_LECT",
+          "username": "audit_lect",
+          "fullName": "Audit lecturer",
+          "email": "audit-lect@lecturer.hcmute.edu.vn",
+          "role": "LECTURER",
+          "departmentId": 1,
+          "departmentName": "Công nghệ phần mềm",
+          "status": "ACTIVE",
+          "createdAt": "2026-09-28T09:28:14.227031",
+          "updatedAt": "2026-09-28T09:28:14.227031"
+        },
+        "advisor1": null,
+        "advisor2": null,
+        "createdAt": "2026-09-28T09:28:14.4025594",
+        "updatedAt": "2026-09-28T09:28:14.4025594"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Lock topic creator",
+    "method": "PATCH",
+    "path": "/api/admin/users/15/status",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Đã cập nhật trạng thái.",
+      "data": {
+        "id": 15,
+        "userCode": "AUDIT_LECT",
+        "username": "audit_lect",
+        "fullName": "Audit lecturer",
+        "email": "audit-lect@lecturer.hcmute.edu.vn",
+        "role": "LECTURER",
+        "departmentId": 1,
+        "departmentName": "Công nghệ phần mềm",
+        "status": "LOCKED",
+        "createdAt": "2026-09-28T09:28:14.227031",
+        "updatedAt": "2026-09-28T09:28:14.227031"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Approve topic with locked default supervisor",
+    "method": "POST",
+    "path": "/api/lecturer/department-topics/7/approval",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Cập nhật trạng thái phê duyệt đề tài thành công.",
+      "data": {
+        "id": 7,
+        "topicCode": "AUDIT-TOPIC",
+        "title": "Audit topic",
+        "description": "Meaningful audit topic description",
+        "requirements": null,
+        "maxStudents": 3,
+        "topicType": "COURSE",
+        "status": "APPROVED",
+        "rejectionReason": null,
+        "department": {
+          "id": 1,
+          "code": "CNPM",
+          "name": "Công nghệ phần mềm",
+          "description": "Bộ môn Kỹ thuật phần mềm & hệ thống thông minh"
+        },
+        "period": {
+          "id": 4,
+          "name": "Audit period",
+          "type": "COURSE",
+          "typeLabel": "COURSE",
+          "lecturerStartAt": "2026-09-26T09:28:14",
+          "lecturerEndAt": "2026-09-29T09:28:14",
+          "studentStartAt": "2026-09-30T09:28:14",
+          "studentEndAt": "2026-10-03T09:28:14",
+          "reviewDeadline": null,
+          "defenseDate": null,
+          "createdAt": "2026-09-28T09:28:14.069857",
+          "updatedAt": "2026-09-28T09:28:14.069857"
+        },
+        "createdBy": {
+          "id": 15,
+          "userCode": "AUDIT_LECT",
+          "username": "audit_lect",
+          "fullName": "Audit lecturer",
+          "email": "audit-lect@lecturer.hcmute.edu.vn",
+          "role": "LECTURER",
+          "departmentId": 1,
+          "departmentName": "Công nghệ phần mềm",
+          "status": "LOCKED",
+          "createdAt": "2026-09-28T09:28:14.227031",
+          "updatedAt": "2026-09-28T09:28:14.418713"
+        },
+        "advisor1": {
+          "id": 15,
+          "userCode": "AUDIT_LECT",
+          "username": "audit_lect",
+          "fullName": "Audit lecturer",
+          "email": "audit-lect@lecturer.hcmute.edu.vn",
+          "role": "LECTURER",
+          "departmentId": 1,
+          "departmentName": "Công nghệ phần mềm",
+          "status": "LOCKED",
+          "createdAt": "2026-09-28T09:28:14.227031",
+          "updatedAt": "2026-09-28T09:28:14.418713"
+        },
+        "advisor2": null,
+        "createdAt": "2026-09-28T09:28:14.402559",
+        "updatedAt": "2026-09-28T09:28:14.402559"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Change period type after approved topic exists",
+    "method": "PUT",
+    "path": "/api/admin/registration-periods/4",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Đã cập nhật đợt đăng ký.",
+      "data": {
+        "id": 4,
+        "name": "Audit period",
+        "type": "TLCN",
+        "typeLabel": "TLCN",
+        "lecturerStartAt": "2026-09-26T09:28:14",
+        "lecturerEndAt": "2026-09-29T09:28:14",
+        "studentStartAt": "2026-09-30T09:28:14",
+        "studentEndAt": "2026-10-03T09:28:14",
+        "reviewDeadline": "2026-10-06T09:28:14",
+        "defenseDate": null,
+        "createdAt": "2026-09-28T09:28:14.069857",
+        "updatedAt": "2026-09-28T09:28:14.069857"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Read topic with inconsistent period type",
+    "method": "GET",
+    "path": "/api/lecturer/topics/7",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Lấy chi tiết đề tài thành công.",
+      "data": {
+        "id": 7,
+        "topicCode": "AUDIT-TOPIC",
+        "title": "Audit topic",
+        "description": "Meaningful audit topic description",
+        "requirements": null,
+        "maxStudents": 3,
+        "topicType": "COURSE",
+        "status": "APPROVED",
+        "rejectionReason": null,
+        "department": {
+          "id": 1,
+          "code": "CNPM",
+          "name": "Công nghệ phần mềm",
+          "description": "Bộ môn Kỹ thuật phần mềm & hệ thống thông minh"
+        },
+        "period": {
+          "id": 4,
+          "name": "Audit period",
+          "type": "TLCN",
+          "typeLabel": "TLCN",
+          "lecturerStartAt": "2026-09-26T09:28:14",
+          "lecturerEndAt": "2026-09-29T09:28:14",
+          "studentStartAt": "2026-09-30T09:28:14",
+          "studentEndAt": "2026-10-03T09:28:14",
+          "reviewDeadline": "2026-10-06T09:28:14",
+          "defenseDate": null,
+          "createdAt": "2026-09-28T09:28:14.069857",
+          "updatedAt": "2026-09-28T09:28:14.482664"
+        },
+        "createdBy": {
+          "id": 15,
+          "userCode": "AUDIT_LECT",
+          "username": "audit_lect",
+          "fullName": "Audit lecturer",
+          "email": "audit-lect@lecturer.hcmute.edu.vn",
+          "role": "LECTURER",
+          "departmentId": 1,
+          "departmentName": "Công nghệ phần mềm",
+          "status": "LOCKED",
+          "createdAt": "2026-09-28T09:28:14.227031",
+          "updatedAt": "2026-09-28T09:28:14.418713"
+        },
+        "advisor1": {
+          "id": 15,
+          "userCode": "AUDIT_LECT",
+          "username": "audit_lect",
+          "fullName": "Audit lecturer",
+          "email": "audit-lect@lecturer.hcmute.edu.vn",
+          "role": "LECTURER",
+          "departmentId": 1,
+          "departmentName": "Công nghệ phần mềm",
+          "status": "LOCKED",
+          "createdAt": "2026-09-28T09:28:14.227031",
+          "updatedAt": "2026-09-28T09:28:14.418713"
+        },
+        "advisor2": null,
+        "createdAt": "2026-09-28T09:28:14.402559",
+        "updatedAt": "2026-09-28T09:28:14.466538"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Null council roster elements",
+    "method": "POST",
+    "path": "/api/councils",
+    "status": 400,
+    "response": {
+      "success": false,
+      "message": "Dữ liệu không hợp lệ.",
+      "data": null,
+      "errors": null
+    }
+  },
+  {
+    "label": "Create first case-variant login",
+    "method": "POST",
+    "path": "/api/admin/users",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Đã tạo tài khoản.",
+      "data": {
+        "id": 16,
+        "userCode": "AUDIT_CASE1",
+        "username": "AuditCase",
+        "fullName": "Audit lecturer",
+        "email": "auditcase1@lecturer.hcmute.edu.vn",
+        "role": "LECTURER",
+        "departmentId": 1,
+        "departmentName": "Công nghệ phần mềm",
+        "status": "ACTIVE",
+        "createdAt": "2026-09-28T09:28:14.627168",
+        "updatedAt": "2026-09-28T09:28:14.627168"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Create second case-variant login",
+    "method": "POST",
+    "path": "/api/admin/users",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Đã tạo tài khoản.",
+      "data": {
+        "id": 17,
+        "userCode": "AUDIT_CASE2",
+        "username": "auditcase",
+        "fullName": "Audit lecturer",
+        "email": "auditcase2@lecturer.hcmute.edu.vn",
+        "role": "LECTURER",
+        "departmentId": 1,
+        "departmentName": "Công nghệ phần mềm",
+        "status": "ACTIVE",
+        "createdAt": "2026-09-28T09:28:14.703134",
+        "updatedAt": "2026-09-28T09:28:14.703134"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Login with ambiguous case-insensitive username",
+    "method": "POST",
+    "path": "/api/auth/login",
+    "status": 500,
+    "response": {
+      "success": false,
+      "message": "Không thể xử lý yêu cầu lúc này.",
+      "data": null,
+      "errors": null
+    }
+  },
+  {
+    "label": "Create password-reset subject",
+    "method": "POST",
+    "path": "/api/admin/users",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Đã tạo tài khoản.",
+      "data": {
+        "id": 18,
+        "userCode": "AUDIT_PASS",
+        "username": "auditpass",
+        "fullName": "Audit lecturer",
+        "email": "auditpass@lecturer.hcmute.edu.vn",
+        "role": "LECTURER",
+        "departmentId": 1,
+        "departmentName": "Công nghệ phần mềm",
+        "status": "ACTIVE",
+        "createdAt": "2026-09-28T09:28:14.808163",
+        "updatedAt": "2026-09-28T09:28:14.808163"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Change subject password as admin",
+    "method": "PUT",
+    "path": "/api/admin/users/18",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Đã cập nhật tài khoản.",
+      "data": {
+        "id": 18,
+        "userCode": "AUDIT_PASS",
+        "username": "auditpass",
+        "fullName": "Audit lecturer",
+        "email": "auditpass@lecturer.hcmute.edu.vn",
+        "role": "LECTURER",
+        "departmentId": 1,
+        "departmentName": "Công nghệ phần mềm",
+        "status": "ACTIVE",
+        "createdAt": "2026-09-28T09:28:14.808163",
+        "updatedAt": "2026-09-28T09:28:14.808163"
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "Old session after password reset",
+    "method": "GET",
+    "path": "/api/auth/me",
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "Phiên đăng nhập hợp lệ.",
+      "data": {
+        "id": 18,
+        "username": "auditpass",
+        "fullName": "Audit lecturer",
+        "role": "LECTURER",
+        "enabled": true,
+        "departmentId": 1,
+        "departmentCode": "CNPM",
+        "departmentName": "Công nghệ phần mềm",
+        "accountNonLocked": true,
+        "credentialsNonExpired": true,
+        "accountNonExpired": true,
+        "password": "",
+        "authorities": [
+          {
+            "authority": "ROLE_LECTURER"
+          }
+        ],
+        "department": {
+          "id": 1,
+          "code": "CNPM",
+          "name": "Công nghệ phần mềm"
+        }
+      },
+      "errors": null
+    }
+  },
+  {
+    "label": "DTO accepts 80-byte password but BCrypt rejects",
+    "method": "POST",
+    "path": "/api/admin/users",
+    "status": 400,
+    "response": {
+      "success": false,
+      "message": "password cannot be more than 72 bytes",
+      "data": null,
+      "errors": "password cannot be more than 72 bytes"
+    }
+  },
+  {
+    "label": "Null council roster elements with valid defenseDate",
+    "method": "POST",
+    "path": "/api/councils",
+    "status": 500,
+    "response": {
+      "success": false,
+      "message": "Không thể xử lý yêu cầu lúc này.",
+      "data": null,
+      "errors": null
+    }
+  }
+]

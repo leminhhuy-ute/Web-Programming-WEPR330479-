@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hội đồng & Kết quả bảo vệ - Quản lý đề tài</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
+    <link rel="stylesheet" href="/assets/css/lecturer.css">
+    <link rel="stylesheet" href="/css/councils.css">
+</head>
+
+<body class="council-page">
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="/lecturer/dashboard.html" aria-label="Trang tổng quan đề tài">
+                <img class="brand-logo" src="/assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Cán bộ</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Cán bộ">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="/lecturer/dashboard.html">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="/lecturer/topics/list.html">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="/lecturer/topics/form.html">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="/lecturer/topics/student-groups.html">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="/lecturer/topics/approval.html" id="nav-approval" style="display:none;">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="/councils/index.html" class="active">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 id="shell-page-title">Hội đồng & Đánh giá bảo vệ</h1>
+                    <p class="page-subtitle">Thành lập hội đồng, phân công phản biện, nhập điểm chuyên môn và công bố kết quả bảo vệ.</p>
+                </div>
+                <div id="admin-actions" class="actions" style="display: flex; gap: 10px;" hidden>
+                    <button class="button primary" id="create-council">Thành lập hội đồng</button>
+                    <button class="button secondary" id="assign-group">Phân công nhóm & phản biện</button>
+                </div>
+            </div>
+
+            <p id="feedback" role="status" class="alert success" hidden></p>
+
+            <section class="card council-section section-gap">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 750; color: var(--navy); margin: 0;">Danh sách hội đồng bảo vệ</h2>
+                        <p class="text-muted" style="margin: 4px 0 0; font-size: 13px;">Các hội đồng phục vụ chấm đề tài khóa luận và tiểu luận tốt nghiệp.</p>
+                    </div>
+                    <span id="council-count" class="badge">Đang tải…</span>
+                </div>
+                <div id="council-list">Đang tải danh sách hội đồng…</div>
+            </section>
+
+            <section class="card council-section section-gap" style="margin-top: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 750; color: var(--navy); margin: 0;">Đề tài & nhóm được phân công bảo vệ</h2>
+                        <p class="text-muted" style="margin: 4px 0 0; font-size: 13px;">Danh sách các nhóm sinh viên chờ bảo vệ hoặc đã hoàn tất chấm điểm.</p>
+                    </div>
+                </div>
+                <div id="defense-list">Đang tải danh sách đề tài…</div>
+            </section>
+
+            <div class="card" style="margin-top: 24px; background: var(--surface-alt); padding: 16px 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                <strong>Lưu ý quy chế:</strong> Chủ tịch hội đồng tổng hợp điểm khi đủ phiếu đánh giá từ tất cả thành viên. Trưởng khoa phê duyệt công bố chính thức để sinh viên tra cứu.
+            </div>
+        </main>
+    </div>
+
+    <dialog id="council-dialog" aria-labelledby="dialog-title"></dialog>
+
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/lecturer-shell.js"></script>
+    <script src="/js/councils.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đề xuất đề tài - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="../dashboard.html" aria-label="Trang tổng quan giảng viên">
+                <img class="brand-logo" src="../../assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Giảng viên</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Giảng viên">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="../dashboard.html">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="list.html">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="form.html" class="active">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="student-groups.html">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="approval.html" id="nav-approval" style="display:none;">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="../../councils/index.html">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 id="form-page-title">Đề xuất đề tài mới</h1>
+                    <p class="page-subtitle">Soạn thảo nội dung mục tiêu, công nghệ và yêu cầu thực hiện đề tài cho sinh viên.</p>
+                </div>
+                <a href="list.html" class="button secondary">← Quay lại danh sách</a>
+            </div>
+
+            <form id="topic-form" class="card edit-form entity-form">
+                <input type="hidden" id="form-topic-id">
+
+                <div class="form-section">
+                    <span class="section-title">1. Thông tin cơ bản</span>
+                    <div class="form-grid">
+                        <label>
+                            Mã đề tài (Bỏ trống để tự động tạo)
+                            <input type="text" id="form-code" placeholder="Ví dụ: DT-CNPM-005">
+                        </label>
+                        <label>
+                            Loại đề tài (*)
+                            <select id="form-type" required>
+                                <option value="COURSE">Môn học (COURSE)</option>
+                                <option value="NCKH">Nghiên cứu khoa học (NCKH)</option>
+                                <option value="TLCN">Tiểu luận chuyên ngành (TLCN)</option>
+                                <option value="KLTN">Khóa luận tốt nghiệp (KLTN)</option>
+                            </select>
+                        </label>
+                        <label class="full-width">
+                            Tên đề tài (*)
+                            <input type="text" id="form-title" placeholder="Ví dụ: Nghiên cứu ứng dụng trí tuệ nhân tạo trong quản lý dữ liệu" required>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <span class="section-title">2. Phân loại & Phạm vi</span>
+                    <div class="form-grid">
+                        <label>
+                            Bộ môn quản lý (*)
+                            <select id="form-department" required></select>
+                        </label>
+                        <label>
+                            Đợt đăng ký (*)
+                            <select id="form-period" required></select>
+                        </label>
+                        <label>
+                            Số lượng sinh viên tối đa (*)
+                            <input type="number" id="form-max-students" min="1" max="3" value="2" required>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <span class="section-title">3. Nội dung & Yêu cầu</span>
+                    <div class="form-grid">
+                        <label class="full-width">
+                            Mô tả đề tài
+                            <textarea id="form-description" rows="4" placeholder="Mô tả chi tiết mục tiêu, phạm vi và kết quả dự kiến của đề tài..."></textarea>
+                        </label>
+                        <label class="full-width">
+                            Yêu cầu đối với sinh viên
+                            <textarea id="form-requirements" rows="3" placeholder="Các kỹ năng, công nghệ hoặc kiến thức nền tảng sinh viên cần chuẩn bị..."></textarea>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="button primary">Lưu đề tài</button>
+                    <a href="list.html" class="button secondary">Hủy bỏ</a>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadForm();
+        });
+    </script>
+</body>
+
+</html>

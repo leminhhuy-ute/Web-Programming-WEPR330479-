@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title>Không gian Sinh viên - Quản lý đề tài</title>
+  <link rel="stylesheet" href="/assets/css/common.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/workspace.css">
+  <script defer src="/js/app.js"></script>
+</head>
+
+<body>
+  <a href="#main" class="skip">Đi tới nội dung</a>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+      <a class="brand-link" href="#dashboard" aria-label="Trang tổng quan sinh viên">
+        <img class="brand-logo" src="/assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+        <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+        <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+      </a>
+    </div>
+    <div class="topbar-right">
+      <div class="header-user" aria-live="polite">
+        <div class="topbar-right-copy">
+          <div class="header-user-copy">
+            <strong id="profile-name">Lê Minh Tuấn</strong>
+            <span id="profile-role">Sinh viên</span>
+          </div>
+          <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+        </div>
+        <span class="avatar" id="profile-avatar" aria-label="Sinh viên">LT</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <p class="nav-label">ĐIỀU HƯỚNG</p>
+      <nav aria-label="Điều hướng chính">
+        <a href="#dashboard" data-nav="dashboard" class="active">
+          <span>Bảng điều khiển</span>
+        </a>
+        <a href="#group" data-nav="group">
+          <span>Nhóm của tôi</span>
+          <b id="invite-count"></b>
+        </a>
+        <a href="#topics" data-nav="topics">
+          <span>Kho đề tài</span>
+        </a>
+        <a href="#project" data-nav="project">
+          <span>Đề tài đang thực hiện</span>
+        </a>
+        <a href="#reports" data-nav="reports">
+          <span>Nộp báo cáo</span>
+        </a>
+        <a href="#results" data-nav="results">
+          <span>Kết quả đánh giá</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <form th:action="@{/logout}" method="post" style="margin: 0; width: 100%;">
+          <button class="sidebar-logout" type="submit" style="width: 100%; border: none; background: transparent; cursor: pointer;">
+            Đăng xuất
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <main id="main" class="main-content" tabindex="-1">
+      <div class="loading">Đang tải không gian sinh viên…</div>
+    </main>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+</body>
+
+</html>

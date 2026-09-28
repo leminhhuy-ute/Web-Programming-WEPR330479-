@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bảng điều khiển - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+
+<body data-admin data-module="dashboard">
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Bảng điều khiển</h1>
+                <p class="page-subtitle">Theo dõi nhanh tình trạng vận hành và truy cập các khu vực quản trị.</p>
+            </div>
+        </div>
+        <section class="admin-metrics" aria-label="Thống kê hệ thống">
+            <article class="metric-card"><span>Tài khoản</span><strong data-stat="users">—</strong><small>Tổng người dùng</small></article>
+            <article class="metric-card"><span>Đợt đang mở</span><strong data-stat="activePeriods">—</strong><small>Giai đoạn GV hoặc SV</small></article>
+            <article class="metric-card"><span>Đề tài chờ duyệt</span><strong data-stat="pendingTopics">—</strong><small>Cần bộ môn xử lý</small></article>
+            <article class="metric-card"><span>Đề tài công bố</span><strong data-stat="approvedTopics">—</strong><small>Sinh viên có thể xem</small></article>
+            <article class="metric-card"><span>Nhóm đang thực hiện</span><strong data-stat="approvedGroups">—</strong><small>Đã được GVHD chấp thuận</small></article>
+            <article class="metric-card"><span>Hội đồng</span><strong data-stat="councils">—</strong><small>Đã thành lập</small></article>
+            <article class="metric-card"><span>Kết quả công bố</span><strong data-stat="publishedResults">—</strong><small>Đã hiển thị cho sinh viên</small></article>
+        </section>
+        <h2 class="section-heading">Khu vực quản trị</h2>
+        <nav class="dashboard-links">
+            <a href="users/list.html">
+                <strong>Tài khoản</strong>
+                <small>Quản lý hồ sơ, vai trò và trạng thái tài khoản.</small>
+            </a>
+            <a href="departments/list.html">
+                <strong>Bộ môn</strong>
+                <small>Thiết lập cơ cấu bộ môn trực thuộc khoa.</small>
+            </a>
+            <a href="registration-periods/list.html">
+                <strong>Đợt đăng ký</strong>
+                <small>Theo dõi lịch đăng ký của giảng viên, sinh viên.</small>
+            </a>
+            <a href="announcements/list.html">
+                <strong>Thông báo</strong>
+                <small>Soạn thảo và công bố thông tin học vụ.</small>
+            </a>
+            <a href="../lecturer/dashboard.html">
+                <strong>Đề tài & nhóm</strong>
+                <small>Theo dõi đề tài, phân công GVHD và nhóm sinh viên.</small>
+            </a>
+            <a href="../councils/index.html">
+                <strong>Hội đồng & kết quả</strong>
+                <small>Thành lập hội đồng, phân công và công bố kết quả.</small>
+            </a>
+        </nav>
+    </main>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/admin-shell.js"></script>
+    <script src="../assets/js/admin-dashboard.js"></script>
+</body>
+
+</html>

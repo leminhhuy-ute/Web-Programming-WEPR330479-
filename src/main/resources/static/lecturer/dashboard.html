@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bảng điều khiển Giảng viên - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/lecturer.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="dashboard.html" aria-label="Trang tổng quan giảng viên">
+                <img class="brand-logo" src="../assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Giảng viên</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Giảng viên">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="dashboard.html" class="active">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="topics/list.html">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="topics/form.html">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="topics/student-groups.html">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="topics/approval.html" id="nav-approval" style="display:none;">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="../councils/index.html">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 id="shell-page-title">Bảng điều khiển Giảng viên</h1>
+                    <p class="page-subtitle">Theo dõi tổng quan đề tài hướng dẫn, tiến độ nhóm sinh viên và thông báo học vụ.</p>
+                </div>
+                <a href="topics/form.html" class="button primary">+ Đề xuất đề tài mới</a>
+            </div>
+
+            <section class="stats-grid" aria-label="Thống kê giảng viên">
+                <article class="stat-card">
+                    <span class="label">Đề tài tôi đề xuất</span>
+                    <strong class="value" id="stat-my-topics">0</strong>
+                </article>
+                <article class="stat-card">
+                    <span class="label">Đề tài chờ duyệt</span>
+                    <strong class="value" id="stat-pending-topics" style="color: #d97706;">0</strong>
+                </article>
+                <article class="stat-card">
+                    <span class="label">Đề tài đã duyệt</span>
+                    <strong class="value" id="stat-approved-topics" style="color: #16a34a;">0</strong>
+                </article>
+                <article class="stat-card">
+                    <span class="label">Nhóm SV đăng ký</span>
+                    <strong class="value" id="stat-groups" style="color: #0284c7;">0</strong>
+                </article>
+            </section>
+
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="card-header">
+                    <h2>Đề tài đề xuất gần đây</h2>
+                    <a href="topics/list.html" class="button secondary" style="font-size: 12.5px; min-height: 34px; padding: 4px 12px;">Xem tất cả</a>
+                </div>
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Mã đề tài</th>
+                                <th style="min-width: 280px;">Tên đề tài</th>
+                                <th style="width: 180px;">GV đề xuất</th>
+                                <th style="width: 130px;">Loại</th>
+                                <th style="width: 120px;">Trạng thái</th>
+                                <th style="width: 140px;">Ngày tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-topics-tbody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/lecturer-shell.js"></script>
+    <script src="../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.initDashboard();
+        });
+    </script>
+</body>
+
+</html>

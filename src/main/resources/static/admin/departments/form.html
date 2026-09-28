@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thông tin bộ môn - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body data-admin data-module="departments" data-view="form">
+    <main class="main-content">
+        <div id="nav"></div>
+        <div class="page-header">
+            <div>
+                <h1>Thông tin bộ môn</h1>
+                <p class="page-subtitle">Thiết lập mã, tên và mô tả chức năng của bộ môn trực thuộc.</p>
+            </div>
+            <a class="button secondary" href="list.html">← Quay lại danh sách</a>
+        </div>
+        <p id="message" class="form-error" role="alert"></p>
+        <form id="entity-form" class="card edit-form entity-form">
+            <div class="form-section">
+                <span class="section-title">Thiết lập bộ môn</span>
+                <div class="form-grid">
+                    <label>
+                        Mã bộ môn
+                        <input name="code" placeholder="Ví dụ: BM-CNPM" required>
+                    </label>
+                    <label>
+                        Tên bộ môn
+                        <input name="name" placeholder="Ví dụ: Công nghệ phần mềm" required>
+                    </label>
+                    <label class="full-width">
+                        Mô tả
+                        <textarea name="description" placeholder="Mô tả chức năng hoặc giới thiệu chuyên ngành..."></textarea>
+                    </label>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="button primary">Lưu thông tin</button>
+                <a class="button secondary" href="list.html">Hủy</a>
+            </div>
+        </form>
+    </main>
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/admin-shell.js"></script>
+    <script src="../../assets/js/admin-crud.js"></script>
+</body>
+
+</html>

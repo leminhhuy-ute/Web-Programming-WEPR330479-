@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Duyệt đề tài bộ môn - Quản lý đề tài</title>
+    <link rel="stylesheet" href="../../assets/css/common.css">
+    <link rel="stylesheet" href="../../assets/css/lecturer.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+            <a class="brand-link" href="../dashboard.html" aria-label="Trang tổng quan giảng viên">
+                <img class="brand-logo" src="../../assets/images/logo.png" alt="HCMUTE" width="44" height="44" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span class="brand-monogram" aria-label="HCMUTE" hidden>H</span>
+                <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <div class="header-user" aria-live="polite">
+                <div class="topbar-right-copy">
+                    <div class="header-user-copy">
+                        <strong id="shell-user-name" data-user-name>TS. Trần Hoàng Nam</strong>
+                        <span id="shell-user-role" data-user-role>Trưởng bộ môn</span>
+                    </div>
+                    <span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span>
+                </div>
+                <span class="avatar" id="shell-user-avatar" data-user-avatar aria-label="Trưởng bộ môn">HN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <p class="nav-label">ĐIỀU HƯỚNG</p>
+            <nav>
+                <a href="../dashboard.html">
+                    <span>Bảng điều khiển</span>
+                </a>
+                <a href="list.html">
+                    <span>Tất cả đề tài</span>
+                </a>
+                <a href="form.html">
+                    <span>Đề xuất đề tài</span>
+                </a>
+                <a href="student-groups.html">
+                    <span>Nhóm sinh viên hướng dẫn</span>
+                </a>
+                <a href="approval.html" id="nav-approval" class="active">
+                    <span>Duyệt đề tài bộ môn</span>
+                </a>
+                <a href="../../councils/index.html">
+                    <span>Hội đồng & chấm điểm</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Duyệt đề tài bộ môn</h1>
+                    <p class="page-subtitle">Thẩm định nội dung đề xuất của giảng viên và gán phân công hướng dẫn (GVHD 1 & GVHD 2).</p>
+                </div>
+            </div>
+
+            <div class="toolbar filter-bar">
+                <select id="approval-status-filter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="PENDING" selected>Chờ duyệt</option>
+                    <option value="APPROVED">Đã duyệt</option>
+                    <option value="REJECTED">Từ chối</option>
+                </select>
+            </div>
+
+            <div class="card table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 130px;">Mã đề tài</th>
+                            <th style="min-width: 280px;">Tên đề tài</th>
+                            <th style="width: 175px;">GV đề xuất</th>
+                            <th style="width: 125px;">Loại</th>
+                            <th style="width: 115px;">Trạng thái</th>
+                            <th style="width: 235px;">Gán GVHD 1 & 2</th>
+                            <th style="width: 160px;">Thao tác phê duyệt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approval-tbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải dữ liệu đề tài bộ môn...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <dialog id="assign-advisor-dialog" class="card" style="max-width: 520px; width: 90%; border-radius: var(--radius-lg); padding: 0; border: 1px solid var(--border); box-shadow: var(--shadow-lg);">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="assign-dialog-title" style="font-size:16.5px; font-weight:750; color:var(--navy); margin:0;">Phân công Giảng viên hướng dẫn</h2>
+            <button type="button" class="button outline small" onclick="document.getElementById('assign-advisor-dialog').close()" style="min-height:28px; padding:2px 8px;">✕</button>
+        </div>
+        <form id="assign-advisor-form" style="padding: 20px 24px;">
+            <input type="hidden" id="assign-topic-id">
+            <p id="assign-topic-title" style="font-weight:600; font-size:13.5px; color:var(--text); margin-bottom:16px; background:var(--surface-alt); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border-light);"></p>
+            
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label for="assign-adv1" style="font-weight:600; font-size:13px; color:var(--text); margin-bottom:6px; display:block;">Giảng viên hướng dẫn 1 (*)</label>
+                <select id="assign-adv1" required style="width:100%; height:40px;">
+                    <option value="">-- Chọn Giảng viên hướng dẫn 1 --</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="assign-adv2" style="font-weight:600; font-size:13px; color:var(--text); margin-bottom:6px; display:block;">Giảng viên hướng dẫn 2 (Tùy chọn)</label>
+                <select id="assign-adv2" style="width:100%; height:40px;">
+                    <option value="">-- Không gán --</option>
+                </select>
+            </div>
+
+            <p id="assign-dialog-error" class="alert error" style="display:none; font-size:13px; padding:10px 14px; margin-bottom:16px;"></p>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="button outline" onclick="document.getElementById('assign-advisor-dialog').close()">Hủy</button>
+                <button type="submit" class="button primary" id="btn-submit-assign">Lưu phân công</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lecturer-shell.js"></script>
+    <script src="../../assets/js/lecturer-crud.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            LecturerCrud.loadApprovalPage();
+        });
+    </script>
+</body>
+
+</html>
