@@ -14,6 +14,19 @@ public class EmailDeliveryService {
             @Value("${app.mail.enabled:false}") boolean enabled,@Value("${app.mail.from}") String from) {
         this.notifications=notifications;this.sender=sender;this.enabled=enabled;this.from=from;
     }
+    public String testRecipient() { return from; }
+    public void sendTest() {
+        if(!enabled) throw new IllegalStateException("Gửi email đang tắt.");
+        var message=new SimpleMailMessage();message.setFrom(from);message.setTo(from);
+        message.setSubject("[THỬ NGHIỆM] Kết quả đề tài đã được công bố");
+        message.setText("Đây là email thử từ Hệ thống quản lý đề tài sinh viên."
+            +"\nMọi thông tin điểm dưới đây chỉ để minh họa, không phải kết quả học tập chính thức."
+            +"\n\nĐợt: Đợt kiểm thử\nNhóm: Nhóm kiểm thử\nĐề tài: Đề tài kiểm thử"
+            +"\nĐiểm cuối cùng (minh họa): 8.00/10"
+            +"\n\nKhi có kết quả thật được công bố, hệ thống sẽ gửi email riêng cho từng sinh viên trong nhóm."
+            +"\nKhoa Công nghệ Thông tin");
+        sender.send(message);
+    }
     @Transactional public void deliver(Long id) {
         if(!enabled) return;
         var email=notifications.lockById(id).orElse(null);

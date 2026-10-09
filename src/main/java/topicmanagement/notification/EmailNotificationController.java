@@ -1,5 +1,7 @@
 package topicmanagement.notification;
 import java.time.LocalDateTime;
+import org.springframework.http.*;
+import org.springframework.mail.MailException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +17,7 @@ public class EmailNotificationController {
     private final boolean enabled;
     public record EmailView(Long id,String student,String group,String recipient,String status,int attempts,
         LocalDateTime createdAt,LocalDateTime sentAt,LocalDateTime nextAttemptAt,String lastError) {}
-    public record State(boolean enabled,PageResponse<EmailView> page) {}
+    public record State(boolean enabled,String testRecipient,PageResponse<EmailView> page) {}
     public EmailNotificationController(EmailNotificationRepository notifications,EmailDeliveryService delivery,
             @Value("${app.mail.enabled:false}") boolean enabled) {
         this.notifications=notifications;this.delivery=delivery;this.enabled=enabled;
@@ -27,7 +29,16 @@ public class EmailNotificationController {
         var data=status==null?notifications.findAll(pageable):notifications.findByStatus(status,pageable);
         var views=data.map(n->new EmailView(n.id,n.student.getFullName(),n.defense.group.getGroupName(),
             n.recipient,n.status.name(),n.attempts,n.createdAt,n.sentAt,n.nextAttemptAt,n.lastError));
-        return ApiResponse.ok("Lịch sử thông báo điểm.",new State(enabled,PageResponse.from(views)));
+        return ApiResponse.ok("Lịch sử thông báo điểm.",new State(enabled,delivery.testRecipient(),PageResponse.from(views)));
+    }
+    @PostMapping("/test") public ResponseEntity<ApiResponse<Void>> sendTest() {
+        if(!enabled) return ResponseEntity.status(409).body(ApiResponse.fail("Gửi email đang tắt. Hãy cấu hình SMTP trước.",null));
+        try {
+            delivery.sendTest();
+            return ResponseEntity.ok(ApiResponse.ok("Máy chủ SMTP đã chấp nhận email thử.",null));
+        } catch(MailException ex) {
+            return ResponseEntity.status(502).body(ApiResponse.fail("Không gửi được email thử. Hãy kiểm tra cấu hình SMTP.",null));
+        }
     }
     @PostMapping("/{id}/retry") public ApiResponse<Void> retry(@PathVariable Long id) {
         delivery.retry(id);return ApiResponse.ok("Đã đưa email vào hàng đợi gửi lại.",null);

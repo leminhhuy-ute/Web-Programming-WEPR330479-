@@ -1,6 +1,6 @@
 # Email thông báo điểm – cấu hình và kiểm thử
 
-Chọn **Brevo** cho đề tài: gói miễn phí hiện có 300 email/ngày. Tạo người gửi và xác minh địa chỉ gửi trong Brevo, sau đó lấy **SMTP login** và **SMTP key** ở mục SMTP & API. SMTP key khác API key.
+Có thể dùng **Gmail** để kiểm thử cục bộ hoặc **Brevo** khi triển khai. Với Brevo, cần tạo và xác minh địa chỉ người gửi, sau đó lấy **SMTP login** và **SMTP key** ở mục SMTP & API. SMTP key khác API key.
 
 Nguồn chính thức: [gói dịch vụ](https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans), [cấu hình SMTP](https://developers.brevo.com/docs/smtp-integration).
 
@@ -18,6 +18,12 @@ $env:MAIL_ENABLED = "true"
 
 Thiết lập các biến này ở môi trường chạy ứng dụng. `.env.example` chỉ là mẫu; Spring Boot không tự đọc `.env`. Không commit thông tin đăng nhập. Dùng port 587 với STARTTLS; timeout kết nối/đọc/ghi 3 giây.
 
+Với Gmail trong môi trường học tập, dùng `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USERNAME` và `MAIL_FROM` là địa chỉ Gmail của bạn, còn `SMTP_PASSWORD` là App Password được tạo sau khi bật xác minh hai bước. Chỉ nhập App Password tại máy chạy ứng dụng, không đưa vào Git hoặc báo cáo.
+
+## Gửi email điểm thử
+
+Trưởng khoa mở **Email thông báo điểm** và bấm **Gửi email điểm thử**. Hệ thống gửi tới chính địa chỉ `MAIL_FROM` với tiêu đề **THỬ NGHIỆM** và điểm 8.00/10 được ghi rõ là minh họa. Thao tác này không công bố điểm, không sửa email sinh viên và không tạo bản ghi trong hàng đợi. Nút chỉ hoạt động khi `MAIL_ENABLED=true`. Thông báo thành công nghĩa là máy chủ SMTP đã chấp nhận thư; hãy kiểm tra thêm Hộp thư đến hoặc Spam.
+
 ## Quy trình
 
 1. Chủ tịch tổng hợp điểm, trưởng khoa công bố kết quả.
@@ -32,4 +38,4 @@ SMTP không bảo đảm gửi đúng một lần: nếu máy dừng sau khi SMT
 
 Schema đầy đủ hiện có bảng `email_notifications`. Với DB hiện hành đã tương ứng V5, profile `mysql` tự baseline ở V5 và chạy migration V6 bằng Flyway. Bản migration chạy trong ứng dụng nằm tại `src/main/resources/db/migration/mysql/`; bản SQL tiện tra cứu nằm ở `database/migration/`. Các V2–V5 cũ vẫn được giữ làm lịch sử và không được chạy lại tự động trên schema đầy đủ. DB cũ chưa đạt V5 cần áp dụng đúng các nâng cấp còn thiếu trước khi chạy bản mới. Profile demo/test H2 dùng Hibernate và tắt Flyway.
 
-Kiểm thử tự động sử dụng MailSender giả lập, không gửi email ra ngoài. Việc gửi thực tế qua Brevo cần bạn cấu hình tài khoản và biến môi trường trên máy chạy.
+Kiểm thử tự động sử dụng MailSender giả lập, không gửi email ra ngoài. Việc gửi thực tế cần cấu hình tài khoản SMTP và biến môi trường trên máy chạy.

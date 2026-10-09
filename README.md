@@ -44,7 +44,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 ### Mở rộng kết quả và thông báo
 - **Chọn đợt rõ ràng** khi tạo nhóm; chặn đăng ký đề tài khác đợt và kiểm tra một sinh viên không có hai nhóm trong cùng đợt thực hiện đề tài.
 - **Sửa/xóa hội đồng trên giao diện** cho trưởng khoa; khi sửa kiểm tra cả GVHD thứ nhất/thứ hai, phản biện đã phân công và ngày bảo vệ.
-- **Email công bố điểm**: hàng đợi lưu trong CSDL, thử lại khi SMTP lỗi, trang theo dõi và gửi lại thư thất bại. Mặc định tắt gửi, bật qua biến môi trường. Xem [cấu hình SMTP/Brevo](docs/SMTP_SETUP.md).
+- **Email công bố điểm**: hàng đợi lưu trong CSDL, thử lại khi SMTP lỗi, trang theo dõi và gửi lại thư thất bại. Trưởng khoa có thể gửi email điểm minh họa tới địa chỉ người gửi để kiểm tra SMTP mà không công bố điểm thật. Mặc định tắt gửi, bật qua biến môi trường. Xem [cấu hình SMTP](docs/SMTP_SETUP.md).
 - **Xuất Excel/PDF**: trưởng khoa xuất kết quả đã công bố theo đợt; sinh viên tải PDF kết quả của chính mình. PDF nhúng font tiếng Việt, tự xuống dòng và phân trang.
 
 ### Hội đồng (`Council & Defense`)
@@ -247,7 +247,7 @@ Tài liệu kỹ thuật chuyên sâu được duy trì đầy đủ tại thư 
 - 🧪 **[Kịch bản kiểm thử thủ công (MANUAL_TESTING_SCENARIO.md)](docs/MANUAL_TESTING_SCENARIO.md)**: Cẩm nang hướng dẫn kiểm thử thủ công chi tiết từng bước từ đăng nhập đến công bố kết quả.
 - 📋 **[Báo cáo nghiệm thu & Xác minh (FINAL_VERIFICATION_REPORT.md)](docs/FINAL_VERIFICATION_REPORT.md)**: Báo cáo khắc phục các lỗi audit, kiểm thử hồi quy 54/54 test và cải tiến giao diện.
 - 📝 **[Thay đổi so với bản gốc ngày 09/10/2026](docs/CHANGE_REPORT_2026-10-09.md)**: Lỗi đã sửa, tính năng mới, commit, kiểm chứng và hướng dẫn test.
-- ✉️ **[Cấu hình SMTP/Brevo](docs/SMTP_SETUP.md)**: Biến môi trường, hàng đợi email và migration V6.
+- ✉️ **[Cấu hình SMTP](docs/SMTP_SETUP.md)**: Gmail/Brevo, email điểm thử, hàng đợi và migration V6.
 - 🚀 **[Hướng dẫn triển khai Production (DEPLOYMENT_GUIDE.md)](docs/DEPLOYMENT_GUIDE.md)**: Hướng dẫn cài đặt máy chủ Linux, dịch vụ systemd, reverse proxy Nginx SSL và sao lưu dữ liệu MySQL.
 
 ---
