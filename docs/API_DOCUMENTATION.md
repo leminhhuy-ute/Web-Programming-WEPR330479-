@@ -129,7 +129,7 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 | Phương thức | Endpoint | Mô tả chức năng |
 | :--- | :--- | :--- |
 | `GET` | `/api/student/me` | Lấy trạng thái tổng hợp (thông tin cá nhân, nhóm hiện tại, đăng ký hiện tại, lời mời). |
-| `POST` | `/api/student/groups` | Tạo nhóm sinh viên mới, người tạo là Nhóm trưởng. Body: `{"name": "Nhóm Kỹ thuật 01"}` |
+| `POST` | `/api/student/groups` | Tạo nhóm sinh viên mới, người tạo là Nhóm trưởng. Body: `{"name": "Nhóm Kỹ thuật 01", "periodId": 2}`; `periodId` tùy chọn để tương thích client cũ. |
 | `POST` | `/api/student/groups/invitations` | Nhóm trưởng gửi lời mời thành viên qua MSSV. Body: `{"studentId": "22110002"}` |
 | `POST` | `/api/student/invitations/{id}/response` | Thành viên phản hồi lời mời gia nhập nhóm. Body: `{"accept": true}` |
 | `POST` | `/api/student/groups/leader` | Nhóm trưởng chuyển quyền lãnh đạo cho thành viên khác. Body: `{"studentId": "22110002"}` |
@@ -165,3 +165,22 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 | `POST` | `/api/councils/defenses/{id}/grade` | Thành viên HĐ | Nhập điểm đánh giá (0.00–10.00) và nhận xét cá nhân. |
 | `POST` | `/api/councils/defenses/{id}/finalize` | `CHAIRPERSON` | Chủ tịch tổng hợp điểm trung bình cộng khi toàn bộ thành viên đã nhập điểm. |
 | `POST` | `/api/councils/defenses/{id}/publish` | `DEAN` | Trưởng khoa chính thức phê duyệt công bố điểm cho sinh viên. |
+
+
+## 8. API chọn đợt, xuất kết quả và hàng đợi email (bổ sung 09/10/2026)
+
+| Phương thức | Endpoint | Quyền | Hành vi |
+| --- | --- | --- | --- |
+| GET | `/api/student/periods` | STUDENT | Các đợt để tạo nhóm, kèm `open` và `joined`. |
+| GET | `/api/student/result-periods` | STUDENT | Chỉ các đợt sinh viên đã tham gia nhóm. |
+| GET | `/api/student/result.pdf?periodId=2` | STUDENT | PDF kết quả đã công bố của chính sinh viên. Đợt không tham gia hoặc chưa công bố trả 400. Không truyền đợt dùng cùng cách chọn như API kết quả hiện tại. |
+| GET | `/api/admin/exports/results.xlsx?periodId=2` | DEAN | Excel kết quả đã công bố; mỗi sinh viên một dòng, điểm kiểu số. |
+| GET | `/api/admin/exports/results.pdf?periodId=2` | DEAN | PDF kết quả đã công bố theo đợt. |
+| GET | `/api/admin/email-notifications?page=0&size=20&status=PENDING` | DEAN | `{enabled,page}` trong `ApiResponse.data`. Có thể bỏ `status`; kích thước trang giới hạn 100. |
+| POST | `/api/admin/email-notifications/{id}/retry` | DEAN | Chỉ đưa thư FAILED vào hàng đợi; SENT/PENDING trả 400. Không gửi thư trực tiếp trong request. |
+
+Xuất kết quả quản trị bỏ `periodId` để lấy tất cả đợt; ID không tồn tại trả 400. Tệp tải về có `Content-Disposition: attachment` và `Cache-Control: no-store`.
+
+Công bố điểm giờ tạo hàng đợi email trong cùng giao dịch; công bố lại không tạo thư trùng. SMTP gửi ở tác vụ nền khi `MAIL_ENABLED=true`. Xem [SMTP_SETUP.md](SMTP_SETUP.md).
+
+Đăng ký đề tài khác đợt của nhóm trả 409. Sửa hội đồng đã phân công sẽ từ chối đưa GVHD vào hội đồng, bỏ/thay vai trò phản biện đã phân công hoặc đổi ngày không khớp ngày bảo vệ của đợt. Các kiểm tra quyền tại service theo người sở hữu, bộ môn và vai trò hội đồng tiếp tục áp dụng cùng `@PreAuthorize` tại API.
