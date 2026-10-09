@@ -38,6 +38,7 @@ class PeriodAndCouncilRegressionTest {
     @Autowired topicmanagement.service.StudentResultService results;
     @Autowired topicmanagement.notification.EmailNotificationRepository emailNotifications;
     @Autowired topicmanagement.council.DefenseRepository defenseRows;
+    @Autowired topicmanagement.export.ResultExportService exports;
     Department department;
     User dean, advisor, advisor2, chair, secretary, reviewer, student;
     RegistrationPeriod period;
@@ -177,6 +178,35 @@ class PeriodAndCouncilRegressionTest {
         assertThrows(IllegalArgumentException.class,()->councilService.publish(defense.id));
         assertFalse(defense.published);
         assertEquals(0,emailNotifications.count());
+    }
+
+    @Test void exportsIncludeOnlyPublishedResultsInTheSelectedPeriod() throws Exception {
+        Long councilId=assignedCouncil();var defense=defenseRows.findByCouncilId(councilId).getFirst();
+        defense.finalized=true;defense.finalScore=new java.math.BigDecimal("8.50");
+        assertTrue(exports.rows(period.getId()).isEmpty());
+        councilService.publish(defense.id);
+        assertEquals(1,exports.rows(period.getId()).size());
+        assertEquals(student.getUserCode(),exports.rows(period.getId()).getFirst().studentCode());
+        assertTrue(exports.rows(period("Other period").getId()).isEmpty());
+        try(var workbook=new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(exports.excel(period.getId())))) {
+            assertEquals(8.5,workbook.getSheetAt(0).getRow(1).getCell(7).getNumericCellValue());
+        }
+    }
+
+    @Test void studentPdfUsesOnlyTheAuthenticatedStudentsPublishedResult() throws Exception {
+        Long councilId=assignedCouncil();var defense=defenseRows.findByCouncilId(councilId).getFirst();
+        var principal=CurrentUser.from(student);
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities()));
+        assertThrows(IllegalArgumentException.class,()->exports.studentPdf(period.getId()));
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,()->exports.rows(period.getId()));
+        defense.finalized=true;defense.finalScore=new java.math.BigDecimal("8.50");defense.published=true;
+        try(var document=org.apache.pdfbox.Loader.loadPDF(exports.studentPdf(period.getId()))) {
+            String text=new org.apache.pdfbox.text.PDFTextStripper().getText(document);
+            assertTrue(text.contains("8.50"));assertTrue(text.contains("Regression topic"));
+        }
+        var outsider=user("outsiderPdf",Role.STUDENT);principal=CurrentUser.from(outsider);
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities()));
+        assertThrows(IllegalArgumentException.class,()->exports.studentPdf(period.getId()));
     }
 
     private Long assignedCouncil() {

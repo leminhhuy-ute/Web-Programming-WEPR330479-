@@ -7,6 +7,8 @@ import topicmanagement.entity.GroupMember;
 
 public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> {
     List<GroupMember> findByGroupId(Long groupId);
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths={"student","group"})
+    List<GroupMember> findByGroupIdIn(java.util.Collection<Long> groupIds);
     List<GroupMember> findByStudentId(Long studentId);
     boolean existsByGroupIdAndStudentId(Long groupId, Long studentId);
     boolean existsByRegistrationPeriodIdAndStudentId(Long periodId, Long studentId);
