@@ -16,18 +16,19 @@ import topicmanagement.dto.response.MessageResponse;
 class StudentController {
     private final StudentService service;
     StudentController(StudentService service) {this.service=service;}
-    record Name(@NotBlank @Size(max=80) String name) {}
+    record Name(@NotBlank @Size(max=80) String name, Long periodId) {}
     record Member(@NotBlank @Size(max=30) String studentId) {}
     record TopicChoice(@NotBlank @Size(max=30) String topicId) {}
     record Decision(@NotNull Boolean accept) {}
     record Cancellation(@Size(max=2000) String note) {}
     @GetMapping("/me") Object me(Principal p) {return service.state(p.getName());}
+    @GetMapping("/periods") Object periods(Principal p) {return service.periodChoices(p.getName());}
     @GetMapping("/topics") Object topics(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="") String department,@RequestParam(defaultValue="") String type) {return service.catalog(q,department,type);}
     @GetMapping("/topics/page") Object topicPage(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="") String department,
         @RequestParam(defaultValue="") String type,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
         return service.catalogPage(q,department,type,page,size);
     }
-    @PostMapping("/groups") Object create(Principal p,@Valid @RequestBody Name input) {service.createGroup(p.getName(),input.name());return new MessageResponse("Đã tạo nhóm. Bạn là nhóm trưởng.");}
+    @PostMapping("/groups") Object create(Principal p,@Valid @RequestBody Name input) {service.createGroup(p.getName(),input.name(),input.periodId());return new MessageResponse("Đã tạo nhóm. Bạn là nhóm trưởng.");}
     @PostMapping("/groups/invitations") Object invite(Principal p,@Valid @RequestBody Member input) {service.invite(p.getName(),input.studentId());return new MessageResponse("Đã gửi lời mời. Thành viên cần xác nhận tham gia.");}
     @PostMapping("/invitations/{id}/response") Object respond(Principal p,@PathVariable Long id,@Valid @RequestBody Decision input) {service.respond(p.getName(),id,input.accept());return new MessageResponse(input.accept()?"Đã tham gia nhóm.":"Đã từ chối lời mời.");}
     @PostMapping("/groups/leader") Object transfer(Principal p,@Valid @RequestBody Member input) {service.transfer(p.getName(),input.studentId());return new MessageResponse("Đã chuyển quyền nhóm trưởng.");}

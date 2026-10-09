@@ -25,7 +25,7 @@ const statusText = {DRAFT:'Bản nháp', PENDING:'Chờ duyệt', APPROVED:'Đã
 const badge = (s, text) => `<span class="badge ${esc(s)}">${esc(text || statusText[s] || s)}</span>`;
 const initials = name => (name || 'SV').split(' ').filter(Boolean).slice(-2).map(x => x[0]).join('').toUpperCase();
 
-let result = {published: false}, announcements = [];
+let result = {published: false}, announcements = [], periodChoices = [], resultPeriods = [], resultPeriodId = '';
 let state, catalog = [], catalogMeta = {page: 0, totalElements: 0, totalPages: 0, first: true, last: true}, page = 'dashboard', toastTimer, busy = false;
 let filters = {q: '', department: '', type: ''};
 
@@ -146,6 +146,7 @@ function groupPage() {
     : '';
 
   return heading('Nhóm của tôi', 'Kết nối thành viên và chuẩn bị cho đề tài của nhóm.', headerAction) +
+    `<section class="panel section-gap"><p><b>Đợt của nhóm:</b> ${esc(state.group?.periodName || 'Chưa tham gia nhóm')}</p>${state.group && periodChoices.some(p => p.open && !p.joined) ? '<button type="button" class="button secondary" data-action="create">Tạo nhóm trong đợt khác</button>' : ''}</section>` +
     `<div class="grid cols">
       <section class="panel">
         <div class="panel-head"><h2>${state.group?esc(state.group.name):'Tạo nhóm sinh viên'}</h2>${state.group?badge('MEMBER',`${state.group.members.length}/3 thành viên`):''}</div>
@@ -183,7 +184,7 @@ function topicsPage() {
 }
 
 function topicBody(t) {
-  return `<span class="topic-code">${esc(t.id)}</span><h2>${esc(t.title)}</h2><div class="tags">${(t.technologies||'').split(' · ').map(x=>`<span>${esc(x)}</span>`).join('')}</div><p class="project-description">${esc(t.description)}</p><div class="project-meta"><div><small>Giảng viên hướng dẫn</small><strong>${esc(cleanName(t.supervisor))}</strong></div><div><small>Bộ môn / Loại</small><strong>${esc(t.department)} · ${esc(t.type)}</strong></div><div><small>Thời gian mở đăng ký</small><strong>${date(t.opensAt)}</strong></div><div><small>Hạn đăng ký</small><strong>${date(t.closesAt)}</strong></div></div>`;
+  return `<span class="topic-code">${esc(t.id)}</span><h2>${esc(t.title)}</h2><div class="tags">${(t.technologies||'').split(' · ').map(x=>`<span>${esc(x)}</span>`).join('')}</div><p class="project-description">${esc(t.description)}</p><div class="project-meta"><div><small>Đợt đăng ký</small><strong>${esc(t.periodName)}</strong></div><div><small>Số sinh viên tối đa</small><strong>${t.capacity}</strong></div><div><small>Giảng viên hướng dẫn</small><strong>${esc(cleanName(t.supervisor))}</strong></div><div><small>Bộ môn / Loại</small><strong>${esc(t.department)} · ${esc(t.type)}</strong></div><div><small>Thời gian mở đăng ký</small><strong>${date(t.opensAt)}</strong></div><div><small>Hạn đăng ký</small><strong>${date(t.closesAt)}</strong></div></div>`;
 }
 
 function registrationTimeline() {
@@ -276,7 +277,8 @@ function newsPanel() {
 }
 
 function resultsPage() {
-  return heading('Kết quả đánh giá', 'Kết quả chính thức do khoa công bố.') + (result.published ? `<section class="panel"><span class="eyebrow">ĐIỂM TỔNG KẾT</span><h2>${esc(result.score)} / 10</h2><p>${esc(result.topic)}</p><div class="table-wrap"><table><thead><tr><th>GIẢNG VIÊN ĐÁNH GIÁ</th><th>ĐIỂM</th><th>NHẬN XÉT</th></tr></thead><tbody>${result.grades.map(g => `<tr><td>${esc(cleanName(g.name))}</td><td><b>${esc(g.score)}</b></td><td>${esc(g.comment)}</td></tr>`).join('')}</tbody></table></div></section>` : `<section class="panel">${empty('Chưa công bố kết quả', 'Điểm sẽ hiển thị sau khi hội đồng hoàn tất đánh giá và khoa công bố.', '', 'file')}</section>`);
+  return heading('Kết quả đánh giá', 'Tra cứu các đợt bạn đã tham gia.') +
+    `<section class="panel section-gap"><label>Đợt đăng ký<select id="result-period"><option value="">Đợt hiện tại hoặc gần nhất</option>${resultPeriods.map(p => `<option value="${p.id}" ${String(p.id) === resultPeriodId ? 'selected' : ''}>${esc(p.name)} · ${esc(p.type)}</option>`).join('')}</select></label></section>` + (result.published ? `<section class="panel"><span class="eyebrow">ĐIỂM TỔNG KẾT</span><h2>${esc(result.score)} / 10</h2><p>${esc(result.topic)}</p><div class="table-wrap"><table><thead><tr><th>GIẢNG VIÊN ĐÁNH GIÁ</th><th>ĐIỂM</th><th>NHẬN XÉT</th></tr></thead><tbody>${result.grades.map(g => `<tr><td>${esc(cleanName(g.name))}</td><td><b>${esc(g.score)}</b></td><td>${esc(g.comment)}</td></tr>`).join('')}</tbody></table></div></section>` : `<section class="panel">${empty('Chưa công bố kết quả', 'Điểm sẽ hiển thị sau khi hội đồng hoàn tất đánh giá và khoa công bố.', '', 'file')}</section>`);
 }
 
 function render() {
@@ -311,12 +313,14 @@ function render() {
 
 async function refresh() {
   const params = new URLSearchParams({...filters, page: String(catalogMeta.page || 0), size: '20'});
-  const values = await Promise.all([api('/me'), api('/topics/page?' + params), api('/result'), api('/announcements')]);
+  const values = await Promise.all([api('/me'), api('/topics/page?' + params), api('/result' + (resultPeriodId ? '?periodId=' + encodeURIComponent(resultPeriodId) : '')), api('/announcements'), api('/periods'), api('/result-periods')]);
   state = values[0];
   catalogMeta = values[1];
   catalog = catalogMeta.content;
   result = values[2];
   announcements = values[3];
+  periodChoices = values[4];
+  resultPeriods = values[5];
   render();
 }
 
@@ -353,7 +357,11 @@ document.addEventListener('click', e => {
   if (!b || busy) return;
   if (b.dataset.go) { location.hash = b.dataset.go; return; }
   if (b.dataset.action === 'close') { $('#dialog').close(); return; }
-  if (b.dataset.action === 'create') openDialog('Tạo nhóm mới', '<p class="muted">Bạn sẽ là nhóm trưởng. Mỗi nhóm có tối đa 3 sinh viên.</p><form id="create-form"><label>Tên nhóm<input name="name" required maxlength="80" placeholder="Ví dụ: Nhóm Phát triển phần mềm"></label><button class="button primary" type="submit">Tạo nhóm</button></form>');
+  if (b.dataset.action === 'create') {
+    const available = periodChoices.filter(p => p.open && !p.joined);
+    if (!available.length) { toast('Không có đợt đang mở mà bạn chưa tham gia nhóm.', true); return; }
+    openDialog('Tạo nhóm mới', `<p class="muted">Nhóm tối đa 3 sinh viên. Chọn đợt trước khi tạo nhóm.</p><form id="create-form"><label>Đợt đăng ký<select name="periodId" required>${available.map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.type)}</option>`).join('')}</select></label><label>Tên nhóm<input name="name" required maxlength="80" placeholder="Ví dụ: Nhóm Phát triển phần mềm"></label><button class="button primary" type="submit">Tạo nhóm</button></form>`);
+  }
   if (b.dataset.action === 'invite') openDialog('Mời thành viên', '<p class="muted">Gửi lời mời bằng mã số sinh viên. Người nhận cần xác nhận trước khi được thêm vào nhóm.</p><form id="invite-form"><label>Mã số sinh viên<input name="studentId" required maxlength="30" placeholder="Ví dụ: 22110002"></label><button class="button primary" type="submit">Gửi lời mời</button></form>');
   if (b.dataset.action === 'cancel-registration') openDialog('Hủy đăng ký đề tài', '<p>Đăng ký sẽ chuyển sang trạng thái <b>Đã hủy</b> và lịch sử vẫn được giữ nguyên.</p><form id="cancel-form"><label>Lý do<textarea name="note" maxlength="2000" placeholder="Lý do hủy đăng ký"></textarea></label><button class="button danger" type="submit">Xác nhận hủy</button></form>');
   if (b.dataset.transfer) {
@@ -378,8 +386,9 @@ document.addEventListener('click', e => {
   if (b.dataset.respond) mutate('/invitations/' + b.dataset.respond + '/response', {accept: b.dataset.accept === 'true'});
   if (b.dataset.topic) {
     const item = catalog.find(x => x.topic.id === b.dataset.topic);
-    const can = isLeader() && !locked() && item.open;
-    openDialog('Chi tiết đề tài', `${topicBody(item.topic)}<div class="notice">${!state.group ? 'Bạn cần tạo hoặc tham gia nhóm.' : !isLeader() ? 'Chỉ nhóm trưởng được đăng ký đề tài.' : locked() ? 'Nhóm đã có một đăng ký đề tài.' : !item.open ? 'Đã ngoài thời gian đăng ký.' : `Đăng ký cho nhóm <b>${esc(state.group.name)}</b>. Kết quả sẽ ở trạng thái chờ duyệt.`}</div>${can ? `<button type="button" class="button primary" data-register="${esc(item.topic.id)}">Xác nhận đăng ký đề tài</button>` : ''}`);
+    const samePeriod = state.group?.periodId === item.topic.periodId;
+    const can = isLeader() && !locked() && item.open && samePeriod;
+    openDialog('Chi tiết đề tài', `${topicBody(item.topic)}<div class="notice">${!state.group ? 'Bạn cần tạo hoặc tham gia nhóm.' : !isLeader() ? 'Chỉ nhóm trưởng được đăng ký đề tài.' : locked() ? 'Nhóm đã có một đăng ký đề tài.' : !item.open ? 'Đã ngoài thời gian đăng ký.' : !samePeriod ? 'Đề tài thuộc đợt khác với nhóm. Hãy chọn đề tài cùng đợt.' : `Đăng ký cho nhóm <b>${esc(state.group.name)}</b>. Kết quả sẽ ở trạng thái chờ duyệt.`}</div>${can ? `<button type="button" class="button primary" data-register="${esc(item.topic.id)}">Xác nhận đăng ký đề tài</button>` : ''}`);
   }
   if (b.dataset.register) mutate('/registrations', {topicId: b.dataset.register});
   if (b.dataset.action === 'reset-filter') {
@@ -403,7 +412,7 @@ document.addEventListener('submit', async e => {
   e.preventDefault();
   if (busy) return;
   const data = new FormData(form);
-  if (form.id === 'create-form') mutate('/groups', {name: String(data.get('name')).trim()});
+  if (form.id === 'create-form') mutate('/groups', {name: String(data.get('name')).trim(), periodId: Number(data.get('periodId'))});
   if (form.id === 'invite-form') mutate('/groups/invitations', {studentId: String(data.get('studentId')).trim()});
   if (form.id === 'cancel-form') mutate('/registrations/cancel', {note: String(data.get('note') || '').trim()});
   if (form.id === 'report-form') {
@@ -456,3 +465,13 @@ if (menuToggle && sidebar) {
     }
   });
 }
+
+// Only periods of the authenticated student's own groups are offered by the server.
+document.addEventListener('change', async event => {
+  if (event.target.id !== 'result-period') return;
+  resultPeriodId = event.target.value;
+  try {
+    result = await api('/result' + (resultPeriodId ? '?periodId=' + encodeURIComponent(resultPeriodId) : ''));
+    render();
+  } catch (error) { toast(error.message, true); }
+});

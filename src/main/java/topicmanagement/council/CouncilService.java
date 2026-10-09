@@ -105,4 +105,7 @@ public class CouncilService {
     public StudentResultResponse studentResult(Long periodId) {
         return studentResults.current(periodId);
     }
+    public List<StudentResultService.ResultPeriod> studentResultPeriods() {
+        return studentResults.periodOptions();
+    }
 }

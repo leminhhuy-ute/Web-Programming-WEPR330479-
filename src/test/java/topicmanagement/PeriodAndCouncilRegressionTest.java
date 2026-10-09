@@ -35,6 +35,7 @@ class PeriodAndCouncilRegressionTest {
     @Autowired StudentService students;
     @Autowired CouncilService councilService;
     @Autowired CouncilRepository councils;
+    @Autowired topicmanagement.service.StudentResultService results;
     Department department;
     User dean, advisor, advisor2, chair, secretary, reviewer, student;
     RegistrationPeriod period;
@@ -77,6 +78,35 @@ class PeriodAndCouncilRegressionTest {
         assertEquals(topic.getId(), group.getTopic().getId());
         assertEquals(period.getId(), members.findByGroupId(group.getId()).getFirst().getRegistrationPeriod().getId());
         assertEquals(RegistrationStatus.PENDING, registrations.findAll().getFirst().getStatus());
+    }
+
+    @Test void studentCanExplicitlyChooseAnOlderOpenPeriodForANewGroup() {
+        period("Newer overlapping period");
+        students.createGroup("student", "Chosen period", period.getId());
+        students.register("student", topic.getTopicCode());
+        var view = students.state("student");
+        assertEquals(period.getId(), view.group().periodId());
+        assertEquals(period.getId(), view.registration().topic().periodId());
+        assertEquals(3, view.registration().topic().capacity());
+    }
+
+    @Test void resultPeriodChoicesContainOnlyTheStudentsOwnMemberships() {
+        period("Not joined");
+        group("OWN", period);
+        var principal = CurrentUser.from(student);
+        SecurityContextHolder.getContext().setAuthentication(
+            UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities()));
+        assertEquals(1, results.periodOptions().size());
+        assertEquals(period.getId(), results.periodOptions().getFirst().id());
+        assertTrue(students.periodChoices("student").stream().filter(p -> p.id().equals(period.getId()))
+            .findFirst().orElseThrow().joined());
+    }
+
+    @Test void explicitGroupCreationOutsideTheStudentWindowIsRejected() {
+        period.setStudentEndAt(now.minusHours(1));
+        assertThrows(IllegalArgumentException.class,
+            () -> students.createGroup("student", "Closed", period.getId()));
+        assertEquals(0, groups.count());
     }
 
     @Test void legacyGroupAndMembershipAreBoundToTheTopicPeriodTogether() {

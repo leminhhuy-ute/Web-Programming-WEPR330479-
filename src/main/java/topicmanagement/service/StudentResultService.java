@@ -32,6 +32,20 @@ public class StudentResultService {
         return current(null);
     }
 
+    public record ResultPeriod(Long id, String name, String type, String groupName) {}
+
+    public List<ResultPeriod> periodOptions() {
+        var user = accounts.user();
+        if (user.getRole() != Role.STUDENT) throw new AccessDeniedException("Chỉ sinh viên.");
+        var choices = new java.util.TreeMap<Long, ResultPeriod>(java.util.Comparator.reverseOrder());
+        for (var membership : members.findByStudentId(user.getId())) {
+            var period = resolvePeriod(membership);
+            if (period != null) choices.putIfAbsent(period.getId(), new ResultPeriod(period.getId(),
+                period.getName(), period.getType().name(), membership.getGroup().getGroupName()));
+        }
+        return List.copyOf(choices.values());
+    }
+
     public StudentResultResponse current(Long periodId) {
         var user = accounts.user();
         if (user.getRole() != Role.STUDENT) throw new AccessDeniedException("Chỉ sinh viên.");

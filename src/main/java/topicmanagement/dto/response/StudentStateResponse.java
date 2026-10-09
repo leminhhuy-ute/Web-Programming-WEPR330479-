@@ -18,10 +18,13 @@ public record StudentStateResponse(
 
     public record StudentTopic(String id, String title, String description, String technologies,
             String supervisor, String department, String type, int capacity,
-            LocalDateTime opensAt, LocalDateTime closesAt, LocalDateTime reportDueAt) {}
+            LocalDateTime opensAt, LocalDateTime closesAt, LocalDateTime reportDueAt,
+            Long periodId, String periodName) {}
 
     public record StudentGroupView(Long id, String name, String leaderId, int maxMembers,
-            List<StudentPerson> members, List<StudentInvitation> invitations) {}
+            List<StudentPerson> members, List<StudentInvitation> invitations, Long periodId, String periodName) {}
+
+    public record PeriodChoice(Long id, String name, String type, boolean open, boolean joined) {}
 
     public record StudentRegistrationView(Long id, String status, LocalDateTime submittedAt,
             String feedback, StudentTopic topic) {}

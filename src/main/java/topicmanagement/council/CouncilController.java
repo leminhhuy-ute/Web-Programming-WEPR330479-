@@ -22,5 +22,6 @@ public class CouncilController {
     @PostMapping("/api/councils/defenses/{id}/finalize") Object finish(@PathVariable Long id) {service.finalizeScore(id);return ok();}
     @PostMapping("/api/councils/defenses/{id}/publish") Object publish(@PathVariable Long id) {service.publish(id);return ok();}
     @GetMapping("/api/student/result") Object result(@RequestParam(required = false) Long periodId) {return service.studentResult(periodId);}
+    @GetMapping("/api/student/result-periods") Object resultPeriods() {return service.studentResultPeriods();}
     private Object ok(){return new MessageResponse("Đã lưu thay đổi.");}
 }

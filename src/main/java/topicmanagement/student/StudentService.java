@@ -100,7 +100,8 @@ public class StudentService {
         return new StudentTopic(t.getTopicCode(),t.getTitle(),Objects.toString(t.getDescription(),""),
             Objects.toString(t.getRequirements(),""),
             t.getAdvisor1()==null?"Chưa phân công":t.getAdvisor1().getFullName()+(t.getAdvisor2()==null?"":" · "+t.getAdvisor2().getFullName()),
-            t.getDepartment().getName(),type(t),1,t.getPeriod().getStudentStartAt(),t.getPeriod().getStudentEndAt(),null);
+            t.getDepartment().getName(),type(t),t.getMaxStudents(),t.getPeriod().getStudentStartAt(),
+            t.getPeriod().getStudentEndAt(),t.getPeriod().getReviewDeadline(),t.getPeriod().getId(),t.getPeriod().getName());
     }
     public StudentStateResponse state(String username) {
         User me=student(username);StudentGroup g=group(me);
@@ -111,7 +112,9 @@ public class StudentService {
         if(g!=null) {
             groupView=new StudentGroupView(g.getId(),g.getGroupName(),g.getLeader().getUserCode(),3,
                 members.findByGroupId(g.getId()).stream().map(m->person(m.getStudent())).toList(),
-                invitations.findByGroupIdOrderByCreatedAtDesc(g.getId()).stream().map(this::invitation).toList());
+                invitations.findByGroupIdOrderByCreatedAtDesc(g.getId()).stream().map(this::invitation).toList(),
+                g.getPeriod() != null ? g.getPeriod().getId() : g.getTopic() != null ? g.getTopic().getPeriod().getId() : null,
+                g.getPeriod() != null ? g.getPeriod().getName() : g.getTopic() != null ? g.getTopic().getPeriod().getName() : "Chưa gắn đợt");
             var latest=registrationService.latest(g.getId());
             if(latest.isPresent()) {
                 var r=latest.get();registration=new StudentRegistrationView(r.getId(),r.getStatus().name(),r.getCreatedAt(),r.getReason(),topic(r.getTopic()));
@@ -154,8 +157,13 @@ public class StudentService {
         try{return RegistrationPeriodType.valueOf(value);}catch(IllegalArgumentException ignored){return null;}
     }
     @Transactional public void createGroup(String username,String name) {
+        createGroup(username, name, null);
+    }
+    @Transactional public void createGroup(String username,String name,Long periodId) {
         User me=student(username);em.lock(me,LockModeType.PESSIMISTIC_WRITE);
-        RegistrationPeriod period = currentOrLatestPeriod();
+        RegistrationPeriod period = periodId == null ? currentOrLatestPeriod()
+            : periods.findById(periodId).orElseThrow(() -> bad("Đợt đăng ký không tồn tại."));
+        if (periodId != null) TopicPolicy.registration(period, period.getType(), true);
         if (period != null) {
             if (members.existsByRegistrationPeriodIdAndStudentId(period.getId(), me.getId()))
                 throw bad("Bạn đã thuộc một nhóm trong đợt này.");
@@ -166,6 +174,19 @@ public class StudentService {
         StudentGroup g=new StudentGroup();g.setGroupCode("G-"+UUID.randomUUID());g.setGroupName(name.strip());g.setLeader(me);
         g.setPeriod(period);
         groups.save(g);members.save(new GroupMember(g,me,"LEADER", period));
+    }
+
+    public List<PeriodChoice> periodChoices(String username) {
+        User me = student(username);
+        var memberships = members.findByStudentId(me.getId());
+        var now = LocalDateTime.now();
+        return periods.search("", null).stream().map(p -> new PeriodChoice(p.getId(), p.getName(), p.getType().name(),
+            !now.isBefore(p.getStudentStartAt()) && !now.isAfter(p.getStudentEndAt()),
+            memberships.stream().anyMatch(m ->
+                (m.getRegistrationPeriod() != null && p.getId().equals(m.getRegistrationPeriod().getId()))
+                || (m.getGroup().getPeriod() != null && p.getId().equals(m.getGroup().getPeriod().getId()))
+                || (m.getGroup().getTopic() != null && p.getId().equals(m.getGroup().getTopic().getPeriod().getId())))))
+            .toList();
     }
     @Transactional public void invite(String username,String code) {
         StudentGroup g=leader(username);editable(g);User u=target(code);
