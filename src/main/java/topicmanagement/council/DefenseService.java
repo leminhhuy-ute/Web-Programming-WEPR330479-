@@ -49,7 +49,7 @@ public class DefenseService {
         entityManager.lock(group.getTopic(), LockModeType.PESSIMISTIC_WRITE);
         entityManager.refresh(group.getTopic());
         if (defenses.findByGroupId(groupId).isPresent()) throw new IllegalArgumentException("Nhóm đã được phân công.");
-        Council council = councils.findById(councilId)
+        Council council = councils.lockById(councilId)
             .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hội đồng."));
         if (council.getMembers().stream().noneMatch(member -> member.getLecturer().getId().equals(reviewerId)
                 && member.getRole() == CouncilRole.REVIEWER))

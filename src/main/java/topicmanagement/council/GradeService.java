@@ -80,6 +80,8 @@ public class GradeService {
     private Defense locked(Long id) {
         Defense defense = entityManager.find(Defense.class, id, LockModeType.PESSIMISTIC_WRITE);
         if (defense == null) throw new IllegalArgumentException("Không tìm thấy phân công.");
+        entityManager.lock(defense.council, LockModeType.PESSIMISTIC_WRITE);
+        entityManager.refresh(defense.council);
         return defense;
     }
     private User staff() { User user = accounts.user(); TopicPolicy.staff(user); return user; }

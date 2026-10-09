@@ -8,6 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import topicmanagement.dto.response.CouncilSummaryResponse;
 public interface CouncilRepository extends JpaRepository<Council,Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from Council c where c.id=:id")
+    java.util.Optional<Council> lockById(@Param("id") Long id);
     @EntityGraph(attributePaths = {"members", "members.lecturer"})
     List<Council> findAllByOrderByDefenseDateDesc();
 

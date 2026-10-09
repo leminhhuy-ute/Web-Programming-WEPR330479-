@@ -90,6 +90,9 @@ public class StudentResultService {
 
     private topicmanagement.entity.RegistrationPeriod resolvePeriod(topicmanagement.entity.GroupMember m) {
         if (m == null) return null;
+        // The registered topic defines the actual result period, including legacy data.
+        if (m.getGroup() != null && m.getGroup().getTopic() != null)
+            return m.getGroup().getTopic().getPeriod();
         if (m.getRegistrationPeriod() != null) return m.getRegistrationPeriod();
         if (m.getGroup() != null) return m.getGroup().getPeriod();
         return null;

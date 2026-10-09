@@ -141,6 +141,7 @@ public class DemoData implements CommandLineRunner {
         g1.setGroupCode("GRP-202601");
         g1.setGroupName("Nhóm Nghiên cứu Kỹ thuật Phần mềm UTE");
         g1.setTopic(t2);
+        g1.setPeriod(p2);
         g1.setLeader(stu1);
         g1.setMemberCount(2);
         g1.setStatus(GroupStatus.APPROVED);

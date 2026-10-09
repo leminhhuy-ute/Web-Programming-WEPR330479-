@@ -23,25 +23,34 @@ public class TopicRegistrationService {
     private final AdvisorQuotaService quotas;
     private final ReportRepository reports;
     private final DefenseRepository defenses;
+    private final GroupMemberRepository members;
 
     public TopicRegistrationService(TopicRegistrationRepository registrations,
             RegistrationStatusHistoryRepository history, AdvisorQuotaService quotas) {
         this(registrations, history, quotas, null, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public TopicRegistrationService(TopicRegistrationRepository registrations,
             RegistrationStatusHistoryRepository history, AdvisorQuotaService quotas,
             @org.springframework.beans.factory.annotation.Autowired(required = false) ReportRepository reports,
             @org.springframework.beans.factory.annotation.Autowired(required = false) DefenseRepository defenses) {
+        this(registrations, history, quotas, reports, defenses, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public TopicRegistrationService(TopicRegistrationRepository registrations,
+            RegistrationStatusHistoryRepository history, AdvisorQuotaService quotas,
+            ReportRepository reports, DefenseRepository defenses, GroupMemberRepository members) {
         this.registrations = registrations;
         this.history = history;
         this.quotas = quotas;
         this.reports = reports;
         this.defenses = defenses;
+        this.members = members;
     }
 
     public TopicRegistration submit(StudentGroup group, Topic topic, User actor) {
+        assertSamePeriod(group, topic);
         registrations.findFirstByGroupIdAndStatusInOrderByCreatedAtDesc(group.getId(),
             List.of(RegistrationStatus.DRAFT, RegistrationStatus.PENDING, RegistrationStatus.APPROVED))
             .ifPresent(r -> { throw new IllegalArgumentException("Nhóm đã có một đăng ký đang hoạt động."); });
@@ -52,6 +61,32 @@ public class TopicRegistrationService {
         registrations.save(registration);
         transition(registration, RegistrationStatus.PENDING, actor, "Sinh viên gửi đăng ký đề tài.");
         return registration;
+    }
+
+    private void assertSamePeriod(StudentGroup group, Topic topic) {
+        RegistrationPeriod period = topic.getPeriod();
+        if (group.getPeriod() != null && !group.getPeriod().getId().equals(period.getId()))
+            throw new ConflictException("Nhóm và đề tài phải thuộc cùng một đợt đăng ký.");
+        List<GroupMember> roster = members == null ? group.getMembers() : members.findByGroupId(group.getId());
+        for (GroupMember member : roster) {
+            if (member.getRegistrationPeriod() != null
+                    && !member.getRegistrationPeriod().getId().equals(period.getId()))
+                throw new ConflictException("Thành viên nhóm không thuộc đợt đăng ký của đề tài.");
+            if (members != null && members.findByStudentId(member.getStudent().getId()).stream()
+                    .anyMatch(other -> !other.getGroup().getId().equals(group.getId())
+                        && belongsToPeriod(other, period.getId())))
+                throw new ConflictException("Sinh viên đã thuộc một nhóm khác trong đợt đăng ký này.");
+        }
+        // Legacy groups had no period column populated. Bind both representations together.
+        group.setPeriod(period);
+        roster.forEach(member -> member.setRegistrationPeriod(period));
+    }
+
+    private boolean belongsToPeriod(GroupMember member, Long periodId) {
+        StudentGroup group = member.getGroup();
+        return (member.getRegistrationPeriod() != null && periodId.equals(member.getRegistrationPeriod().getId()))
+            || (group.getPeriod() != null && periodId.equals(group.getPeriod().getId()))
+            || (group.getTopic() != null && periodId.equals(group.getTopic().getPeriod().getId()));
     }
 
     public TopicRegistration decidePending(Long groupId, RegistrationStatus target, String note, User actor) {

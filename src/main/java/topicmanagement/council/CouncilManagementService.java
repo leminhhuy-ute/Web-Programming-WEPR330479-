@@ -57,7 +57,7 @@ public class CouncilManagementService {
 
     public void update(Long id, CouncilService.CreateInput input) {
         dean();
-        Council council = councils.findById(id)
+        Council council = councils.lockById(id)
             .orElseThrow(() -> new IllegalArgumentException("Hội đồng không tồn tại."));
         if (grades != null && grades.existsByDefenseCouncilId(id)) {
             throw new ConflictException("Không thể chỉnh sửa hội đồng khi đã có điểm đánh giá.");
@@ -68,6 +68,13 @@ public class CouncilManagementService {
         if (councils.existsByCodeAndIdNot(input.code().strip(), id)) {
             throw new ConflictException("Mã hội đồng đã tồn tại.");
         }
+
+        // Check every proposed member, including lecturers retained from the previous roster.
+        for (var member : input.members()) {
+            TopicPolicy.staff(users.findById(member.userId())
+                .orElseThrow(() -> new IllegalArgumentException("Giảng viên không tồn tại.")));
+        }
+        validateAssignments(id, input);
 
         council.setCode(input.code().strip());
         council.setName(input.name().strip());
@@ -94,6 +101,24 @@ public class CouncilManagementService {
             }
         }
         councils.save(council);
+    }
+
+    private void validateAssignments(Long councilId, CouncilService.CreateInput input) {
+        if (defenses == null) return;
+        for (Defense defense : defenses.findByCouncilId(councilId)) {
+            var topic = defense.topic != null ? defense.topic : defense.group.getTopic();
+            boolean hasAdvisor = input.members().stream().anyMatch(member ->
+                (topic.getAdvisor1() != null && topic.getAdvisor1().getId().equals(member.userId()))
+                || (topic.getAdvisor2() != null && topic.getAdvisor2().getId().equals(member.userId())));
+            if (hasAdvisor)
+                throw new ConflictException("Không thể thêm GVHD của nhóm đã phân công vào hội đồng.");
+            if (input.members().stream().noneMatch(member -> member.userId().equals(defense.reviewer.getId())
+                    && member.role() == CouncilRole.REVIEWER))
+                throw new ConflictException("Phải giữ GVPB đã phân công với vai trò Phản biện.");
+            var date = topic.getPeriod().getDefenseDate();
+            if (date != null && !date.equals(input.defenseDate().toLocalDate()))
+                throw new ConflictException("Ngày hội đồng phải khớp ngày bảo vệ của đợt đã phân công.");
+        }
     }
 
     public void delete(Long id) {

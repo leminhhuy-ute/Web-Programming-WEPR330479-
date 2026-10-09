@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 public interface DefenseRepository extends JpaRepository<Defense,Long> {
+    @EntityGraph(attributePaths = {"group", "group.topic", "group.topic.period", "group.topic.advisor1",
+        "group.topic.advisor2", "reviewer"})
+    List<Defense> findByCouncilId(Long councilId);
     Optional<Defense> findByGroupId(Long groupId);
     Optional<Defense> findByRegistrationId(Long registrationId);
     boolean existsByRegistrationId(Long registrationId);
