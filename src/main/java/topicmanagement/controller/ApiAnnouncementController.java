@@ -13,6 +13,7 @@ import topicmanagement.enums.AnnouncementAudience;
 import topicmanagement.security.CurrentUser;
 import topicmanagement.service.AnnouncementServiceV2;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/announcements")
 public class ApiAnnouncementController {

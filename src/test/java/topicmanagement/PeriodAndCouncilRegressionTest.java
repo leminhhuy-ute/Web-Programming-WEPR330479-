@@ -22,6 +22,7 @@ import topicmanagement.student.StudentService;
 
 @SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:period-council-regression;DB_CLOSE_DELAY=-1",
     "spring.jpa.hibernate.ddl-auto=create-drop", "spring.profiles.active=test"})
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 @Transactional
 class PeriodAndCouncilRegressionTest {
     @Autowired UserRepository users;
@@ -39,6 +40,9 @@ class PeriodAndCouncilRegressionTest {
     @Autowired topicmanagement.notification.EmailNotificationRepository emailNotifications;
     @Autowired topicmanagement.council.DefenseRepository defenseRows;
     @Autowired topicmanagement.export.ResultExportService exports;
+    @Autowired org.springframework.test.web.servlet.MockMvc mvc;
+    @Autowired topicmanagement.notification.EmailNotificationController emailController;
+    @Autowired topicmanagement.council.CouncilController councilController;
     Department department;
     User dean, advisor, advisor2, chair, secretary, reviewer, student;
     RegistrationPeriod period;
@@ -207,6 +211,28 @@ class PeriodAndCouncilRegressionTest {
         var outsider=user("outsiderPdf",Role.STUDENT);principal=CurrentUser.from(outsider);
         SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities()));
         assertThrows(IllegalArgumentException.class,()->exports.studentPdf(period.getId()));
+    }
+
+    @Test void methodSecurityProtectsAdminOperationsEvenWithoutHttpFilters() {
+        var principal=CurrentUser.from(student);
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities()));
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,()->emailController.page(null,0,20));
+        principal=CurrentUser.from(chair);
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities()));
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,()->councilController.create(input(roster(),now.plusDays(3),"B1")));
+        assertEquals(0,councils.count());
+    }
+
+    @Test void forbiddenAdminResponsePreservesVietnameseAndExportsRequireDean() throws Exception {
+        var principal=CurrentUser.from(student);
+        var auth=UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities());
+        var response=mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/email-notifications")
+            .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication(auth)))
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden()).andReturn().getResponse();
+        assertTrue(response.getContentAsString().contains("Bạn không có quyền"));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/exports/results.xlsx")
+            .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication(auth)))
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden());
     }
 
     private Long assignedCouncil() {

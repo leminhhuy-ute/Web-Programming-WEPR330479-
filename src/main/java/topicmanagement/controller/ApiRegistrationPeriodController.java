@@ -10,6 +10,7 @@ import topicmanagement.dto.response.RegistrationPeriodResponse;
 import topicmanagement.enums.RegistrationPeriodType;
 import topicmanagement.service.RegistrationPeriodServiceV2;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/registration-periods")
 public class ApiRegistrationPeriodController {

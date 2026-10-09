@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.ApiResponse;
 import topicmanagement.dto.response.PageResponse;
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/email-notifications")
 public class EmailNotificationController {

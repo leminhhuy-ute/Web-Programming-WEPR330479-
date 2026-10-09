@@ -8,6 +8,7 @@ import topicmanagement.dto.request.AdvisorQuotaRequest;
 import topicmanagement.dto.response.AdvisorQuotaResponse;
 import topicmanagement.service.AdvisorQuotaService;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/advisor-quotas")
 public class ApiAdvisorQuotaController {

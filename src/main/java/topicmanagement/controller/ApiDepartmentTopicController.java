@@ -12,6 +12,7 @@ import topicmanagement.dto.response.TopicResponse;
 import topicmanagement.security.CurrentUser;
 import topicmanagement.service.DepartmentTopicService;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
 @RestController
 @RequestMapping("/api/lecturer/department-topics")
 public class ApiDepartmentTopicController {
@@ -39,6 +40,7 @@ public class ApiDepartmentTopicController {
         return ApiResponse.ok("Lấy danh sách đề tài bộ môn thành công.", topics);
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT')")
     @PostMapping("/{id}/approval")
     public ApiResponse<TopicResponse> approveOrRejectTopic(
             @PathVariable Long id,
@@ -48,6 +50,7 @@ public class ApiDepartmentTopicController {
         return ApiResponse.ok("Cập nhật trạng thái phê duyệt đề tài thành công.", topic);
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT')")
     @PostMapping("/{id}/assign-advisors")
     public ApiResponse<TopicResponse> assignAdvisors(
             @PathVariable Long id,

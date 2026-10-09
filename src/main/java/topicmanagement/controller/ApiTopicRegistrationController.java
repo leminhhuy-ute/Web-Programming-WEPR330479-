@@ -6,6 +6,7 @@ import topicmanagement.dto.ApiResponse;
 import topicmanagement.security.CurrentAccount;
 import topicmanagement.service.TopicRegistrationService;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/topic-registrations")
 public class ApiTopicRegistrationController {

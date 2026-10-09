@@ -9,6 +9,7 @@ import topicmanagement.dto.response.PageResponse;
 import topicmanagement.security.CurrentAccount;
 import topicmanagement.student.*;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
 @RestController
 public class ReportAccessController {
     private final ReportService reports;

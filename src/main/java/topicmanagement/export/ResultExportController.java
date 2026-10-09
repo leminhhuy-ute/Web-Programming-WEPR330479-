@@ -6,14 +6,17 @@ import org.springframework.web.bind.annotation.*;
 public class ResultExportController {
     private final ResultExportService service;
     public ResultExportController(ResultExportService service){this.service=service;}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
     @GetMapping("/api/admin/exports/results.xlsx")
     public ResponseEntity<byte[]> excel(@RequestParam(required=false) Long periodId)throws IOException {
         return download(service.excel(periodId),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","results.xlsx");
     }
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
     @GetMapping("/api/admin/exports/results.pdf")
     public ResponseEntity<byte[]> pdf(@RequestParam(required=false) Long periodId)throws IOException {
         return download(service.pdf(periodId),"application/pdf","results.pdf");
     }
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/api/student/result.pdf")
     public ResponseEntity<byte[]> studentPdf(@RequestParam(required=false) Long periodId)throws IOException {
         return download(service.studentPdf(periodId),"application/pdf","student-result.pdf");

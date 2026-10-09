@@ -20,6 +20,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
   @Bean
   PasswordEncoder passwordEncoder() {
@@ -99,8 +100,7 @@ public class SecurityConfig {
                     })
                     .defaultAccessDeniedHandlerFor(
                         jsonDenied(),
-                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher(
-                            "/api/**")))
+                        req -> req.getRequestURI().startsWith(req.getContextPath() + "/api/")))
         .sessionManagement(
             s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .sessionAuthenticationStrategy(sessionStrategy)
@@ -112,7 +112,7 @@ public class SecurityConfig {
   private AccessDeniedHandler jsonDenied() {
     return (req, res, ex) -> {
       res.setStatus(403);
-      res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      res.setContentType("application/json;charset=UTF-8");
       res.getWriter()
           .write("{\"success\":false,\"message\":\"Bạn không có quyền truy cập tài nguyên này.\"}");
     };

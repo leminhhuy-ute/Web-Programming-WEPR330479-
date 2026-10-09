@@ -13,6 +13,7 @@ import topicmanagement.enums.Role;
 import topicmanagement.security.CurrentUser;
 import topicmanagement.service.UserService;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/users")
 public class ApiUserController {

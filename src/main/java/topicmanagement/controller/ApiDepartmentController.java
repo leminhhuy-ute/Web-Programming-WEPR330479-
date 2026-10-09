@@ -9,6 +9,7 @@ import topicmanagement.dto.request.DepartmentRequest;
 import topicmanagement.dto.response.DepartmentResponse;
 import topicmanagement.service.DepartmentServiceV2;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/departments")
 public class ApiDepartmentController {

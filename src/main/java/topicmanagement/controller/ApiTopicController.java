@@ -12,6 +12,7 @@ import topicmanagement.dto.response.PageResponse;
 import topicmanagement.security.CurrentUser;
 import topicmanagement.service.TopicService;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
 @RestController
 @RequestMapping("/api/lecturer/topics")
 public class ApiTopicController {

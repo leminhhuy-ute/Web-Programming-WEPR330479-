@@ -17,6 +17,7 @@ import topicmanagement.repository.StudentGroupRepository;
 import topicmanagement.repository.TopicRepository;
 import topicmanagement.repository.UserRepository;
 
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
 @RestController
 @RequestMapping("/api/admin/dashboard")
 public class ApiAdminDashboardController {
