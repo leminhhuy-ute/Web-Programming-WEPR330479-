@@ -18,5 +18,6 @@ public class Report {
     @Column(name="report_size") public Long reportSize;
     @Column(length=64) public String checksum;
     @Column(name="storage_path",length=500) public String storagePath;
-    @Lob @Basic(fetch=FetchType.LAZY) @Column(nullable=false) public byte[] content;
+    @Basic(fetch=FetchType.LAZY) @Column(nullable=false,length=10485760)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LONGVARBINARY) public byte[] content;
 }

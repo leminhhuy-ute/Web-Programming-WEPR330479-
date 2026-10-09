@@ -28,10 +28,12 @@ public class AuditLog {
     @Column(name = "entity_id", length = 80)
     private String entityId;
 
-    @Lob @Column(name = "old_value")
+    @Column(name = "old_value", length = 2147483647)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LONGVARCHAR)
     private String oldValue;
 
-    @Lob @Column(name = "new_value")
+    @Column(name = "new_value", length = 2147483647)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LONGVARCHAR)
     private String newValue;
 
     @Column(name = "created_at", nullable = false, updatable = false)
