@@ -5,15 +5,15 @@ const c$ = s => document.querySelector(s);
 let councilState = null;
 let councilBusy = false;
 
-async function councilApi(path, body) {
+async function councilApi(path, body, method) {
   const options = { credentials: 'same-origin', headers: { Accept: 'application/json' } };
-  if (body !== undefined) {
+  if (body !== undefined || method) {
     const tokenResponse = await fetch('/api/auth/csrf');
     const token = await tokenResponse.json();
-    options.method = 'POST';
+    options.method = method || 'POST';
     options.headers['Content-Type'] = 'application/json';
     options.headers['X-XSRF-TOKEN'] = token.data;
-    options.body = JSON.stringify(body);
+    if (body !== undefined) options.body = JSON.stringify(body);
   }
   const response = await fetch(path, options);
   if (response.status === 401) {
@@ -95,6 +95,7 @@ async function loadCouncils() {
               `).join('')}
             </ul>
           </div>
+          ${dean ? `<div class="actions"><button class="button secondary" data-edit-council="${c.id}">Sửa hội đồng</button><button class="button danger" data-delete-council="${c.id}">Xóa hội đồng</button></div>` : ''}
         </article>
       `).join('') + '</div>';
     }
@@ -176,7 +177,7 @@ function showCouncilDialog(title, html) {
   dialog.showModal();
 }
 
-const lecturerOptions = () => (councilState?.lecturers || []).map(u => `<option value="${u.id}">${escapeCouncil(u.name)}</option>`).join('');
+const lecturerOptions = (selectedId) => (councilState?.lecturers || []).map(u => `<option value="${u.id}" ${String(u.id) === String(selectedId) ? 'selected' : ''}>${escapeCouncil(u.name)}</option>`).join('');
 
 const reviewerOptions = councilId => {
   const council = (councilState?.councils || []).find(c => String(c.id) === String(councilId));
@@ -192,22 +193,23 @@ document.addEventListener('click', async e => {
     return c$('#council-dialog').close();
   }
 
-  if (b.id === 'create-council') {
-    showCouncilDialog('Thành lập hội đồng bảo vệ', `
-      <form id="council-form">
+  if (b.id === 'create-council' || b.dataset.editCouncil) {
+    const editing = b.dataset.editCouncil ? councilState.councils.find(c => String(c.id) === b.dataset.editCouncil) : null;
+    showCouncilDialog(editing ? 'Sửa hội đồng bảo vệ' : 'Thành lập hội đồng bảo vệ', `
+      <form id="council-form" data-id="${editing?.id || ''}">
         <div class="form-row">
           <label>Mã hội đồng
-            <input name="code" placeholder="VD: HD-CNPM-01" maxlength="30" required>
+            <input name="code" value="${escapeCouncil(editing?.code || '')}" placeholder="VD: HD-CNPM-01" maxlength="30" required>
           </label>
           <label>Phòng báo cáo
-            <input name="room" placeholder="VD: A1-302" maxlength="80" required>
+            <input name="room" value="${escapeCouncil(editing?.room || '')}" placeholder="VD: A1-302" maxlength="80" required>
           </label>
         </div>
         <label>Tên hội đồng
-          <input name="name" placeholder="VD: Hội đồng bảo vệ Khóa luận tốt nghiệp CNPM" maxlength="150" required>
+          <input name="name" value="${escapeCouncil(editing?.name || '')}" placeholder="VD: Hội đồng bảo vệ Khóa luận tốt nghiệp CNPM" maxlength="150" required>
         </label>
         <label>Thời gian báo cáo
-          <input name="defenseDate" type="datetime-local" required>
+          <input name="defenseDate" type="datetime-local" value="${escapeCouncil(editing?.date?.slice(0,16) || '')}" required>
         </label>
         <div>
           <p style="font-weight:600; margin:10px 0 8px; font-size:13px; color:var(--navy);">Thành viên hội đồng (chọn 3–5 giảng viên):</p>
@@ -216,15 +218,15 @@ document.addEventListener('click', async e => {
               <label>Giảng viên ${i + 1}
                 <select name="member${i}" ${i < 3 ? 'required' : ''}>
                   <option value="">${i < 3 ? '-- Chọn giảng viên --' : '-- Không thêm --'}</option>
-                  ${lecturerOptions()}
+                  ${lecturerOptions(editing?.members[i]?.id)}
                 </select>
               </label>
               <label>Vai trò
                 <select name="role${i}">
-                  <option value="CHAIRPERSON" ${i === 0 ? 'selected' : ''}>Chủ tịch</option>
-                  <option value="SECRETARY" ${i === 1 ? 'selected' : ''}>Thư ký</option>
-                  <option value="REVIEWER" ${i === 2 ? 'selected' : ''}>Phản biện</option>
-                  <option value="MEMBER" ${i >= 3 ? 'selected' : ''}>Ủy viên</option>
+                  <option value="CHAIRPERSON" ${(editing?.members[i]?.role || ['CHAIRPERSON','SECRETARY','REVIEWER','MEMBER','MEMBER'][i]) === 'CHAIRPERSON' ? 'selected' : ''}>Chủ tịch</option>
+                  <option value="SECRETARY" ${(editing?.members[i]?.role || ['CHAIRPERSON','SECRETARY','REVIEWER','MEMBER','MEMBER'][i]) === 'SECRETARY' ? 'selected' : ''}>Thư ký</option>
+                  <option value="REVIEWER" ${(editing?.members[i]?.role || ['CHAIRPERSON','SECRETARY','REVIEWER','MEMBER','MEMBER'][i]) === 'REVIEWER' ? 'selected' : ''}>Phản biện</option>
+                  <option value="MEMBER" ${(editing?.members[i]?.role || ['CHAIRPERSON','SECRETARY','REVIEWER','MEMBER','MEMBER'][i]) === 'MEMBER' ? 'selected' : ''}>Ủy viên</option>
                 </select>
               </label>
             </div>
@@ -276,6 +278,11 @@ document.addEventListener('click', async e => {
         errorEl.style.display = 'none';
       }
     });
+  }
+
+  if (b.dataset.deleteCouncil) {
+    const council = councilState.councils.find(c => String(c.id) === b.dataset.deleteCouncil);
+    showCouncilDialog('Xóa hội đồng', `<form id="delete-council-form" data-id="${council.id}"><p>Xóa hội đồng <b>${escapeCouncil(council.name)}</b>? Hội đồng đã phân công nhóm sẽ không thể xóa.</p><div class="actions"><button type="button" class="button secondary" data-close>Hủy</button><button type="submit" class="button danger">Xác nhận xóa</button></div></form>`);
   }
 
   if (b.id === 'assign-group') {
@@ -363,7 +370,7 @@ document.addEventListener('click', async e => {
 
 document.addEventListener('submit', async e => {
   const form = e.target;
-  if (!['council-form', 'assignment-form', 'grade-form', 'finalize-form', 'publish-form'].includes(form.id)) return;
+  if (!['council-form', 'assignment-form', 'grade-form', 'finalize-form', 'publish-form', 'delete-council-form'].includes(form.id)) return;
   e.preventDefault();
   if (councilBusy) return;
   councilBusy = true;
@@ -371,8 +378,10 @@ document.addEventListener('submit', async e => {
   const values = Object.fromEntries(new FormData(form));
   let path = '/api/councils';
   let body = values;
+  let method;
 
   if (form.id === 'council-form') {
+    if (form.dataset.id) { path += '/' + form.dataset.id; method = 'PUT'; }
     const errorEl = c$('#dialog-error');
     if (errorEl) errorEl.style.display = 'none';
 
@@ -454,6 +463,10 @@ document.addEventListener('submit', async e => {
     };
   }
 
+  if (form.id === 'delete-council-form') {
+    path += '/' + form.dataset.id; method = 'DELETE'; body = undefined;
+  }
+
   if (form.id === 'assignment-form') {
     path += '/assignments';
     body = Object.fromEntries(Object.entries(values).map(([k, v]) => [k, Number(v)]));
@@ -473,7 +486,7 @@ document.addEventListener('submit', async e => {
   if (submit) submit.disabled = true;
 
   try {
-    await councilApi(path, body);
+    await councilApi(path, body, method);
     c$('#council-dialog').close();
     await loadCouncils();
     councilMessage('Đã lưu thay đổi thành công.');
