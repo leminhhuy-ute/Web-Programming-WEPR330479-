@@ -36,6 +36,8 @@ class PeriodAndCouncilRegressionTest {
     @Autowired CouncilService councilService;
     @Autowired CouncilRepository councils;
     @Autowired topicmanagement.service.StudentResultService results;
+    @Autowired topicmanagement.notification.EmailNotificationRepository emailNotifications;
+    @Autowired topicmanagement.council.DefenseRepository defenseRows;
     Department department;
     User dean, advisor, advisor2, chair, secretary, reviewer, student;
     RegistrationPeriod period;
@@ -150,6 +152,31 @@ class PeriodAndCouncilRegressionTest {
         Long id = assignedCouncil();
         councilService.update(id, input(roster(), now.plusDays(3), "B2"));
         assertEquals("B2", councils.findById(id).orElseThrow().getRoom());
+    }
+
+    @Test void publicationQueuesOneEmailForEachStudentAndIsIdempotent() {
+        Long councilId=assignedCouncil();
+        var defense=defenseRows.findByCouncilId(councilId).getFirst();
+        var second=user("secondStudent",Role.STUDENT);
+        members.save(new GroupMember(defense.group,second,"MEMBER",period));
+        defense.finalized=true;defense.finalScore=new java.math.BigDecimal("8.50");
+        councilService.publish(defense.id);
+        councilService.publish(defense.id);
+        assertEquals(2,emailNotifications.count());
+        var recipient=emailNotifications.findAll().stream().filter(n->n.student.getId().equals(student.getId())).findFirst().orElseThrow();
+        assertEquals(student.getEmail(),recipient.recipient);
+        assertEquals(topicmanagement.notification.EmailNotification.Status.PENDING,recipient.status);
+        assertEquals(0,recipient.attempts);
+        assertTrue(recipient.body.contains("8.50"));
+        assertTrue(recipient.body.contains("\nĐợt: Original"));
+    }
+
+    @Test void unpublishedResultCannotQueueAnEmail() {
+        Long councilId=assignedCouncil();
+        var defense=defenseRows.findByCouncilId(councilId).getFirst();
+        assertThrows(IllegalArgumentException.class,()->councilService.publish(defense.id));
+        assertFalse(defense.published);
+        assertEquals(0,emailNotifications.count());
     }
 
     private Long assignedCouncil() {

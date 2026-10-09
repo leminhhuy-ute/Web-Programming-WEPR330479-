@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Email thông báo điểm</title><link rel="stylesheet" href="/assets/css/common.css"><link rel="stylesheet" href="/assets/css/admin.css"></head>
+<body data-admin data-module="email-notifications"><main class="main-content">
+<div class="page-header"><div><h1>Email thông báo điểm</h1><p class="page-subtitle">Mỗi sinh viên nhận một thông báo khi kết quả được công bố.</p></div></div>
+<p id="mail-state" class="alert" role="status">Đang tải…</p><p id="message" class="alert error" hidden role="alert"></p>
+<form id="mail-filter" class="toolbar"><select name="status" aria-label="Trạng thái email"><option value="">Tất cả trạng thái</option><option value="PENDING">Đang chờ</option><option value="SENT">Đã gửi</option><option value="FAILED">Thất bại</option></select><button class="button secondary">Làm mới</button></form>
+<div class="card table-scroll"><table><thead><tr><th>Sinh viên / Nhóm</th><th>Email</th><th>Trạng thái</th><th>Số lần thử</th><th>Thời gian</th><th>Thao tác</th></tr></thead><tbody id="mail-rows"></tbody></table></div>
+<div class="toolbar"><button id="mail-prev" class="button secondary">Trang trước</button><span id="mail-count"></span><button id="mail-next" class="button secondary">Trang sau</button></div>
+</main><script src="/assets/js/common.js"></script><script src="/assets/js/admin-shell.js"></script><script src="/assets/js/email-notifications.js"></script></body></html>

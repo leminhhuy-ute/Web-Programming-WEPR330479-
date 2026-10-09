@@ -22,13 +22,15 @@ public class GradeService {
     private final CurrentAccount accounts;
     private final EntityManager entityManager;
     private final AuditLogService audit;
+    private final topicmanagement.notification.ResultNotificationService notifications;
 
     public GradeService(GradeRepository grades, CurrentAccount accounts, EntityManager entityManager,
-            AuditLogService audit) {
+            AuditLogService audit, topicmanagement.notification.ResultNotificationService notifications) {
         this.grades = grades;
         this.accounts = accounts;
         this.entityManager = entityManager;
         this.audit = audit;
+        this.notifications = notifications;
     }
 
     public void grade(Long id, BigDecimal score, String comment) {
@@ -72,7 +74,9 @@ public class GradeService {
         User actor = dean();
         Defense defense = locked(id);
         if (!defense.finalized) throw new IllegalArgumentException("Chủ tịch chưa tổng hợp điểm.");
+        if (defense.published) return;
         defense.published = true;
+        notifications.enqueue(defense);
         audit.log(actor, "PUBLISH_RESULT", "Defense", id, "published=false",
             "published=true,score=" + defense.finalScore);
     }

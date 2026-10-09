@@ -8,6 +8,7 @@
         users: ["Quản lý tài khoản", "Quản lý thông tin, vai trò và trạng thái tài khoản."],
         departments: ["Quản lý bộ môn", "Thiết lập các bộ môn trực thuộc Khoa Công nghệ Thông tin."],
         "registration-periods": ["Quản lý đợt đăng ký", "Theo dõi các mốc đăng ký của giảng viên và sinh viên."],
+        "email-notifications": ["Email thông báo điểm", "Theo dõi việc gửi kết quả cho sinh viên."],
         announcements: ["Quản lý thông báo", "Soạn thảo và công bố thông tin dành cho người học, giảng viên."],
     };
     const navigation = [
@@ -18,6 +19,7 @@
         ["announcements", "Thông báo", "/admin/announcements/list.html"],
         ["topics", "Đề tài & nhóm", "/lecturer/dashboard.html"],
         ["councils", "Hội đồng & kết quả", "/councils/index.html"],
+        ["email-notifications", "Email thông báo điểm", "/admin/email-notifications.html"],
     ];
 
     const roleLabels = {

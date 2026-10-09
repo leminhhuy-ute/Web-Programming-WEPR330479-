@@ -279,3 +279,25 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     INDEX idx_audit_entity (entity_name, entity_id),
     INDEX idx_audit_user_created (user_id, created_at)
 );
+
+
+CREATE TABLE IF NOT EXISTS email_notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    version BIGINT NULL,
+    defense_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    next_attempt_at DATETIME(6) NOT NULL,
+    sent_at DATETIME(6) NULL,
+    last_error VARCHAR(300) NULL,
+    CONSTRAINT uk_result_email UNIQUE (defense_id, student_id),
+    CONSTRAINT fk_email_defense FOREIGN KEY (defense_id) REFERENCES defenses(id),
+    CONSTRAINT fk_email_student FOREIGN KEY (student_id) REFERENCES users(id),
+    CONSTRAINT ck_email_status CHECK (status IN ('PENDING','SENT','FAILED')),
+    INDEX idx_email_due (status,next_attempt_at)
+);
