@@ -72,6 +72,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(404).body(ApiResponse.fail("Không tìm thấy trang hoặc tài nguyên.", null));
   }
 
+  @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+  ResponseEntity<ApiResponse<Void>> methodNotAllowed(Exception e) {
+    return ResponseEntity.status(405).body(ApiResponse.fail("Thao tác này không được hỗ trợ.", null));
+  }
+
   @ExceptionHandler(AccessDeniedException.class)
   ResponseEntity<ApiResponse<Void>> denied(AccessDeniedException e) {
     return ResponseEntity.status(403)

@@ -1,0 +1,24 @@
+.profile-column {
+  width: min(100%, 490px);
+  display: grid;
+  gap: 16px;
+}
+
+.profile-card { padding: 30px 32px; }
+.profile-card h2 { font-size: 18px; margin-bottom: 22px; }
+.profile-card label { margin-bottom: 16px; }
+.profile-card input[readonly] { background: #f8fafc; color: var(--text-secondary); cursor: default; }
+.profile-card .field-note { color: var(--text-muted); font-size: 12px; margin: -11px 0 16px; }
+.profile-card .password-hint { color: var(--text-muted); font-size: 12px; margin: -14px 0 20px; line-height: 1.5; }
+.profile-card #class-field .field-note { margin-top: -10px; }
+.profile-submit { width: 100%; margin-top: 2px; }
+.profile-message { border: 1px solid var(--success-border); background: var(--success-bg); color: var(--success); padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+.profile-message.error { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger); }
+.skip { position: fixed; top: -60px; left: 16px; z-index: 200; padding: 8px 12px; background: white; }
+.skip:focus { top: 8px; }
+
+@media (max-width: 720px) {
+  .profile-card { padding: 24px 20px; }
+  .profile-column { width: 100%; }
+  .topbar .topbar-right-copy { display: none; }
+}

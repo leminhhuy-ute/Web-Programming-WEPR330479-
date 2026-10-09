@@ -41,6 +41,10 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 - **Nộp báo cáo**: Nhóm trưởng nộp báo cáo tiến độ tuần tự theo 3 giai đoạn: **Đề cương** $\rightarrow$ **Giữa kỳ** $\rightarrow$ **Cuối kỳ** (hỗ trợ tệp PDF/DOCX tối đa 10 MB, kiểm tra tính hợp lệ cấu trúc tệp).
 - **Xem kết quả**: Tra cứu bảng điểm tổng hợp và nhận xét chi tiết của từng thành viên hội đồng sau khi kết quả được công bố. Hỗ trợ tra cứu theo đợt hiện tại hoặc xem lại lịch sử các đợt đã qua.
 
+### Hồ sơ cá nhân (mọi vai trò)
+- **Xem thông tin cá nhân**: Mọi vai trò xem họ tên, email, mã người dùng và vai trò. Sinh viên xem lớp; giảng viên và cán bộ xem bộ môn. Các trường này chỉ đọc trên trang hồ sơ; Trưởng khoa cập nhật họ tên và lớp sinh viên tại phần quản lý tài khoản.
+- **Đổi mật khẩu**: Người dùng nhập mật khẩu hiện tại và mật khẩu mới đủ mạnh. Đổi thành công sẽ kết thúc phiên hiện tại và vô hiệu hóa phiên cũ.
+
 ### Mở rộng kết quả và thông báo
 - **Chọn đợt rõ ràng** khi tạo nhóm; chặn đăng ký đề tài khác đợt và kiểm tra một sinh viên không có hai nhóm trong cùng đợt thực hiện đề tài.
 - **Sửa/xóa hội đồng trên giao diện** cho trưởng khoa; khi sửa kiểm tra cả GVHD thứ nhất/thứ hai, phản biện đã phân công và ngày bảo vệ.
@@ -78,7 +82,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 | **Bảo mật & Phân quyền (Security)** | Spring Security 6 | Xác thực người dùng, băm mật khẩu BCrypt, phòng chống tấn công CSRF, kiểm soát phiên, chống brute-force và phân quyền truy cập theo vai trò (RBAC) |
 | **Cơ sở dữ liệu Production** | MySQL Server 8.0+ | Hệ quản trị cơ sở dữ liệu quan hệ chính thức, lưu trữ bền vững với Storage Engine InnoDB và bảng mã `utf8mb4_unicode_ci` |
 | **Cơ sở dữ liệu Demo & Test** | H2 Database | Cơ sở dữ liệu nhúng (file-based và in-memory), phục vụ khởi chạy demo tức thì và chạy bộ kiểm thử tự động |
-| **Quản lý Migration Schema** | Flyway | Quản lý lịch sử và tự động áp dụng các tập lệnh nâng cấp cấu trúc cơ sở dữ liệu V6 ở profile MySQL; baseline V5 trên schema hiện hành, không chạy lại các SQL V2–V5 cũ |
+| **Quản lý Migration Schema** | Flyway | Tự động áp dụng V6 (email) và V7 (lớp sinh viên) ở profile MySQL; baseline V5 trên schema hiện hành, không chạy lại các SQL V2–V5 cũ |
 | **Giao diện người dùng (Frontend)** | Thymeleaf, HTML5, CSS3, JS | Giao diện web responsive, kết nối Fetch API, chuẩn nhận diện màu sắc và kiểu chữ của Trường ĐH Sư phạm Kỹ thuật TP.HCM |
 | **Công cụ đóng gói (Build Tool)** | Apache Maven 3.9+ | Quản lý thư viện phụ thuộc và đóng gói toàn bộ dự án thành tệp thực thi duy nhất (Executable Fat JAR) |
 
@@ -91,7 +95,7 @@ Web-Programming-WEPR330479--main/
 ├── .github/                         # Quy trình tự động hóa GitHub Actions
 ├── .mvn/                            # Cấu hình bộ nạp Maven Wrapper
 ├── database/                        # Cơ sở dữ liệu và kịch bản nâng cấp
-│   ├── migration/                   # SQL lịch sử V2..V5 và bản V6 để tra cứu
+│   ├── migration/                   # SQL lịch sử V2..V6 để tra cứu
 │   ├── schema.sql                   # Cấu trúc cơ sở dữ liệu chuẩn đầy đủ cho MySQL
 │   └── seed.sql                     # Dữ liệu mẫu (tài khoản demo, bộ môn, đề tài mẫu)
 ├── docs/                            # Toàn bộ tài liệu kỹ thuật hệ thống (Tiếng Việt)
@@ -226,12 +230,12 @@ Hệ thống được kiểm thử tự động toàn diện qua bộ kiểm th�
 ### Kết quả kiểm thử:
 ```text
 [INFO] Results:
-[INFO] Tests run: 81, Failures: 0, Errors: 0, Skipped: 1
+[INFO] Tests run: 87, Failures: 0, Errors: 0, Skipped: 1
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 ```
-**80 kiểm thử thường lệ đều đạt**. Kiểm tra MySQL được bỏ qua khi máy cục bộ chưa cấu hình MySQL; job CI riêng chạy kiểm tra này trên MySQL 8.4, kiểm chứng Flyway V5 → V6, `ddl-auto=validate` cho toàn bộ entity và lưu nhật ký dài có tiếng Việt. GitHub Actions còn chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp 11 file JavaScript. Các kiểm thử mới bao phủ hai lỗi hồi quy, chọn đợt, phân quyền tại method, hàng đợi email/thử lại, SMTP cục bộ, Excel và PDF nhiều trang. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
+**86 kiểm thử thường lệ đều đạt**. Kiểm tra MySQL được bỏ qua khi máy cục bộ chưa cấu hình MySQL; job CI riêng chạy kiểm tra này trên MySQL 8.4, kiểm chứng Flyway V5 → V7 và `ddl-auto=validate` cho toàn bộ entity. GitHub Actions còn chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp 12 file JavaScript. Kiểm thử hồ sơ bao phủ cả bốn vai trò, giới hạn trường chỉ đọc, cập nhật lớp từ quản trị, CSRF và đổi mật khẩu có hủy phiên. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
 
 ---
 
@@ -256,4 +260,4 @@ Tài liệu kỹ thuật chuyên sâu được duy trì đầy đủ tại thư 
 
 1. **Bảo tồn tài khoản Demo**: Nhằm phục vụ mục đích đánh giá và chấm điểm học phần Lập trình Web, tài khoản demo cùng mật khẩu mặc định `Demo@12345` được lưu giữ trong cơ sở dữ liệu để kiểm thử các vai trò khác nhau qua form đăng nhập tiêu chuẩn (đã gỡ bỏ toàn bộ các nút bấm điền nhanh trên giao diện để sẵn sàng phát hành).
 2. **Khởi tạo cơ sở dữ liệu**: Khi triển khai trên môi trường MySQL thực tế, bắt buộc thực thi tập lệnh [database/schema.sql](database/schema.sql) trước khi khởi động ứng dụng vì profile `mysql` sử dụng chế độ `ddl-auto=validate`.
-3. **Migration dữ liệu**: Profile MySQL dùng Flyway tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline và chạy V6; V2–V5 trong `database/migration/` được giữ làm lịch sử, không tự chạy lại trên schema đầy đủ. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).
+3. **Migration dữ liệu**: Profile MySQL dùng Flyway tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline và chạy V6, V7; V2–V5 trong `database/migration/` được giữ làm lịch sử, không tự chạy lại trên schema đầy đủ. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).

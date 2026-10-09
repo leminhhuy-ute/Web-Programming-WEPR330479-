@@ -89,7 +89,8 @@ public class StudentService {
             throw bad("Nhóm đã đăng ký đề tài. Danh sách thành viên được khóa.");
     }
     private StudentPerson person(User u) {
-        return new StudentPerson(u.getUserCode(),u.getFullName(),u.getDepartment()==null?"":u.getDepartment().getName());
+        return new StudentPerson(u.getUserCode(),u.getFullName(),
+            u.getStudentClass()==null?"Chưa cập nhật":u.getStudentClass());
     }
     private StudentInvitation invitation(Invitation i) {
         return new StudentInvitation(i.id,i.group.getId(),i.group.getGroupName(),i.student.getUserCode(),

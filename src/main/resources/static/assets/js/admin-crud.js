@@ -20,6 +20,7 @@ const moduleConfig = {
             "departmentId",
             "status",
             "password",
+            "studentClass",
         ],
     },
     departments: {
@@ -259,6 +260,16 @@ async function form() {
         }
 
         if (page === "users") {
+            const roleSelect = document.querySelector('[name="role"]');
+            const classField = document.querySelector('#student-class-field');
+            const classInput = classField.querySelector('input');
+            const updateClassField = () => {
+                const student = roleSelect.value === 'STUDENT';
+                classField.hidden = !student;
+                if (!student) classInput.value = '';
+            };
+            roleSelect.addEventListener('change', updateClassField);
+            updateClassField();
             const deps = await request("/api/admin/departments");
             document
                 .querySelector("[name=departmentId]")

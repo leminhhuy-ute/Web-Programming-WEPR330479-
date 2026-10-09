@@ -59,6 +59,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sidebar navigation items
     const navContainer = document.querySelector('.sidebar nav');
     if (navContainer) {
+        if (!navContainer.querySelector('a[href*="/profile.html"]')) {
+            const profileLink = document.createElement('a');
+            profileLink.href = App.getContextPath() + '/profile.html';
+            profileLink.textContent = 'Hồ sơ cá nhân';
+            navContainer.append(profileLink);
+        }
         // If not already present, ensure council link exists without emoji
         if (!navContainer.querySelector('a[href*="/councils/"]')) {
             const link = document.createElement('a');

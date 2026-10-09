@@ -100,6 +100,15 @@ public class UserService {
         user.setFullName(request.fullName().trim());
         user.setEmail(email);
         user.setRole(request.role());
+        String studentClass = request.studentClass() == null ? "" : request.studentClass().strip();
+        if (request.role() == Role.STUDENT) {
+            if (!studentClass.isEmpty() && !studentClass.matches("[\\p{L}\\p{N} ._-]{1,50}"))
+                throw new IllegalArgumentException("Tên lớp không hợp lệ hoặc dài quá 50 ký tự.");
+            user.setStudentClass(studentClass.isEmpty() ? null : studentClass);
+        } else {
+            if (!studentClass.isEmpty()) throw new IllegalArgumentException("Chỉ sinh viên có thông tin lớp.");
+            user.setStudentClass(null);
+        }
         user.setStatus(request.status());
         user.setDepartment(request.departmentId() == null ? null : departments.findById(request.departmentId())
             .orElseThrow(() -> new ResourceNotFoundException("Bộ môn đã chọn không tồn tại.")));
@@ -130,6 +139,6 @@ public class UserService {
         return new UserResponse(user.getId(), user.getUserCode(), user.getUsername(), user.getFullName(),
             user.getEmail(), user.getRole().name(), department == null ? null : department.getId(),
             department == null ? null : department.getName(), user.getStatus().name(),
-            user.getCreatedAt(), user.getUpdatedAt());
+            user.getCreatedAt(), user.getUpdatedAt(), user.getStudentClass());
     }
 }

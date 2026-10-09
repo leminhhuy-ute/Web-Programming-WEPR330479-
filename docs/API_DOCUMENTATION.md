@@ -28,6 +28,7 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 | `401 Unauthorized` | Chưa xác thực | Phiên đăng nhập hết hạn hoặc chưa cung cấp cookie phiên |
 | `403 Forbidden` | Không có quyền | Truy cập trái vai trò hoặc can thiệp đề tài sai bộ môn |
 | `404 Not Found` | Không tìm thấy | Không tồn tại ID đối tượng hoặc đường dẫn không hợp lệ |
+| `405 Method Not Allowed` | Phương thức không được hỗ trợ | Ví dụ: hồ sơ cá nhân chỉ cho xem, không có API tự sửa họ tên hoặc lớp |
 | `409 Conflict` | Vi phạm quy tắc nghiệp vụ | Trùng tên đăng nhập/email, xóa đợt có đề tài, hủy đăng ký khi đã nộp báo cáo |
 | `500 Internal Error` | Lỗi máy chủ nội bộ | Ngoại lệ hệ thống chưa được kiểm soát |
 
@@ -76,20 +77,25 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 - **Endpoint**: `GET /api/auth/csrf`
 - **Quyền truy cập**: Công khai / Đã xác thực
 
+### 2.5 Hồ sơ cá nhân (mọi vai trò)
+- `GET /api/profile`: Xem họ tên, email, mã người dùng, vai trò và bộ môn/lớp từ tài khoản đang đăng nhập. Không có endpoint tự sửa họ tên hoặc lớp.
+- `POST /api/profile/password`: Đổi mật khẩu với body `{"currentPassword":"...","newPassword":"...","confirmPassword":"..."}`. Yêu cầu mật khẩu cũ đúng; mật khẩu mới dài 8–72 ký tự, gồm chữ hoa, chữ thường, số, ký tự đặc biệt và không có khoảng trắng. Thành công sẽ hủy phiên hiện tại; người dùng đăng nhập lại.
+- Trưởng khoa cập nhật lớp và họ tên sinh viên thông qua `PUT /api/admin/users/{id}`; trường `studentClass` chỉ áp dụng cho vai trò `STUDENT`.
+
 ---
 
-## 3. Nhóm API Quản trị Người dùng (`/api/users`)
+## 3. Nhóm API Quản trị Người dùng (`/api/admin/users`)
 
 *Thẩm quyền: Chỉ dành cho `ROLE_DEAN`.*
 
 | Phương thức | Endpoint | Mô tả chức năng |
 | :--- | :--- | :--- |
-| `GET` | `/api/users` | Lấy danh sách tài khoản kèm bộ lọc `keyword`, `role`, `departmentId`, `status`. |
-| `GET` | `/api/users/{id}` | Lấy thông tin chi tiết của một tài khoản theo ID. |
-| `POST` | `/api/users` | Tạo tài khoản mới. Kiểm tra trùng lặp không phân biệt hoa thường và bắt buộc bộ môn cho giảng viên. |
-| `PUT` | `/api/users/{id}` | Cập nhật thông tin tài khoản (họ tên, email, bộ môn). |
-| `PUT` | `/api/users/{id}/status` | Đổi trạng thái tài khoản (`ACTIVE`, `INACTIVE`, `LOCKED`). |
-| `PUT` | `/api/users/{id}/password` | Đặt lại mật khẩu tài khoản (8–72 ký tự) và ghi nhận thời điểm đổi để hủy phiên cũ. |
+| `GET` | `/api/admin/users` | Lấy danh sách tài khoản kèm bộ lọc `keyword`, `role`, `departmentId`. |
+| `GET` | `/api/admin/users/{id}` | Lấy thông tin chi tiết của một tài khoản theo ID. |
+| `POST` | `/api/admin/users` | Tạo tài khoản mới. Trường `studentClass` chỉ áp dụng cho sinh viên. |
+| `PUT` | `/api/admin/users/{id}` | Cập nhật họ tên, email, bộ môn, lớp sinh viên hoặc đặt lại mật khẩu qua trường `password`. |
+| `PATCH` | `/api/admin/users/{id}/status` | Đổi trạng thái tài khoản (`ACTIVE`, `INACTIVE`, `LOCKED`). |
+| `DELETE` | `/api/admin/users/{id}` | Xóa tài khoản theo quy tắc nghiệp vụ. |
 
 ---
 

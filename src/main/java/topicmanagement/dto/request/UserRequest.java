@@ -16,4 +16,10 @@ public record UserRequest(
     @NotNull Role role,
     Long departmentId,
     @NotNull UserStatus status,
-    @Size(min = 8, max = 72) String password) {}
+    @Size(min = 8, max = 72) String password,
+    @Size(max = 50) String studentClass) {
+    public UserRequest(String userCode, String username, String fullName, String email,
+            Role role, Long departmentId, UserStatus status, String password) {
+        this(userCode, username, fullName, email, role, departmentId, status, password, null);
+    }
+}

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hồ sơ cá nhân · Quản lý đề tài</title>
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/profile.css">
+  <script defer src="assets/js/common.js"></script>
+  <script defer src="assets/js/profile.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Đi tới nội dung</a>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+      <a class="brand-link" id="brand-home" href="student" aria-label="Về bảng điều khiển">
+        <img class="brand-logo" src="assets/images/logo.png" alt="HCMUTE" width="44" height="44">
+        <span class="brand-title">QUẢN LÝ ĐỀ TÀI</span>
+      </a>
+    </div>
+    <div class="topbar-right">
+      <div class="header-user" aria-live="polite">
+        <div class="topbar-right-copy"><div class="header-user-copy">
+          <strong id="header-name">Đang tải...</strong><span id="header-role"></span>
+        </div><span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span></div>
+        <span class="avatar" id="header-avatar" aria-label="Ảnh đại diện">--</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <p class="nav-label">ĐIỀU HƯỚNG</p>
+      <nav id="profile-nav" aria-label="Điều hướng chính"></nav>
+      <div class="sidebar-bottom"><button class="sidebar-logout" type="button" data-logout>Đăng xuất</button></div>
+    </aside>
+    <main id="main" class="main-content" tabindex="-1">
+      <div class="page-header"><div>
+        <h1>Hồ sơ cá nhân</h1>
+        <p class="page-subtitle">Xem thông tin cá nhân và đổi mật khẩu.</p>
+      </div></div>
+      <div class="profile-column">
+        <section class="card profile-card" aria-labelledby="personal-heading">
+          <h2 id="personal-heading">Thông tin cá nhân</h2>
+          <p id="profile-message" class="profile-message" role="status" hidden></p>
+          <div id="profile-fields">
+            <label>Email
+              <input id="profile-email" type="email" readonly>
+            </label>
+            <p class="field-note">Email do quản trị viên quản lý.</p>
+            <label>Vai trò
+              <input id="profile-role" type="text" readonly>
+            </label>
+            <label>Họ tên
+              <input id="profile-full-name" type="text" readonly>
+            </label>
+            <label id="code-field">Mã người dùng
+              <input id="profile-code" type="text" readonly>
+            </label>
+            <label id="department-field" hidden>Bộ môn
+              <input id="profile-department" type="text" readonly>
+            </label>
+            <div id="class-field" hidden>
+              <label>Lớp
+                <input id="profile-class" type="text" readonly>
+              </label>
+              <p class="field-note">Lớp do quản trị viên quản lý.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card profile-card" aria-labelledby="password-heading">
+          <h2 id="password-heading">Đổi mật khẩu</h2>
+          <p class="password-hint">Mật khẩu mới cần 8–72 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</p>
+          <p id="password-message" class="profile-message" role="status" hidden></p>
+          <form id="password-form">
+            <label>Mật khẩu hiện tại
+              <input id="current-password" type="password" required autocomplete="current-password">
+            </label>
+            <label>Mật khẩu mới
+              <input id="new-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password">
+            </label>
+            <label>Xác nhận mật khẩu mới
+              <input id="confirm-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password">
+            </label>
+            <button class="button primary profile-submit" type="submit">Đổi mật khẩu</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

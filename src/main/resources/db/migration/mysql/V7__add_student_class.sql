@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN student_class VARCHAR(50) NULL;

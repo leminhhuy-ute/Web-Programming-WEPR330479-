@@ -27,6 +27,9 @@ public class User {
   @Column(nullable = false, unique = true)
   private String email;
 
+  @Column(name = "student_class", length = 50)
+  private String studentClass;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 30)
   private Role role;
@@ -96,6 +99,14 @@ public class User {
 
   public void setEmail(String v) {
     email = v;
+  }
+
+  public String getStudentClass() {
+    return studentClass;
+  }
+
+  public void setStudentClass(String value) {
+    studentClass = value;
   }
 
   public Role getRole() {

@@ -14,11 +14,12 @@ public record UserResponse(
     String departmentName,
     String status,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {
+    LocalDateTime updatedAt,
+    String studentClass) {
     public UserResponse(User u) {
         this(u.getId(), u.getUserCode(), u.getUsername(), u.getFullName(), u.getEmail(),
                 u.getRole().name(), u.getDepartment() == null ? null : u.getDepartment().getId(),
                 u.getDepartment() == null ? null : u.getDepartment().getName(),
-                u.getStatus().name(), u.getCreatedAt(), u.getUpdatedAt());
+                u.getStatus().name(), u.getCreatedAt(), u.getUpdatedAt(), u.getStudentClass());
     }
 }

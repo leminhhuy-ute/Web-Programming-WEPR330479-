@@ -74,6 +74,7 @@ Lưu trữ tài khoản của toàn bộ cán bộ, giảng viên và sinh viên
 - `password_hash` (`VARCHAR(512)`, NOT NULL): Mật khẩu đã băm bằng giải thuật BCrypt.
 - `full_name` (`VARCHAR(255)`, NOT NULL): Họ và tên đầy đủ của người dùng.
 - `email` (`VARCHAR(255)`, NOT NULL, UNIQUE): Địa chỉ email phục vụ thông báo và tài khoản.
+- `student_class` (`VARCHAR(50)`, NULL): Lớp của sinh viên, do Trưởng khoa cập nhật; các vai trò khác không dùng trường này.
 - `role` (`VARCHAR(30)`, NOT NULL): Vai trò hệ thống (`DEAN`, `HEAD_OF_DEPT`, `LECTURER`, `STUDENT`).
 - `department_id` (`BIGINT`, NULL, FK $\rightarrow$ `departments(id)`): Bắt buộc đối với giảng viên và trưởng bộ môn.
 - `status` (`VARCHAR(20)`, NOT NULL): Trạng thái tài khoản (`ACTIVE`, `INACTIVE`, `LOCKED`).
@@ -198,7 +199,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
 
 ## 4. Quản lý tiến hóa Schema qua Flyway Migrations
 
-Các phiên bản nâng cấp cấu trúc cơ sở dữ liệu được quản lý tự động tại thư mục `database/migration/`:
+Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V7 trong `src/main/resources/db/migration/mysql/`:
 
 | Phiên bản | Tệp script Migration | Mô tả thay đổi kiến trúc |
 | :--- | :--- | :--- |
@@ -206,3 +207,5 @@ Các phiên bản nâng cấp cấu trúc cơ sở dữ liệu được quản l
 | `V3` | `V3__add_registration_history.sql` | Bổ sung bảng `registration_status_history` ghi vết toàn diện chuyển đổi trạng thái. |
 | `V4` | `V4__add_quota_audit_report_metadata.sql` | Bổ sung bảng chỉ tiêu hướng dẫn `advisor_quotas` và metadata toàn vẹn tệp báo cáo. |
 | `V5` | `V5__fix_constraints_and_linkages.sql` | Bổ sung cột `password_changed_at`, ràng buộc thành viên nhóm theo đợt (`uk_group_member_period_student`), và liên kết trực tiếp `registration_id`, `topic_id` vào `student_reports` và `defenses`. |
+| `V6` | `V6__add_result_email_outbox.sql` | Tạo hàng đợi email thông báo kết quả. |
+| `V7` | `V7__add_student_class.sql` | Thêm cột lớp sinh viên trong bảng `users`. |

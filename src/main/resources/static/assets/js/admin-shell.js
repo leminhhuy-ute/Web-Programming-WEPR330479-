@@ -22,6 +22,7 @@
         ["councils", "Hội đồng & kết quả", "/councils/index.html"],
         ["exports", "Xuất Excel / PDF", "/admin/exports.html"],
         ["email-notifications", "Email thông báo điểm", "/admin/email-notifications.html"],
+        ["profile", "Hồ sơ cá nhân", "/profile.html"],
     ];
 
     const roleLabels = {
