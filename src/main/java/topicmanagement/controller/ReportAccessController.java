@@ -1,6 +1,9 @@
 package topicmanagement.controller;
 
 import java.nio.charset.StandardCharsets;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.ApiResponse;
@@ -12,6 +15,8 @@ import topicmanagement.student.*;
 @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
 @RestController
 public class ReportAccessController {
+    public record AdvisorFeedbackRequest(@NotBlank(message="Vui lòng nhập nhận xét.")
+        @Size(max=2000,message="Nhận xét tối đa 2.000 ký tự.") String feedback) {}
     private final ReportService reports;
     private final CurrentAccount accounts;
 
@@ -40,6 +45,13 @@ public class ReportAccessController {
     @GetMapping("/api/lecturer/reports/{id}/download")
     public ResponseEntity<byte[]> advisorDownload(@PathVariable Long id) {
         return download(reports.downloadForAdvisor(accounts.user(), id));
+    }
+
+    @PostMapping("/api/lecturer/reports/{id}/feedback")
+    public ApiResponse<ReportSummaryResponse> advisorFeedback(@PathVariable Long id,
+            @Valid @RequestBody AdvisorFeedbackRequest request) {
+        return ApiResponse.ok("Đã lưu nhận xét của giảng viên hướng dẫn.",
+            reports.saveAdvisorFeedback(accounts.user(), id, request.feedback()));
     }
 
     @GetMapping("/api/council/defenses/{defenseId}/reports")

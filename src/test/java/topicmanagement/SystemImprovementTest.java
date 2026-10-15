@@ -21,6 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import topicmanagement.council.*;
 import topicmanagement.dto.request.AdvisorQuotaRequest;
+import topicmanagement.dto.request.AnnouncementRequest;
+import topicmanagement.dto.request.TopicRequest;
+import topicmanagement.exception.ConflictException;
 import topicmanagement.entity.*;
 import topicmanagement.enums.*;
 import topicmanagement.repository.*;
@@ -55,6 +58,69 @@ class SystemImprovementTest {
     @Autowired UserService userService;
     @Autowired EntityManager entityManager;
     @Autowired MockMvc mvc;
+    @Autowired NotificationService notificationService;
+    @Autowired AnnouncementServiceV2 announcementService;
+    @Autowired TopicService topicService;
+
+    @Test
+    void duplicateTopicTitleGetsSpecificMessageIgnoringCaseAndSurroundingSpaces() {
+        Fixture fixture = fixture(false);
+        TopicRequest request = new TopicRequest();
+        request.setTopicCode("NEW-" + suffix());
+        request.setTitle("  " + fixture.topic.getTitle().toUpperCase() + "  ");
+        request.setDescription("Mô tả đủ dài để kiểm thử đề tài.");
+        request.setMaxStudents(3);
+        request.setTopicType("COURSE");
+        request.setDepartmentId(fixture.department.getId());
+        request.setPeriodId(fixture.period.getId());
+        var error = assertThrows(ConflictException.class,
+            () -> topicService.createTopic(request, fixture.advisor));
+        assertEquals("Tên đề tài đã tồn tại. Vui lòng nhập tên khác.", error.getMessage());
+    }
+
+    @Test
+    void departmentAnnouncementReachesOnlyItsStudentsAndReadStateIsPerUser() {
+        Fixture fixture = fixture(false);
+        User head = user("head", Role.HEAD_OF_DEPT, fixture.department);
+        User studentTwo = user("studentTwo", Role.STUDENT, fixture.department);
+        Department otherDepartment = new Department();
+        otherDepartment.setCode("OTHER" + suffix().substring(0, 6));
+        otherDepartment.setName("Bộ môn khác " + suffix());
+        departments.save(otherDepartment);
+        User outsider = user("outside", Role.STUDENT, otherDepartment);
+        var notice = announcementService.createForDepartment(
+            new AnnouncementRequest("Lịch họp", "Sinh viên xem lịch họp.", AnnouncementAudience.STUDENT), head);
+
+        assertTrue(notificationService.feed(fixture.student).items().stream().anyMatch(item -> item.id().equals(notice.id())));
+        assertTrue(notificationService.feed(studentTwo).items().stream().anyMatch(item -> item.id().equals(notice.id())));
+        assertFalse(notificationService.feed(outsider).items().stream().anyMatch(item -> item.id().equals(notice.id())));
+        assertThrows(AccessDeniedException.class, () -> notificationService.markRead(outsider, notice.id()));
+        notificationService.markRead(fixture.student, notice.id());
+        notificationService.markRead(fixture.student, notice.id());
+        assertTrue(notificationService.feed(fixture.student).items().stream()
+            .filter(item -> item.id().equals(notice.id())).findFirst().orElseThrow().read());
+        assertFalse(notificationService.feed(studentTwo).items().stream()
+            .filter(item -> item.id().equals(notice.id())).findFirst().orElseThrow().read());
+        assertThrows(AccessDeniedException.class, () -> announcementService.createForDepartment(
+            new AnnouncementRequest("Sai quyền", "Không hợp lệ", AnnouncementAudience.LECTURER), head));
+        announcementService.delete(notice.id());
+        assertFalse(notificationService.feed(fixture.student).items().stream()
+            .anyMatch(item -> item.id().equals(notice.id())));
+    }
+
+    @Test
+    void advisorFeedbackIsVisibleToStudentsButCannotBeEditedByAnotherLecturer() throws Exception {
+        Fixture fixture = fixture(true);
+        Report report = upload(fixture);
+        assertNull(reportService.listForStudent(fixture.student, fixture.group).getFirst().advisorFeedback());
+        var updated = reportService.saveAdvisorFeedback(fixture.advisor, report.id, "Cần bổ sung phần kết luận.");
+        assertEquals("Cần bổ sung phần kết luận.", updated.advisorFeedback());
+        assertEquals(fixture.advisor.getFullName(), updated.feedbackBy());
+        assertEquals(updated.advisorFeedback(),
+            reportService.listForStudent(fixture.student, fixture.group).getFirst().advisorFeedback());
+        assertThrows(AccessDeniedException.class,
+            () -> reportService.saveAdvisorFeedback(fixture.otherLecturer, report.id, "Sửa trái phép"));
+    }
 
     @Test
     void advisorCanViewAndDownloadButAnotherLecturerGets403() throws Exception {

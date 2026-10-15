@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gửi thông báo - Quản lý đề tài</title>
+  <link rel="stylesheet" href="/assets/css/common.css">
+  <link rel="stylesheet" href="/assets/css/lecturer.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left"><button class="menu-button" type="button" aria-label="Mở menu" data-menu-toggle>☰</button>
+      <a class="brand-link" href="/lecturer/dashboard.html"><img class="brand-logo" src="/assets/images/logo.png" alt="HCMUTE" width="44" height="44"><span class="brand-title">QUẢN LÝ ĐỀ TÀI</span></a></div>
+    <div class="topbar-right"><div class="header-user"><div class="topbar-right-copy"><div class="header-user-copy"><strong id="shell-user-name">Đang tải...</strong><span id="shell-user-role">Trưởng bộ môn</span></div><span class="topbar-context">KHOA CÔNG NGHỆ THÔNG TIN</span></div><span class="avatar" id="shell-user-avatar">--</span></div></div>
+  </header>
+  <div class="app-layout">
+    <aside class="sidebar"><p class="nav-label">ĐIỀU HƯỚNG</p><nav>
+      <a href="/lecturer/dashboard.html">Bảng điều khiển</a>
+      <a href="/lecturer/topics/list.html">Tất cả đề tài</a>
+      <a href="/lecturer/topics/form.html">Đề xuất đề tài</a>
+      <a href="/lecturer/topics/student-groups.html">Nhóm sinh viên hướng dẫn</a>
+      <a href="/lecturer/topics/approval.html" id="nav-approval">Duyệt đề tài bộ môn</a>
+      <a href="/councils/index.html">Hội đồng & chấm điểm</a>
+    </nav><div class="sidebar-bottom"><button id="shell-logout-btn" class="sidebar-logout" type="button" data-logout>Đăng xuất</button></div></aside>
+    <main class="main-content"><div class="page-header"><div><h1>Gửi thông báo cho sinh viên</h1><p class="page-subtitle">Thông báo tới sinh viên thuộc bộ môn của bạn.</p></div></div>
+      <section class="card" style="max-width:760px;padding:28px">
+        <form id="department-announcement-form">
+          <label>Tiêu đề<input name="title" required maxlength="255" placeholder="Nhập tiêu đề"></label>
+          <label>Nội dung<textarea name="content" required maxlength="10000" rows="7" placeholder="Nội dung thông báo"></textarea></label>
+          <p id="announcement-message" role="status" hidden></p>
+          <button class="button primary" type="submit">Gửi thông báo</button>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/lecturer-shell.js"></script>
+  <script src="/assets/js/department-announcements.js"></script>
+</body>
+</html>

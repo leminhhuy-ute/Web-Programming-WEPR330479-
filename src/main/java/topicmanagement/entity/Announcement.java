@@ -22,6 +22,10 @@ public class Announcement {
   private AnnouncementAudience audience;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "department_id")
+  private Department department;
+
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by")
   private User createdBy;
 
@@ -60,6 +64,9 @@ public class Announcement {
   public void setAudience(AnnouncementAudience v) {
     audience = v;
   }
+
+  public Department getDepartment() { return department; }
+  public void setDepartment(Department value) { department = value; }
 
   public User getCreatedBy() {
     return createdBy;

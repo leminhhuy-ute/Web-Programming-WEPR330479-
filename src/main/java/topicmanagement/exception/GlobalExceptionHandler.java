@@ -35,11 +35,18 @@ public class GlobalExceptionHandler {
     ConstraintViolationException.class
   })
   ResponseEntity<ApiResponse<Void>> bad(Exception e) {
+    String detail;
+    if (e instanceof MethodArgumentNotValidException validation) {
+      var field = validation.getBindingResult().getFieldError();
+      detail = field == null ? "Dữ liệu không hợp lệ." : field.getDefaultMessage();
+    } else if (e instanceof ConstraintViolationException validation) {
+      detail = validation.getConstraintViolations().stream().map(v -> v.getMessage())
+          .findFirst().orElse("Dữ liệu không hợp lệ.");
+    } else {
+      detail = e.getMessage();
+    }
     return ResponseEntity.badRequest()
-        .body(
-            ApiResponse.fail(
-                e instanceof IllegalArgumentException ? e.getMessage() : "Dữ liệu không hợp lệ.",
-                e instanceof IllegalArgumentException ? e.getMessage() : null));
+        .body(ApiResponse.fail(detail == null || detail.isBlank() ? "Dữ liệu không hợp lệ." : detail, null));
   }
 
   @ExceptionHandler(DataIntegrityViolationException.class)

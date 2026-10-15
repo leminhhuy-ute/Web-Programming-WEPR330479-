@@ -104,6 +104,10 @@ public class TopicService {
             throw new IllegalArgumentException("Nhóm phải có từ 1 đến 3 sinh viên.");
         if (request.getDescription() == null || request.getDescription().trim().length() < 10)
             throw new IllegalArgumentException("Mô tả đề tài phải có ít nhất 10 ký tự.");
+        String title = request.getTitle() == null ? "" : request.getTitle().trim();
+        if (title.isBlank()) throw new IllegalArgumentException("Tên đề tài không được để trống.");
+        if (topicRepository.existsByTitleIgnoreCase(title))
+            throw new ConflictException("Tên đề tài đã tồn tại. Vui lòng nhập tên khác.");
         Department dept = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bộ môn."));
         RegistrationPeriod period = periodRepository.findById(request.getPeriodId())
@@ -129,7 +133,7 @@ public class TopicService {
             throw new org.springframework.security.access.AccessDeniedException("Chỉ đề xuất cho bộ môn của mình.");
         Topic topic = new Topic();
         topic.setTopicCode(code);
-        topic.setTitle(request.getTitle().trim());
+        topic.setTitle(title);
         topic.setDescription(request.getDescription().trim());
         topic.setRequirements(request.getRequirements());
         topic.setMaxStudents(request.getMaxStudents());
@@ -152,6 +156,10 @@ public class TopicService {
             throw new IllegalArgumentException("Mô tả đề tài phải có ít nhất 10 ký tự.");
         Topic topic = topicRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề tài có ID: " + id));
+        String title = request.getTitle() == null ? "" : request.getTitle().trim();
+        if (title.isBlank()) throw new IllegalArgumentException("Tên đề tài không được để trống.");
+        if (topicRepository.existsByTitleIgnoreCaseAndIdNot(title, id))
+            throw new ConflictException("Tên đề tài đã tồn tại. Vui lòng nhập tên khác.");
 
         if (topic.getStatus() == TopicStatus.APPROVED)
             throw new ConflictException("Không thể sửa đề tài đã được duyệt.");
@@ -177,7 +185,7 @@ public class TopicService {
             throw new org.springframework.security.access.AccessDeniedException("Chỉ đề xuất cho bộ môn của mình.");
         topic.setStatus(TopicStatus.PENDING);
         topic.setRejectionReason(null);
-        topic.setTitle(request.getTitle().trim());
+        topic.setTitle(title);
         topic.setDescription(request.getDescription().trim());
         topic.setRequirements(request.getRequirements());
         topic.setMaxStudents(request.getMaxStudents());

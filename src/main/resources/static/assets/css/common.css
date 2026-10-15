@@ -1,6 +1,27 @@
 @import url("style.css");
 @import url("admin.css");
 
+.app-message-dialog {
+    width: min(440px, calc(100vw - 32px));
+    max-width: none;
+    border: 1px solid #dfe7ef;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 22px 60px #14284440;
+    color: #15324d;
+    text-align: center;
+}
+.app-message-dialog::backdrop { background: #0e213f80; }
+.app-message-dialog .app-message-icon {
+    width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%;
+    display: grid; place-items: center; background: #fff0f0; color: #b22b37;
+    font-size: 26px; font-weight: 800;
+}
+.app-message-dialog[data-kind="success"] .app-message-icon { background: #e8f5ef; color: #167b58; }
+.app-message-dialog h2 { margin: 0 0 10px; font-size: 19px; }
+.app-message-dialog p { margin: 0 0 24px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.app-message-dialog button { min-width: 120px; }
+
 /* Shared Utility Classes */
 .page-nav {
     display: flex;

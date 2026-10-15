@@ -172,6 +172,9 @@
     function initAdminShell() {
         window.mountAdminShell();
         void window.loadCurrentUser();
+        const bell = document.createElement('script');
+        bell.src = '/assets/js/notifications.js';
+        document.body.append(bell);
     }
 
     if (document.readyState === "loading") {

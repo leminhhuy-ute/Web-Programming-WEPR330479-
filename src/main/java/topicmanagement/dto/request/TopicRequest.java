@@ -17,7 +17,7 @@ public class TopicRequest {
 
     @NotNull(message = "Số lượng sinh viên tối đa không được để trống")
     @Min(value = 1, message = "Số lượng sinh viên tối đa phải từ 1 trở lên")
-    @jakarta.validation.constraints.Max(3)
+    @jakarta.validation.constraints.Max(value = 3, message = "Số lượng sinh viên tối đa không được vượt quá 3")
     private Integer maxStudents;
 
     @NotBlank(message = "Loại đề tài không được để trống (COURSE, NCKH, TLCN, KLTN)")

@@ -44,6 +44,7 @@ function profileNavigation(role) {
     ['Đề xuất đề tài', '/lecturer/topics/form.html'],
     ['Nhóm sinh viên hướng dẫn', '/lecturer/topics/student-groups.html'],
     ...(role === 'HEAD_OF_DEPT' ? [['Duyệt đề tài bộ môn', '/lecturer/topics/approval.html']] : []),
+    ...(role === 'HEAD_OF_DEPT' ? [['Gửi thông báo', '/lecturer/announcements.html']] : []),
     ['Hội đồng & chấm điểm', '/councils/index.html']
   ];
   const links = role === 'STUDENT' ? studentLinks : role === 'DEAN' ? deanLinks : lecturerLinks;

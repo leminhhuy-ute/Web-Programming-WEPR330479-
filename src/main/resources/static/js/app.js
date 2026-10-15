@@ -52,6 +52,20 @@ async function api(path, body, method) {
 }
 
 function toast(text, error = false) {
+  if (error) {
+    let dialog = $('#student-error-dialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.id = 'student-error-dialog';
+      dialog.className = 'student-error-dialog';
+      dialog.innerHTML = '<div class="student-error-icon" aria-hidden="true">!</div><h2>Không thể thực hiện</h2><p></p><button type="button" class="button primary">Đã hiểu</button>';
+      document.body.append(dialog);
+      dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    }
+    dialog.querySelector('p').textContent = text || 'Vui lòng thử lại.';
+    if (!dialog.open) dialog.showModal();
+    return;
+  }
   const t = $('#toast');
   t.textContent = text;
   t.className = error ? 'error' : '';
@@ -94,7 +108,7 @@ function dashboard() {
   const next = !state.group ? 'group' : !r ? 'topics' : r.status === 'APPROVED' ? 'reports' : 'project';
   const stName = cleanName(state.student.name);
   const firstName = stName.split(' ').slice(-2).join(' ') || 'bạn';
-  return heading(`Chào bạn, ${esc(firstName)}!`, 'Không gian quản lý nhóm, đề tài và báo cáo học vụ.') +
+  return heading(`Chào bạn, ${esc(firstName)}!`, 'Không gian quản lý nhóm, đề tài và báo cáo học vụ.') + newsPanel() +
     `<div class="grid metrics">
       <div class="panel metric">
         <span class="metric-icon">${icon('users')}</span>
@@ -256,7 +270,11 @@ function reportsPage() {
     </div>
     <section class="panel section-gap">
       <div class="panel-head"><h2>Lịch sử nộp báo cáo</h2>${badge('MEMBER', state.reports.length + ' tệp')}</div>
-      ${state.reports.length ? `<div class="table-wrap"><table><thead><tr><th>TÊN TỆP</th><th>LOẠI</th><th>THỜI GIAN NỘP</th><th>TRẠNG THÁI</th><th>THAO TÁC</th></tr></thead><tbody>${state.reports.map(r => `<tr><td><b>${esc(r.filename)}</b><small>${(r.size/1024).toFixed(1)} KB · ${esc(cleanName(r.submittedBy))}</small>${r.note ? `<small>${esc(r.note)}</small>` : ''}</td><td>${esc(r.stage)}</td><td>${date(r.submittedAt)}</td><td>${badge('APPROVED', 'Đã nộp')}</td><td><a href="/api/student/reports/${r.id}/download" class="button secondary small">Tải về</a></td></tr>`).join('')}</tbody></table></div>` : empty('Chưa có báo cáo', 'Các tệp do nhóm trưởng nộp sẽ hiển thị tại đây.', '', 'file')}
+      ${state.reports.length ? `<div class="table-wrap"><table><thead><tr><th>TÊN TỆP</th><th>LOẠI</th><th>THỜI GIAN NỘP</th><th>THAO TÁC</th></tr></thead><tbody>${state.reports.map(r => `<tr><td><b>${esc(r.filename)}</b><small>${(r.size/1024).toFixed(1)} KB · ${esc(cleanName(r.submittedBy))}</small>${r.note ? `<small>${esc(r.note)}</small>` : ''}</td><td>${esc(r.stage)}</td><td>${date(r.submittedAt)}</td><td><a href="/api/student/reports/${r.id}/download" class="button secondary small">Tải về</a></td></tr>`).join('')}</tbody></table></div>` : empty('Chưa có báo cáo', 'Các tệp do nhóm trưởng nộp sẽ hiển thị tại đây.', '', 'file')}
+    </section>
+    <section class="panel section-gap">
+      <h2>Nhận xét của giảng viên hướng dẫn</h2>
+      ${state.reports.filter(r => r.advisorFeedback).length ? `<div class="stack">${state.reports.filter(r => r.advisorFeedback).map(r => `<article class="notice advisor-feedback"><b>${esc(r.stage)} · ${esc(r.filename)}</b><p>${esc(r.advisorFeedback)}</p><small>${esc(cleanName(r.feedbackBy))} · ${date(r.feedbackAt)}</small></article>`).join('')}</div>` : '<p class="muted">Chưa có nhận xét cho các báo cáo của nhóm.</p>'}
     </section>`;
 }
 
@@ -294,7 +312,7 @@ function render() {
   $('#profile-avatar').textContent = initials(displayName);
   $('#invite-count').textContent = state.invitations.length || '';
   $('#main').innerHTML = ({
-    dashboard: () => dashboard() + newsPanel(),
+    dashboard: dashboard,
     group: groupPage,
     topics: topicsPage,
     project: projectPage,
@@ -445,6 +463,13 @@ window.addEventListener('hashchange', () => {
 
 refresh().catch(e => {
   $('#main').innerHTML = empty('Chưa tải được dữ liệu', esc(e.message), '<button type="button" class="button secondary" data-action="reload">Thử lại</button>', 'info');
+});
+
+document.addEventListener('announcements:updated', async () => {
+  try {
+    announcements = await api('/announcements');
+    if (page === 'dashboard' && state) render();
+  } catch (_) { /* Bell will show its own loading error. */ }
 });
 
 document.addEventListener('click', e => {

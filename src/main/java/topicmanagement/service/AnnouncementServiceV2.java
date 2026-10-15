@@ -18,10 +18,12 @@ import topicmanagement.repository.*;
 public class AnnouncementServiceV2 {
   private final AnnouncementRepository announcements;
   private final UserRepository users;
+  private final AnnouncementReadRepository reads;
 
-  public AnnouncementServiceV2(AnnouncementRepository a, UserRepository u) {
+  public AnnouncementServiceV2(AnnouncementRepository a, UserRepository u, AnnouncementReadRepository reads) {
     announcements = a;
     users = u;
+    this.reads = reads;
   }
 
   public List<AnnouncementResponse> findAll(String q, AnnouncementAudience a) {
@@ -44,6 +46,17 @@ public class AnnouncementServiceV2 {
         users
             .findById(author)
             .orElseThrow(() -> new ResourceNotFoundException("Người tạo không tồn tại.")));
+    a.setDepartment(null);
+    return save(a, r);
+  }
+
+  public AnnouncementResponse createForDepartment(AnnouncementRequest r, topicmanagement.entity.User author) {
+    if (author.getRole() != topicmanagement.enums.Role.HEAD_OF_DEPT || author.getDepartment() == null
+        || r.audience() != AnnouncementAudience.STUDENT)
+      throw new org.springframework.security.access.AccessDeniedException("Trưởng bộ môn chỉ được gửi thông báo cho sinh viên thuộc bộ môn.");
+    Announcement a = new Announcement();
+    a.setCreatedBy(author);
+    a.setDepartment(author.getDepartment());
     return save(a, r);
   }
 
@@ -59,6 +72,7 @@ public class AnnouncementServiceV2 {
   }
 
   public void delete(Long id) {
+    reads.deleteByAnnouncementId(id);
     announcements.delete(entity(id));
   }
 

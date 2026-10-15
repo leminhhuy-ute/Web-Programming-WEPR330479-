@@ -15,6 +15,9 @@ public class Report {
     @Column(nullable=false,length=1000) public String note;
     @Column(nullable=false) public LocalDateTime submittedAt=LocalDateTime.now();
     public boolean late;
+    @Column(name="advisor_feedback",columnDefinition="TEXT") public String advisorFeedback;
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="feedback_by_id") public User feedbackBy;
+    @Column(name="feedback_at") public LocalDateTime feedbackAt;
     @Column(name="report_size") public Long reportSize;
     @Column(length=64) public String checksum;
     @Column(name="storage_path",length=500) public String storagePath;

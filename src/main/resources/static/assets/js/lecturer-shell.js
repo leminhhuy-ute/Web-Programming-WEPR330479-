@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    const bell = document.createElement('script');
+    bell.src = '/assets/js/notifications.js';
+    document.body.append(bell);
+
     // Role and Display
     const cleanFullName = sanitizeName(user.fullName, user.role);
     const moduleLabel = user.role === 'DEAN'
@@ -59,6 +63,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sidebar navigation items
     const navContainer = document.querySelector('.sidebar nav');
     if (navContainer) {
+        if (user.role === 'HEAD_OF_DEPT' && !navContainer.querySelector('a[href*="/lecturer/announcements.html"]')) {
+            const announcementLink = document.createElement('a');
+            announcementLink.href = App.getContextPath() + '/lecturer/announcements.html';
+            announcementLink.textContent = 'Gửi thông báo';
+            if (location.pathname.endsWith('/lecturer/announcements.html')) announcementLink.classList.add('active');
+            navContainer.append(announcementLink);
+        }
         if (!navContainer.querySelector('a[href*="/profile.html"]')) {
             const profileLink = document.createElement('a');
             profileLink.href = App.getContextPath() + '/profile.html';

@@ -18,27 +18,27 @@ public interface ReportRepository extends JpaRepository<Report,Long> {
     @Query("select new topicmanagement.dto.response.ReportSummaryResponse("
         + "r.id,r.group.id,r.group.groupName,r.group.topic.topicCode,r.group.topic.title,"
         + "r.filename,r.contentType,r.stage,r.note,coalesce(r.reportSize,0),r.checksum,"
-        + "r.submittedAt,r.late,r.submittedBy.userCode) "
-        + "from Report r where r.group.id=:groupId order by r.submittedAt desc")
+        + "r.submittedAt,r.late,r.submittedBy.userCode,r.advisorFeedback,reviewer.fullName,r.feedbackAt) "
+        + "from Report r left join r.feedbackBy reviewer where r.group.id=:groupId order by r.submittedAt desc")
     List<ReportSummaryResponse> findSummariesByGroupId(@Param("groupId") Long groupId);
 
     @Query(value = "select new topicmanagement.dto.response.ReportSummaryResponse("
         + "r.id,r.group.id,r.group.groupName,r.group.topic.topicCode,r.group.topic.title,"
         + "r.filename,r.contentType,r.stage,r.note,coalesce(r.reportSize,0),r.checksum,"
-        + "r.submittedAt,r.late,r.submittedBy.userCode) from Report r where r.group.id=:groupId",
+        + "r.submittedAt,r.late,r.submittedBy.userCode,r.advisorFeedback,reviewer.fullName,r.feedbackAt) from Report r left join r.feedbackBy reviewer where r.group.id=:groupId",
         countQuery = "select count(r) from Report r where r.group.id=:groupId")
     Page<ReportSummaryResponse> findSummariesByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
     @Query("select new topicmanagement.dto.response.ReportSummaryResponse("
         + "r.id,r.group.id,r.group.groupName,r.group.topic.topicCode,r.group.topic.title,"
         + "r.filename,r.contentType,r.stage,r.note,coalesce(r.reportSize,0),r.checksum,"
-        + "r.submittedAt,r.late,r.submittedBy.userCode) from Report r where r.id=:id")
+        + "r.submittedAt,r.late,r.submittedBy.userCode,r.advisorFeedback,reviewer.fullName,r.feedbackAt) from Report r left join r.feedbackBy reviewer where r.id=:id")
     Optional<ReportSummaryResponse> findSummaryById(@Param("id") Long id);
 
     @Query("select new topicmanagement.dto.response.ReportSummaryResponse("
         + "r.id,r.group.id,r.group.groupName,r.group.topic.topicCode,r.group.topic.title,"
         + "r.filename,r.contentType,r.stage,r.note,coalesce(r.reportSize,0),r.checksum,"
-        + "r.submittedAt,r.late,r.submittedBy.userCode) from Report r "
+        + "r.submittedAt,r.late,r.submittedBy.userCode,r.advisorFeedback,reviewer.fullName,r.feedbackAt) from Report r left join r.feedbackBy reviewer "
         + "where r.group.id in :groupIds order by r.submittedAt desc")
     List<ReportSummaryResponse> findSummariesByGroupIdIn(@Param("groupIds") Collection<Long> groupIds);
 }

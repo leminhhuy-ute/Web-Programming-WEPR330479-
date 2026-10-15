@@ -1,24 +1,26 @@
 package topicmanagement.controller;
-import java.util.*;
+import java.time.LocalDateTime;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
-import topicmanagement.enums.*;
 import topicmanagement.repository.AnnouncementRepository;
 import topicmanagement.security.CurrentAccount;
+import topicmanagement.service.NotificationService;
 @RestController
 public class SharedAnnouncementController {
+    public record AnnouncementItem(Long id, String title, String content, LocalDateTime createdAt) {}
     private final AnnouncementRepository announcements;
     private final CurrentAccount accounts;
-    public SharedAnnouncementController(AnnouncementRepository announcements,CurrentAccount accounts) {
-        this.announcements=announcements;this.accounts=accounts;
+    private final NotificationService notifications;
+    public SharedAnnouncementController(AnnouncementRepository announcements,CurrentAccount accounts,
+            NotificationService notifications) {
+        this.announcements=announcements;this.accounts=accounts;this.notifications=notifications;
     }
     @GetMapping({"/api/student/announcements","/api/lecturer/announcements"})
     @Transactional(readOnly=true)
     public Object list() {
-        var role=accounts.user().getRole();
-        var audience=role==Role.STUDENT?AnnouncementAudience.STUDENT:AnnouncementAudience.LECTURER;
+        var recipient=accounts.user();
         return announcements.search("",null).stream()
-            .filter(a->a.getAudience()==AnnouncementAudience.ALL||a.getAudience()==audience)
-            .map(a->Map.of("id",a.getId(),"title",a.getTitle(),"content",a.getContent())).toList();
+            .filter(a->notifications.visibleTo(a,recipient))
+            .map(a->new AnnouncementItem(a.getId(),a.getTitle(),a.getContent(),a.getCreatedAt())).toList();
     }
 }

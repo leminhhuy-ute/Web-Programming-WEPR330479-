@@ -116,11 +116,13 @@ function mountShell() {
 }
 
 function showError(error) {
+    const detail = error.message || "Không thể xử lý yêu cầu. Vui lòng thử lại.";
     const message = document.querySelector("#message");
     if (message) {
-        message.textContent = error.message || "Không thể tải dữ liệu. Vui lòng thử lại.";
+        message.textContent = detail;
         message.hidden = false;
     }
+    void showAppMessage(detail);
 }
 
 function clearError() {

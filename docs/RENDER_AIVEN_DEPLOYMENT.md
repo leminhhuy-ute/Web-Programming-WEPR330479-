@@ -13,7 +13,7 @@ Tài liệu lab dùng ứng dụng Todo làm ví dụ; dự án này dùng `/log
 | `application-cloud.properties` | Dùng MySQL, biến môi trường, HTTPS proxy và connection pool nhỏ |
 | `db/migration/cloud/V1__create_initial_schema.sql` | Tạo schema trực tiếp trong database được chọn ở JDBC URL |
 
-Flyway chạy V1 -> V6 -> V7; Hibernate chỉ `validate`. Không chạy `schema.sql`/`seed.sql` thủ công trên Aiven.
+Flyway chạy V1 -> V6 -> V7 -> V8; Hibernate chỉ `validate`. Không chạy `schema.sql`/`seed.sql` thủ công trên Aiven.
 Profile cloud dành cho database MỚI, TRỐNG. Database cũ đã chạy V5 dùng profile `mysql` theo tài liệu cũ.
 Không sửa migration V1 sau khi đã triển khai vì Flyway kiểm tra checksum.
 
@@ -59,7 +59,7 @@ Chỉ tạo MỘT Web Service bằng một trong hai cách.
 
 ## 4. Kiểm tra sau khi Deploy
 
-1. Trong Logs, tìm Flyway migrate thành công V1, V6, V7 và `Started TopicManagementApplication`.
+1. Trong Logs, tìm Flyway migrate thành công V1, V6, V7, V8 và `Started TopicManagementApplication`.
 2. Đợi trạng thái Render **Live**. Mở URL HTTPS do Render cấp, ví dụ `https://TEN-SERVICE.onrender.com/login.html`.
 3. Profile `cloud-demo` tạo 13 tài khoản mẫu nếu bảng users đang trống. Ví dụ: `dean01`, `hod01`, `lecturer01`, `student01`; mật khẩu ban đầu `Demo@12345`.
 4. Đăng nhập Trưởng khoa, tạo một thông báo thử; đăng xuất, đăng nhập Sinh viên và kiểm tra hiển thị.

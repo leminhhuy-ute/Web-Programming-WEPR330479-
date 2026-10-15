@@ -107,7 +107,7 @@ const LecturerCrud = {
                 const res = await App.fetchApi(url);
                 this.renderTopicTable(res.data);
             } catch (e) {
-                alert(e.message);
+                await showAppMessage(e.message);
             }
         };
 
@@ -150,10 +150,10 @@ const LecturerCrud = {
         if (!confirm('Bạn có chắc chắn muốn xóa đề tài đề xuất này không?')) return;
         try {
             await App.fetchApi(`${App.getContextPath()}/api/lecturer/topics/${id}`, { method: 'DELETE' });
-            alert('Xóa đề tài thành công.');
+            await showAppMessage('Xóa đề tài thành công.', 'success');
             location.reload();
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -187,7 +187,7 @@ const LecturerCrud = {
                 if (t.department) document.getElementById('form-department').value = t.department.id;
                 if (t.period) document.getElementById('form-period').value = t.period.id;
             } catch (e) {
-                alert(e.message);
+                await showAppMessage(e.message);
             }
         }
 
@@ -214,10 +214,10 @@ const LecturerCrud = {
                     method: method,
                     body: JSON.stringify(payload)
                 });
-                alert(topicId ? 'Cập nhật đề tài thành công!' : 'Đề xuất đề tài mới thành công!');
+                await showAppMessage(topicId ? 'Cập nhật đề tài thành công!' : 'Đề xuất đề tài mới thành công!', 'success');
                 window.location.href = 'list.html';
             } catch (err) {
-                alert(err.message);
+                await showAppMessage(err.message);
             }
         });
     },
@@ -257,7 +257,7 @@ const LecturerCrud = {
             const user = await App.getCurrentUser();
             document.getElementById('btn-edit').hidden = t.status === 'APPROVED' || t.createdBy?.id !== user.id;
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -275,7 +275,7 @@ const LecturerCrud = {
                 const res = await App.fetchApi(url);
                 this.renderApprovalTable(res.data);
             } catch (e) {
-                alert(e.message);
+                await showAppMessage(e.message);
             }
         };
 
@@ -379,7 +379,7 @@ const LecturerCrud = {
                         })
                     });
                     document.getElementById('assign-advisor-dialog').close();
-                    alert('Đã phân công Giảng viên hướng dẫn thành công!');
+                    await showAppMessage('Đã phân công Giảng viên hướng dẫn thành công!', 'success');
                     // Refresh topics
                     const status = document.getElementById('approval-status-filter')?.value || '';
                     const user = await App.getCurrentUser();
@@ -433,10 +433,10 @@ const LecturerCrud = {
                 method: 'POST',
                 body: JSON.stringify({ status: 'APPROVED' })
             });
-            alert('Đã duyệt đề tài.');
+            await showAppMessage('Đã duyệt đề tài.', 'success');
             location.reload();
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -448,10 +448,10 @@ const LecturerCrud = {
                 method: 'POST',
                 body: JSON.stringify({ status: 'REJECTED', rejectionReason: reason })
             });
-            alert('Đã từ chối đề tài.');
+            await showAppMessage('Đã từ chối đề tài.', 'success');
             location.reload();
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -489,7 +489,7 @@ const LecturerCrud = {
                 </tr>
             `).join('');
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -497,6 +497,7 @@ const LecturerCrud = {
         try {
             const res = await App.fetchApi(`${App.getContextPath()}/api/lecturer/groups/${groupId}/reports`);
             const reports = res.data;
+            const currentUser = await App.getCurrentUser();
             let dialog = document.getElementById('lecturer-report-dialog');
             if (!dialog) {
                 dialog = document.createElement('dialog');
@@ -509,11 +510,28 @@ const LecturerCrud = {
                 document.body.appendChild(dialog);
             }
             const groupName = reports[0]?.groupName || `Nhóm #${groupId}`;
-            dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Chỉ GVHD của đề tài và Trưởng khoa được truy cập.</p></div><button class="button outline" onclick="document.getElementById('lecturer-report-dialog').close()">Đóng</button></div>` +
-                (reports.length ? `<table class="data-table"><thead><tr><th>Tệp</th><th>Cột mốc</th><th>Thời gian nộp</th><th></th></tr></thead><tbody>${reports.map(r => `<tr><td><strong>${escapeHtml(r.filename)}</strong><br><small>${(Number(r.size || 0) / 1024).toFixed(1)} KB</small></td><td>${escapeHtml(r.stage)}</td><td>${new Date(r.submittedAt).toLocaleString('vi-VN')}</td><td><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải về</a></td></tr>`).join('')}</tbody></table>` : '<p>Nhóm chưa nộp báo cáo.</p>');
+            dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Giảng viên hướng dẫn có thể nhận xét từng tệp báo cáo.</p></div><button class="button outline" onclick="document.getElementById('lecturer-report-dialog').close()">Đóng</button></div>` +
+                (reports.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>Tệp</th><th>Cột mốc</th><th>Thời gian nộp</th><th>Nhận xét của giảng viên hướng dẫn</th><th></th></tr></thead><tbody>${reports.map(r => `<tr><td><strong>${escapeHtml(r.filename)}</strong><br><small>${(Number(r.size || 0) / 1024).toFixed(1)} KB</small></td><td>${escapeHtml(r.stage)}</td><td>${new Date(r.submittedAt).toLocaleString('vi-VN')}</td><td style="min-width:240px"><p style="white-space:pre-wrap">${escapeHtml(r.advisorFeedback || 'Chưa có nhận xét')}</p>${currentUser.role !== 'DEAN' ? `<form class="advisor-feedback-form" data-report-id="${r.id}"><label for="feedback-${r.id}">Nhập nhận xét</label><textarea id="feedback-${r.id}" name="feedback" maxlength="2000" required style="width:100%">${escapeHtml(r.advisorFeedback || '')}</textarea><button class="button secondary" type="submit">Lưu nhận xét</button></form>` : ''}</td><td><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải về</a></td></tr>`).join('')}</tbody></table></div>` : '<p>Nhóm chưa nộp báo cáo.</p>');
+            dialog.onsubmit = async event => {
+                const form = event.target.closest('.advisor-feedback-form');
+                if (!form) return;
+                event.preventDefault();
+                const button = form.querySelector('button');
+                button.disabled = true;
+                try {
+                    await App.fetchApi(`${App.getContextPath()}/api/lecturer/reports/${form.dataset.reportId}/feedback`, {
+                        method: 'POST', body: JSON.stringify({feedback: form.elements.feedback.value})
+                    });
+                    dialog.close();
+                    await this.viewReports(groupId);
+                } catch (error) {
+                    await showAppMessage(error.message);
+                    button.disabled = false;
+                }
+            };
             dialog.showModal();
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -524,10 +542,10 @@ const LecturerCrud = {
                 method: 'POST',
                 body: JSON.stringify({ status: 'APPROVED', notes: 'Giảng viên đã chấp nhận nhóm.' })
             });
-            alert('Đã duyệt nhận nhóm sinh viên.');
+            await showAppMessage('Đã duyệt nhận nhóm sinh viên.', 'success');
             location.reload();
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     },
 
@@ -539,10 +557,10 @@ const LecturerCrud = {
                 method: 'POST',
                 body: JSON.stringify({ status: 'REJECTED', notes: notes })
             });
-            alert('Đã từ chối nhóm sinh viên.');
+            await showAppMessage('Đã từ chối nhóm sinh viên.', 'success');
             location.reload();
         } catch (e) {
-            alert(e.message);
+            await showAppMessage(e.message);
         }
     }
 };

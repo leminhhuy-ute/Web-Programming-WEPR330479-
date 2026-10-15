@@ -199,7 +199,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
 
 ## 4. Quản lý tiến hóa Schema qua Flyway Migrations
 
-Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V7 trong `src/main/resources/db/migration/mysql/`:
+Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V8 trong `src/main/resources/db/migration/mysql/`:
 
 | Phiên bản | Tệp script Migration | Mô tả thay đổi kiến trúc |
 | :--- | :--- | :--- |
@@ -209,3 +209,4 @@ Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực th
 | `V5` | `V5__fix_constraints_and_linkages.sql` | Bổ sung cột `password_changed_at`, ràng buộc thành viên nhóm theo đợt (`uk_group_member_period_student`), và liên kết trực tiếp `registration_id`, `topic_id` vào `student_reports` và `defenses`. |
 | `V6` | `V6__add_result_email_outbox.sql` | Tạo hàng đợi email thông báo kết quả. |
 | `V7` | `V7__add_student_class.sql` | Thêm cột lớp sinh viên trong bảng `users`. |
+| `V8` | `V8__notifications_and_advisor_feedback.sql` | Thêm phạm vi bộ môn và lượt đọc thông báo; lưu nhận xét báo cáo của giảng viên hướng dẫn. |

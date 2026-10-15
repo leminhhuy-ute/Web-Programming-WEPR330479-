@@ -190,3 +190,14 @@ Xuất kết quả quản trị bỏ `periodId` để lấy tất cả đợt; I
 Công bố điểm giờ tạo hàng đợi email trong cùng giao dịch; công bố lại không tạo thư trùng. SMTP gửi ở tác vụ nền khi `MAIL_ENABLED=true`. Xem [SMTP_SETUP.md](SMTP_SETUP.md).
 
 Đăng ký đề tài khác đợt của nhóm trả 409. Sửa hội đồng đã phân công sẽ từ chối đưa GVHD vào hội đồng, bỏ/thay vai trò phản biện đã phân công hoặc đổi ngày không khớp ngày bảo vệ của đợt. Các kiểm tra quyền tại service theo người sở hữu, bộ môn và vai trò hội đồng tiếp tục áp dụng cùng `@PreAuthorize` tại API.
+
+## 9. Thông báo và nhận xét báo cáo
+
+| Phương thức | Endpoint | Quyền | Hành vi |
+| --- | --- | --- | --- |
+| `GET` | `/api/notifications` | Đã đăng nhập | Danh sách thông báo theo vai trò và bộ môn, kèm số thông báo chưa đọc. |
+| `POST` | `/api/notifications/{id}/read` | Người nhận | Đánh dấu đã đọc riêng cho tài khoản hiện tại; không thể đọc thông báo ngoài phạm vi nhận. |
+| `POST` | `/api/notifications/department` | `HEAD_OF_DEPT` | Gửi thông báo cho sinh viên trong bộ môn mình; body gồm `title`, `content`, `audience: "STUDENT"`. |
+| `POST` | `/api/lecturer/reports/{id}/feedback` | Giảng viên hướng dẫn | Lưu nhận xét 1–2000 ký tự cho báo cáo; body `{"feedback":"..."}`. |
+
+Trưởng khoa có thể chọn thêm `HEAD_OF_DEPT` khi tạo thông báo qua API quản trị. Tạo hoặc sửa đề tài trùng tên (không phân biệt chữ hoa/thường) trả `409` cùng thông báo cụ thể.

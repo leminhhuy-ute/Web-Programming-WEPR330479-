@@ -116,3 +116,21 @@ const App = {
 };
 request('/api/auth/csrf').catch(() => {});
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function showAppMessage(message, kind = 'error') {
+    let dialog = document.querySelector('#app-message-dialog');
+    if (!dialog) {
+        dialog = document.createElement('dialog');
+        dialog.id = 'app-message-dialog';
+        dialog.className = 'app-message-dialog';
+        dialog.innerHTML = '<div class="app-message-icon" aria-hidden="true"></div><h2></h2><p></p><button type="button" class="button primary">Đã hiểu</button>';
+        document.body.append(dialog);
+        dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    }
+    dialog.dataset.kind = kind;
+    dialog.querySelector('.app-message-icon').textContent = kind === 'success' ? '✓' : '!';
+    dialog.querySelector('h2').textContent = kind === 'success' ? 'Thao tác thành công' : 'Không thể thực hiện';
+    dialog.querySelector('p').textContent = message || 'Vui lòng thử lại.';
+    if (!dialog.open) dialog.showModal();
+    return new Promise(resolve => dialog.addEventListener('close', resolve, {once: true}));
+}

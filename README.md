@@ -25,11 +25,13 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 - **Tạo đợt đăng ký**: Cấu hình các đợt đăng ký với 4 mốc thời gian tuần tự (cửa sổ giảng viên đề xuất và cửa sổ sinh viên đăng ký).
 - **Quản lý hội đồng**: Thành lập hội đồng đánh giá (3–5 thành viên với các chức danh Chủ tịch, Thư ký, Phản biện, Ủy viên), phân công nhóm bảo vệ và chỉ định giảng viên phản biện.
 - **Công bố kết quả**: Phê duyệt và công bố bảng điểm đánh giá của hội đồng cho sinh viên tra cứu.
+- **Gửi thông báo**: Trưởng khoa chọn đối tượng nhận là Trưởng bộ môn, Giảng viên, Sinh viên hoặc tất cả.
 
 ### Trưởng bộ môn / Giảng viên (`ROLE_HEAD_OF_DEPT` / `ROLE_LECTURER`)
 - **Đề xuất đề tài**: Giảng viên đề xuất đề tài thuộc bộ môn trong cửa sổ thời gian cho phép; Trưởng khoa có quyền đề xuất đề tài liên bộ môn.
 - **Quản lý đề tài**: Trưởng bộ môn thẩm định, phê duyệt đề tài, phân công giảng viên hướng dẫn chính/phụ (`advisor1`, `advisor2`), hoặc từ chối đề tài kèm lý do phản hồi.
-- **Hướng dẫn sinh viên**: Giảng viên hướng dẫn duyệt các nhóm sinh viên đăng ký đề tài của mình, theo dõi tiến độ và tải tệp báo cáo của nhóm.
+- **Hướng dẫn sinh viên**: Giảng viên hướng dẫn duyệt các nhóm sinh viên đăng ký đề tài của mình, theo dõi tiến độ, tải tệp và nhập nhận xét cho từng báo cáo; chỉ giảng viên hướng dẫn được sửa nhận xét.
+- **Thông báo bộ môn**: Trưởng bộ môn gửi thông báo cho sinh viên thuộc bộ môn mình phụ trách.
 - **Tham gia đánh giá**: Tham gia hội đồng chấm bảo vệ, nhập điểm số độc lập ($0.00 - 10.00$) và nhận xét chuyên môn (với điều kiện không hướng dẫn đề tài đó).
 
 ### Sinh viên (`ROLE_STUDENT`)
@@ -39,6 +41,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 - **Rời nhóm & Giải tán nhóm**: Thành viên có thể rời nhóm hoặc nhóm trưởng giải tán nhóm khi nhóm chưa đăng ký đề tài.
 - **Đăng ký đề tài**: Nhóm trưởng đại diện nhóm chọn đề tài đã công bố trong danh mục để đăng ký. Nghiêm cấm hủy đăng ký khi nhóm đã nộp báo cáo hoặc đã có lịch bảo vệ.
 - **Nộp báo cáo**: Nhóm trưởng nộp báo cáo tiến độ tuần tự theo 3 giai đoạn: **Đề cương** $\rightarrow$ **Giữa kỳ** $\rightarrow$ **Cuối kỳ** (hỗ trợ tệp PDF/DOCX tối đa 10 MB, kiểm tra tính hợp lệ cấu trúc tệp).
+- **Xem nhận xét**: Thành viên nhóm xem nhận xét của giảng viên hướng dẫn ngay tại trang Nộp báo cáo.
 - **Xem kết quả**: Tra cứu bảng điểm tổng hợp và nhận xét chi tiết của từng thành viên hội đồng sau khi kết quả được công bố. Hỗ trợ tra cứu theo đợt hiện tại hoặc xem lại lịch sử các đợt đã qua.
 
 ### Hồ sơ cá nhân (mọi vai trò)
@@ -46,6 +49,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 - **Đổi mật khẩu**: Người dùng nhập mật khẩu hiện tại và mật khẩu mới đủ mạnh. Đổi thành công sẽ kết thúc phiên hiện tại và vô hiệu hóa phiên cũ.
 
 ### Mở rộng kết quả và thông báo
+- **Chuông thông báo**: Hiển thị thông báo phù hợp với vai trò và bộ môn, đếm tin chưa đọc riêng theo từng tài khoản, tự cập nhật mỗi 5 giây khi trang đang mở. Thông báo nằm đầu bảng điều khiển sinh viên.
 - **Chọn đợt rõ ràng** khi tạo nhóm; chặn đăng ký đề tài khác đợt và kiểm tra một sinh viên không có hai nhóm trong cùng đợt thực hiện đề tài.
 - **Sửa/xóa hội đồng trên giao diện** cho trưởng khoa; khi sửa kiểm tra cả GVHD thứ nhất/thứ hai, phản biện đã phân công và ngày bảo vệ.
 - **Email công bố điểm**: hàng đợi lưu trong CSDL, thử lại khi SMTP lỗi, trang theo dõi và gửi lại thư thất bại. Trưởng khoa có thể gửi email điểm minh họa tới địa chỉ người gửi để kiểm tra SMTP mà không công bố điểm thật. Mặc định tắt gửi, bật qua biến môi trường. Xem [cấu hình SMTP](docs/SMTP_SETUP.md).
@@ -82,7 +86,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 | **Bảo mật & Phân quyền (Security)** | Spring Security 6 | Xác thực người dùng, băm mật khẩu BCrypt, phòng chống tấn công CSRF, kiểm soát phiên, chống brute-force và phân quyền truy cập theo vai trò (RBAC) |
 | **Cơ sở dữ liệu Production** | MySQL Server 8.0+ | Hệ quản trị cơ sở dữ liệu quan hệ chính thức, lưu trữ bền vững với Storage Engine InnoDB và bảng mã `utf8mb4_unicode_ci` |
 | **Cơ sở dữ liệu Demo & Test** | H2 Database | Cơ sở dữ liệu nhúng (file-based và in-memory), phục vụ khởi chạy demo tức thì và chạy bộ kiểm thử tự động |
-| **Quản lý Migration Schema** | Flyway | Tự động áp dụng V6 (email) và V7 (lớp sinh viên) ở profile MySQL; baseline V5 trên schema hiện hành, không chạy lại các SQL V2–V5 cũ |
+| **Quản lý Migration Schema** | Flyway | Tự động áp dụng V6 (email), V7 (lớp sinh viên) và V8 (thông báo, nhận xét báo cáo) ở profile MySQL; baseline V5 trên schema hiện hành, không chạy lại các SQL V2–V5 cũ |
 | **Giao diện người dùng (Frontend)** | Thymeleaf, HTML5, CSS3, JS | Giao diện web responsive, kết nối Fetch API, chuẩn nhận diện màu sắc và kiểu chữ của Trường ĐH Sư phạm Kỹ thuật TP.HCM |
 | **Công cụ đóng gói (Build Tool)** | Apache Maven 3.9+ | Quản lý thư viện phụ thuộc và đóng gói toàn bộ dự án thành tệp thực thi duy nhất (Executable Fat JAR) |
 
@@ -239,7 +243,7 @@ Hệ thống được kiểm thử tự động toàn diện qua bộ kiểm th�
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 ```
-**86 kiểm thử thường lệ đều đạt**. Kiểm tra MySQL được bỏ qua khi máy cục bộ chưa cấu hình MySQL; job CI riêng chạy kiểm tra này trên MySQL 8.4, kiểm chứng Flyway V5 → V7 và `ddl-auto=validate` cho toàn bộ entity. GitHub Actions còn chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp 12 file JavaScript. Kiểm thử hồ sơ bao phủ cả bốn vai trò, giới hạn trường chỉ đọc, cập nhật lớp từ quản trị, CSRF và đổi mật khẩu có hủy phiên. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
+Kiểm tra MySQL được bỏ qua khi máy cục bộ chưa cấu hình MySQL; job CI riêng chạy trên MySQL 8.4, kiểm chứng Flyway V5 → V8 và `ddl-auto=validate` cho toàn bộ entity. GitHub Actions còn chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp JavaScript. Kiểm thử hồi quy bao phủ phân quyền thông báo theo bộ môn, trạng thái đã đọc, nhận xét báo cáo và kiểm tra tên đề tài trùng. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
 
 ---
 
@@ -264,4 +268,4 @@ Tài liệu kỹ thuật chuyên sâu được duy trì đầy đủ tại thư 
 
 1. **Bảo tồn tài khoản Demo**: Nhằm phục vụ mục đích đánh giá và chấm điểm học phần Lập trình Web, tài khoản demo cùng mật khẩu mặc định `Demo@12345` được lưu giữ trong cơ sở dữ liệu để kiểm thử các vai trò khác nhau qua form đăng nhập tiêu chuẩn (đã gỡ bỏ toàn bộ các nút bấm điền nhanh trên giao diện để sẵn sàng phát hành).
 2. **Khởi tạo cơ sở dữ liệu**: Khi triển khai trên môi trường MySQL thực tế, bắt buộc thực thi tập lệnh [database/schema.sql](database/schema.sql) trước khi khởi động ứng dụng vì profile `mysql` sử dụng chế độ `ddl-auto=validate`.
-3. **Migration dữ liệu**: Profile MySQL dùng Flyway tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline và chạy V6, V7; V2–V5 trong `database/migration/` được giữ làm lịch sử, không tự chạy lại trên schema đầy đủ. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).
+3. **Migration dữ liệu**: Profile MySQL dùng Flyway tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline và chạy V6–V8; V2–V5 trong `database/migration/` được giữ làm lịch sử, không tự chạy lại trên schema đầy đủ. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).

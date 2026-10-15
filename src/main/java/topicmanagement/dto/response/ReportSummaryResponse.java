@@ -16,4 +16,7 @@ public record ReportSummaryResponse(
     String checksum,
     LocalDateTime submittedAt,
     boolean late,
-    String submittedBy) {}
+    String submittedBy,
+    String advisorFeedback,
+    String feedbackBy,
+    LocalDateTime feedbackAt) {}

@@ -18,6 +18,8 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
     Optional<Topic> lockById(@Param("id") Long id);
     Optional<Topic> findByTopicCode(String topicCode);
     boolean existsByTopicCode(String topicCode);
+    boolean existsByTitleIgnoreCase(String title);
+    boolean existsByTitleIgnoreCaseAndIdNot(String title, Long id);
     boolean existsByPeriodId(Long periodId);
     long countByPeriodId(Long periodId);
     long countByStatus(TopicStatus status);

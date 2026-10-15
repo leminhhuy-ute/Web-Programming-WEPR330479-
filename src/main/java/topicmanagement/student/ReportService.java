@@ -167,6 +167,23 @@ public class ReportService {
         return summary;
     }
 
+    @Transactional
+    public ReportSummaryResponse saveAdvisorFeedback(User actor, Long reportId, String feedback) {
+        if (feedback == null || feedback.isBlank() || feedback.strip().length() > 2000)
+            throw bad("Nhận xét cần từ 1 đến 2.000 ký tự.");
+        Report report = reports.findById(reportId).orElseThrow(this::denied);
+        Topic topic = report.group.getTopic();
+        boolean advisor = topic != null && ((topic.getAdvisor1() != null && topic.getAdvisor1().getId().equals(actor.getId()))
+            || (topic.getAdvisor2() != null && topic.getAdvisor2().getId().equals(actor.getId())));
+        if (!advisor) throw denied();
+        report.advisorFeedback = feedback.strip();
+        report.feedbackBy = actor;
+        report.feedbackAt = LocalDateTime.now();
+        reports.saveAndFlush(report);
+        audit.log(actor, "COMMENT_REPORT", "Report", report.id, null, "Nhận xét báo cáo của nhóm.");
+        return reports.findSummaryById(report.id).orElseThrow(this::denied);
+    }
+
     public ReportSummaryResponse metadataForCouncil(User actor, Long reportId) {
         ReportSummaryResponse summary = reports.findSummaryById(reportId).orElseThrow(this::denied);
         var defense = defenses.findByGroupId(summary.groupId()).orElseThrow(this::denied);
