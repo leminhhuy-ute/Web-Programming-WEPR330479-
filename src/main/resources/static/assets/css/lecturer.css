@@ -343,6 +343,15 @@ table.data-table tbody tr:hover {
   align-items: center;
 }
 
+.announcement-count {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
 .announcement-body {
   padding: 20px 24px;
 }

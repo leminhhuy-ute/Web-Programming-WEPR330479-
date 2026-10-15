@@ -102,27 +102,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Announcements panel on dashboard
+    // Keep faculty announcements at the top of the lecturer dashboard.
     if (document.querySelector('#stat-my-topics')) {
-        try {
-            const response = await fetch('/api/lecturer/announcements');
-            if (response.ok) {
-                const news = await response.json();
-                const panel = document.createElement('section');
-                panel.className = 'announcement-panel';
-                panel.style.marginTop = '24px';
-                panel.innerHTML = '<div class="card-header">' + 
-                    '<h2 style="font-size:17px;font-weight:750;color:var(--navy);margin:0;">Thông báo từ khoa</h2>' + 
-                    (news.length ? `<span class="badge" style="background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">${news.length} thông báo</span>` : '') +
-                    '</div>' +
-                    '<div class="announcement-body">' +
-                    (news.length ? news.map(a => `<div class="announcement-item"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><h3 style="font-size:15px;margin:0;font-weight:700;color:var(--navy);">${escapeHtml(a.title)}</h3>${a.createdAt ? `<span style="font-size:12px;color:var(--text-muted);white-space:nowrap;font-weight:500;">${new Date(a.createdAt).toLocaleDateString('vi-VN')}</span>` : ''}</div><p style="margin:0;white-space:pre-wrap;color:var(--text-secondary);font-size:13.5px;line-height:1.6;">${escapeHtml(a.content)}</p></div>`).join('') : '<p class="text-muted" style="margin:0;">Chưa có thông báo mới.</p>') +
-                    '</div>';
-                const mainArea = document.querySelector('.content-body') || document.querySelector('.main-content');
-                if (mainArea) mainArea.append(panel);
-            }
-        } catch (error) {
-            console.error(error);
+        const mainArea = document.querySelector('.content-body') || document.querySelector('.main-content');
+        if (mainArea) {
+            const panel = document.createElement('section');
+            panel.className = 'announcement-panel';
+            panel.setAttribute('aria-label', 'Thông báo từ khoa');
+            panel.innerHTML = '<div class="card-header">' +
+                '<h2 style="font-size:17px;font-weight:750;color:var(--navy);margin:0;">Thông báo từ khoa</h2>' +
+                '<span class="announcement-count badge" hidden></span>' +
+                '</div><div class="announcement-body"><p class="text-muted" style="margin:0;">Đang tải thông báo...</p></div>';
+            const pageHeader = mainArea.querySelector('.page-header');
+            if (pageHeader) pageHeader.insertAdjacentElement('afterend', panel);
+            else mainArea.prepend(panel);
+
+            const loadAnnouncements = async () => {
+                try {
+                    const response = await fetch('/api/lecturer/announcements');
+                    if (!response.ok) throw new Error('Không thể tải thông báo từ khoa.');
+                    const news = await response.json();
+                    const count = panel.querySelector('.announcement-count');
+                    count.hidden = !news.length;
+                    count.textContent = `${news.length} thông báo`;
+                    panel.querySelector('.announcement-body').innerHTML = news.length
+                        ? news.map(a => `<div class="announcement-item"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><h3 style="font-size:15px;margin:0;font-weight:700;color:var(--navy);">${escapeHtml(a.title)}</h3>${a.createdAt ? `<span style="font-size:12px;color:var(--text-muted);white-space:nowrap;font-weight:500;">${new Date(a.createdAt).toLocaleDateString('vi-VN')}</span>` : ''}</div><p style="margin:0;white-space:pre-wrap;color:var(--text-secondary);font-size:13.5px;line-height:1.6;">${escapeHtml(a.content)}</p></div>`).join('')
+                        : '<p class="text-muted" style="margin:0;">Chưa có thông báo mới.</p>';
+                } catch (error) {
+                    console.error(error);
+                    panel.querySelector('.announcement-body').innerHTML = '<p class="text-muted" style="margin:0;">Không thể tải thông báo từ khoa.</p>';
+                }
+            };
+            await loadAnnouncements();
+            document.addEventListener('announcements:updated', loadAnnouncements);
         }
     }
 
