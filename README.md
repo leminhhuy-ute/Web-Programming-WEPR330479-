@@ -42,7 +42,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 - **Xem kết quả**: Tra cứu bảng điểm tổng hợp và nhận xét chi tiết của từng thành viên hội đồng sau khi kết quả được công bố. Hỗ trợ tra cứu theo đợt hiện tại hoặc xem lại lịch sử các đợt đã qua.
 
 ### Hồ sơ cá nhân (mọi vai trò)
-- **Xem thông tin cá nhân**: Mọi vai trò xem họ tên, email, mã người dùng và vai trò. Sinh viên xem lớp; giảng viên và cán bộ xem bộ môn. Các trường này chỉ đọc trên trang hồ sơ; Trưởng khoa cập nhật họ tên và lớp sinh viên tại phần quản lý tài khoản.
+- **Xem thông tin cá nhân**: Mọi vai trò xem họ tên, email, mã người dùng và vai trò; giảng viên và cán bộ xem bộ môn. Các trường này chỉ đọc trên trang hồ sơ; Trưởng khoa quản lý họ tên và lớp sinh viên tại phần quản lý tài khoản.
 - **Đổi mật khẩu**: Người dùng nhập mật khẩu hiện tại và mật khẩu mới đủ mạnh. Đổi thành công sẽ kết thúc phiên hiện tại và vô hiệu hóa phiên cũ.
 
 ### Mở rộng kết quả và thông báo

@@ -19,13 +19,37 @@ function profileMessage(selector, message, error = false) {
 function profileNavigation(role) {
   const home = role === 'STUDENT' ? '/student'
     : role === 'DEAN' ? '/admin/dashboard.html' : '/lecturer/dashboard.html';
-  const links = role === 'STUDENT'
-    ? [['Bảng điều khiển', '/student'], ['Nhóm của tôi', '/student#group'], ['Kết quả đánh giá', '/student#results']]
-    : role === 'DEAN'
-      ? [['Bảng điều khiển', home], ['Tài khoản', '/admin/users/list.html'], ['Hội đồng & kết quả', '/councils/index.html']]
-      : [['Bảng điều khiển', home], ['Đề tài', '/lecturer/topics/list.html'], ['Hội đồng & chấm điểm', '/councils/index.html']];
+  const studentLinks = [
+    ['Bảng điều khiển', '/student'],
+    ['Nhóm của tôi', '/student#group'],
+    ['Kho đề tài', '/student#topics'],
+    ['Đề tài đang thực hiện', '/student#project'],
+    ['Nộp báo cáo', '/student#reports'],
+    ['Kết quả đánh giá', '/student#results']
+  ];
+  const deanLinks = [
+    ['Bảng điều khiển', home],
+    ['Tài khoản', '/admin/users/list.html'],
+    ['Bộ môn', '/admin/departments/list.html'],
+    ['Đợt đăng ký', '/admin/registration-periods/list.html'],
+    ['Thông báo', '/admin/announcements/list.html'],
+    ['Đề tài & nhóm', '/lecturer/dashboard.html'],
+    ['Hội đồng & kết quả', '/councils/index.html'],
+    ['Xuất Excel / PDF', '/admin/exports.html'],
+    ['Email thông báo điểm', '/admin/email-notifications.html']
+  ];
+  const lecturerLinks = [
+    ['Bảng điều khiển', home],
+    ['Tất cả đề tài', '/lecturer/topics/list.html'],
+    ['Đề xuất đề tài', '/lecturer/topics/form.html'],
+    ['Nhóm sinh viên hướng dẫn', '/lecturer/topics/student-groups.html'],
+    ...(role === 'HEAD_OF_DEPT' ? [['Duyệt đề tài bộ môn', '/lecturer/topics/approval.html']] : []),
+    ['Hội đồng & chấm điểm', '/councils/index.html']
+  ];
+  const links = role === 'STUDENT' ? studentLinks : role === 'DEAN' ? deanLinks : lecturerLinks;
   $profile('#brand-home').href = api(home);
   const nav = $profile('#profile-nav');
+  nav.replaceChildren();
   for (const [label, href] of [...links, ['Hồ sơ cá nhân', '/profile.html']]) {
     const anchor = document.createElement('a');
     anchor.href = api(href);
@@ -51,8 +75,6 @@ function renderProfile(profile) {
   $profile('#code-field').firstChild.textContent = profile.role === 'STUDENT' ? 'MSSV' : 'Mã cán bộ';
   $profile('#department-field').hidden = profile.role === 'STUDENT' || !profile.departmentName;
   $profile('#profile-department').value = profile.departmentName || '';
-  $profile('#class-field').hidden = profile.role !== 'STUDENT';
-  $profile('#profile-class').value = profile.studentClass || 'Chưa cập nhật';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
