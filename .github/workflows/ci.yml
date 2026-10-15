@@ -74,6 +74,17 @@ jobs:
         run: |
           chmod +x mvnw
           ./mvnw -B -Dtest=MySqlMigrationSmokeTest test
+      - name: Create a separate empty cloud database
+        env:
+          MYSQL_PWD: ci-root-only
+        run: mysql -h 127.0.0.1 -u root -e 'CREATE DATABASE cloud_deploy_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+      - name: Verify fresh cloud migration, demo persistence and login
+        env:
+          CLOUD_MYSQL_TEST: 'true'
+          DB_URL: jdbc:mysql://127.0.0.1:3306/cloud_deploy_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh
+          DB_USERNAME: root
+          DB_PASSWORD: ci-root-only
+        run: ./mvnw -B -Dtest=CloudMySqlMigrationSmokeTest test
       - name: Save MySQL verification report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -81,3 +92,21 @@ jobs:
           name: mysql-migration-test
           path: target/surefire-reports/
           retention-days: 7
+  docker-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build the same Java 21 image used by Render
+        run: docker build -t topic-management:ci .
+      - name: Start container with the free-tier memory limit
+        run: |
+          docker run -d --name topic-smoke --memory=512m -p 18080:8080 topic-management:ci
+          trap 'docker logs topic-smoke; docker rm -f topic-smoke' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:18080/login.html > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1

@@ -164,6 +164,10 @@ Sử dụng các tài khoản demo được cung cấp để kiểm thử các v
 
 ## Hướng dẫn chạy dự án
 
+Triển khai theo bài lab **Docker + Render + Aiven MySQL**: xem [hướng dẫn từng bước](docs/RENDER_AIVEN_DEPLOYMENT.md).
+Profile `cloud` tự tạo schema bằng Flyway trên **database trống**; thêm `cloud-demo` để nạp tài khoản mẫu một lần.
+Dockerfile dùng Java 21, Render lấy cổng từ `PORT`, thông tin CSDL đặt trong Environment của Render.
+
 ### Yêu cầu môi trường
 - **Java Development Kit (JDK)**: Phiên bản OpenJDK 21 trở lên (`java -version`).
 - **Apache Maven**: Đã tích hợp sẵn Maven Wrapper trong dự án (không cần cài thêm).

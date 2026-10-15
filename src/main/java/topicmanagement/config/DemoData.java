@@ -11,9 +11,9 @@ import topicmanagement.enums.*;
 import topicmanagement.repository.*;
 import topicmanagement.council.*;
 
-/** Persistent academic demo data runner for local / testing profiles. */
+/** Opt-in academic demo data, persisted in the active database only when empty. */
 @Component
-@Profile("demo")
+@Profile({"demo", "cloud-demo"})
 public class DemoData implements CommandLineRunner {
     private final UserRepository users;
     private final DepartmentRepository departments;

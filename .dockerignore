@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.tools
+target
+data
+output
+tmp
+.env
+.env.*
+*.log
+*.docx
+*.pdf

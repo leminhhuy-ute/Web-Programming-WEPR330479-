@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: hcmute-topic-management
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /login.html
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: cloud,cloud-demo
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: MAIL_ENABLED
+        value: "false"
+      - key: TZ
+        value: Asia/Ho_Chi_Minh
