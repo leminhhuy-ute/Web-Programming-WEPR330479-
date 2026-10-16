@@ -15,8 +15,8 @@ class MySqlMigrationSmokeTest {
     @Autowired EmailNotificationRepository notifications;
     @Autowired topicmanagement.repository.AuditLogRepository audit;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
-    @Test void existingDatabaseUpgradesToV9AndMatchesHibernateEntities() {
-        assertEquals("9",flyway.info().current().getVersion().toString());
+    @Test void existingDatabaseUpgradesToV10AndMatchesHibernateEntities() {
+        assertEquals("10",flyway.info().current().getVersion().toString());
         assertEquals(0,flyway.migrate().migrationsExecuted);
         assertEquals(0,notifications.count());
         var entry=new topicmanagement.entity.AuditLog();entry.setAction("MYSQL_MAPPING_TEST");entry.setEntity("AuditLog");

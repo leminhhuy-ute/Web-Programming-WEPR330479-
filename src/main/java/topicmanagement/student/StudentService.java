@@ -13,6 +13,7 @@ import topicmanagement.service.TopicRegistrationService;
 import topicmanagement.dto.response.StudentStateResponse;
 import topicmanagement.dto.response.StudentStateResponse.*;
 import topicmanagement.dto.response.PageResponse;
+import topicmanagement.council.Defense;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import java.time.*;
@@ -109,6 +110,8 @@ public class StudentService {
         StudentGroupView groupView=null;StudentRegistrationView registration=null;
         List<topicmanagement.dto.response.TopicRegistrationResponse> registrationHistory=List.of();
         List<topicmanagement.dto.response.ReportSummaryResponse> reportList=List.of();
+        AdvisorGuidanceView guidance=null;
+        DefenseScheduleView defense=null;
         var invitationList=invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(me.getId(),"PENDING").stream().map(this::invitation).toList();
         if(g!=null) {
             groupView=new StudentGroupView(g.getId(),g.getGroupName(),g.getLeader().getUserCode(),3,
@@ -124,8 +127,15 @@ public class StudentService {
                 registration=new StudentRegistrationView(g.getId(),g.getStatus().name(),g.getRegisteredAt(),g.getNotes(),topic(g.getTopic()));
             }
             reportList=reportService.listForStudent(me,g);
+            guidance=new AdvisorGuidanceView(g.getAdvisorTasks(),g.getAdvisorRequirements(),g.getAdvisorCompletedAt()!=null);
+            if(g.getAdvisorCompletedAt()!=null) {
+                defense=em.createQuery("select d from Defense d join fetch d.council join fetch d.reviewer where d.group.id=:groupId",Defense.class)
+                    .setParameter("groupId",g.getId()).getResultStream().findFirst()
+                    .map(d->new DefenseScheduleView(d.reviewer.getFullName(),d.council.getName(),
+                        d.council.getDefenseDate(),d.council.getRoom())).orElse(null);
+            }
         }
-        return new StudentStateResponse(person(me),groupView,registration,registrationHistory,reportList,invitationList);
+        return new StudentStateResponse(person(me),groupView,registration,registrationHistory,reportList,invitationList,guidance,defense);
     }
     public List<CatalogItem> catalog(String q,String department,String type) {
         return catalogPage(q,department,type,0,100).content();

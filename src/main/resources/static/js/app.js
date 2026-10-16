@@ -238,7 +238,14 @@ function projectPage() {
 function reportsPage() {
   const allowed = isLeader() && state.registration?.status === 'APPROVED';
   return heading('Nộp báo cáo', 'Lưu lại từng cột mốc trong quá trình thực hiện đề tài.') +
-    `<div class="grid cols">
+    `<section class="panel section-gap">
+      <h2>Nhiệm vụ và yêu cầu của giảng viên hướng dẫn</h2>
+      <div class="project-meta" style="grid-template-columns:1fr">
+        <div><small>Nhiệm vụ được giao</small><p style="white-space:pre-wrap;margin:8px 0 0">${esc(state.guidance?.tasks || 'Giảng viên hướng dẫn chưa giao nhiệm vụ.')}</p></div>
+        <div><small>Yêu cầu thực hiện</small><p style="white-space:pre-wrap;margin:8px 0 0">${esc(state.guidance?.requirements || 'Giảng viên hướng dẫn chưa cập nhật yêu cầu.')}</p></div>
+      </div>
+    </section>
+    <div class="grid cols">
       <section class="panel">
         <h2>Báo cáo của nhóm</h2>
         ${state.registration ? `<p class="muted">${esc(state.registration.topic.title)}</p>` : ''}
@@ -276,6 +283,10 @@ function reportsPage() {
     <section class="panel section-gap">
       <h2>Nhận xét của giảng viên hướng dẫn</h2>
       ${state.reports.filter(r => r.advisorFeedback).length ? `<div class="stack">${state.reports.filter(r => r.advisorFeedback).map(r => `<article class="notice advisor-feedback"><b>${esc(r.stage)} · ${esc(r.filename)}</b><p>${esc(r.advisorFeedback)}</p><small>${esc(cleanName(r.feedbackBy))} · ${date(r.feedbackAt)}</small></article>`).join('')}</div>` : '<p class="muted">Chưa có nhận xét cho các báo cáo của nhóm.</p>'}
+    </section>
+    <section class="panel section-gap">
+      <h2>Phản biện &amp; Hội đồng</h2>
+      ${!state.guidance?.completed ? '<p class="muted">Thông tin phản biện và lịch hội đồng sẽ hiển thị sau khi giảng viên hướng dẫn xác nhận hoàn thành đề tài.</p>' : state.defense ? `<div class="project-meta" style="grid-template-columns:1fr"><div><small>Giảng viên phản biện</small><strong>${esc(state.defense.reviewer)}</strong></div><div><small>Hội đồng</small><strong>${esc(state.defense.council)}</strong></div><div><small>Ngày giờ báo cáo hội đồng</small><strong>${date(state.defense.defenseDate)}</strong></div><div><small>Địa chỉ / phòng báo cáo</small><strong>${esc(state.defense.room)}</strong></div></div>` : '<p class="muted">Đề tài đã được xác nhận hoàn thành. Khoa chưa phân công giảng viên phản biện và lịch hội đồng.</p>'}
     </section>`;
 }
 

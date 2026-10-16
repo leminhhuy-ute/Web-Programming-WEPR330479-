@@ -42,6 +42,15 @@ public class StudentGroup {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "advisor_tasks", columnDefinition = "TEXT")
+    private String advisorTasks;
+
+    @Column(name = "advisor_requirements", columnDefinition = "TEXT")
+    private String advisorRequirements;
+
+    @Column(name = "advisor_completed_at")
+    private LocalDateTime advisorCompletedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "period_id")
     private RegistrationPeriod period;
@@ -80,6 +89,15 @@ public class StudentGroup {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getAdvisorTasks() { return advisorTasks; }
+    public void setAdvisorTasks(String advisorTasks) { this.advisorTasks = advisorTasks; }
+
+    public String getAdvisorRequirements() { return advisorRequirements; }
+    public void setAdvisorRequirements(String advisorRequirements) { this.advisorRequirements = advisorRequirements; }
+
+    public LocalDateTime getAdvisorCompletedAt() { return advisorCompletedAt; }
+    public void setAdvisorCompletedAt(LocalDateTime advisorCompletedAt) { this.advisorCompletedAt = advisorCompletedAt; }
 
     public List<GroupMember> getMembers() { return members; }
     public void setMembers(List<GroupMember> members) { this.members = members; }

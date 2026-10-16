@@ -495,8 +495,12 @@ const LecturerCrud = {
 
     async viewReports(groupId) {
         try {
-            const res = await App.fetchApi(`${App.getContextPath()}/api/lecturer/groups/${groupId}/reports`);
+            const [res, guidanceRes] = await Promise.all([
+                App.fetchApi(`${App.getContextPath()}/api/lecturer/groups/${groupId}/reports`),
+                App.fetchApi(`${App.getContextPath()}/api/lecturer/student-groups/${groupId}/guidance`)
+            ]);
             const reports = res.data;
+            const guidance = guidanceRes.data;
             const currentUser = await App.getCurrentUser();
             let dialog = document.getElementById('lecturer-report-dialog');
             if (!dialog) {
@@ -511,12 +515,25 @@ const LecturerCrud = {
                 dialog.style.overflow = 'auto';
                 document.body.appendChild(dialog);
             }
-            const groupName = reports[0]?.groupName || `Nhóm #${groupId}`;
+            const groupName = guidance.groupName || reports[0]?.groupName || `Nhóm #${groupId}`;
             const statusLabels = {PENDING: 'Chờ duyệt', REJECTED: 'Từ chối', APPROVED: 'Đã duyệt'};
-            dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Xem lịch sử phiên bản, cập nhật trạng thái và gửi nhận xét cho sinh viên.</p></div><button type="button" class="button outline" data-report-dialog-close>Đóng</button></div>` +
+            dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Giao nhiệm vụ, xem lịch sử báo cáo và nhận xét cho sinh viên.</p></div><button type="button" class="button outline" data-report-dialog-close>Đóng</button></div>` +
+                `<section class="card" style="padding:18px;border:1px solid #e2e8f0;border-radius:10px;margin:16px 0"><h3>Nhiệm vụ và yêu cầu cho nhóm</h3>${guidance.canManage ? `<form id="advisor-guidance-form"><label>Nhiệm vụ được giao<textarea name="tasks" maxlength="10000" rows="5" placeholder="Nhập nhiệm vụ, sản phẩm dự kiến hoặc kế hoạch thực hiện">${escapeHtml(guidance.tasks || '')}</textarea></label><label>Yêu cầu thực hiện<textarea name="requirements" maxlength="10000" rows="5" placeholder="Nhập yêu cầu cụ thể đối với sinh viên">${escapeHtml(guidance.requirements || '')}</textarea></label><button class="button primary" type="submit">Lưu nhiệm vụ và yêu cầu</button></form>` : `<p style="white-space:pre-wrap">${escapeHtml(guidance.tasks || 'Chưa có nhiệm vụ.')}</p><p style="white-space:pre-wrap">${escapeHtml(guidance.requirements || 'Chưa có yêu cầu.')}</p>`}<div style="border-top:1px solid #e2e8f0;margin-top:16px;padding-top:16px"><strong>Hoàn thành đề tài:</strong> ${guidance.completedAt ? `Đã xác nhận lúc ${new Date(guidance.completedAt).toLocaleString('vi-VN')}` : 'Chưa xác nhận'} ${guidance.canManage && !guidance.completedAt ? '<button type="button" class="button secondary" data-confirm-topic-complete>Xác nhận hoàn thành đề tài</button>' : ''}</div></section>` +
                 (reports.length ? `<div style="display:grid;gap:16px">${reports.map(r => `<article class="card" style="padding:18px;border:1px solid #e2e8f0;border-radius:10px"><div style="display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap"><div><strong>${escapeHtml(r.filename)}</strong><div style="color:#64748b;font-size:13px">${(Number(r.size || 0) / 1024).toFixed(1)} KB · ${escapeHtml(r.stage)} · ${new Date(r.submittedAt).toLocaleString('vi-VN')}</div></div><span class="badge ${(r.status || 'PENDING').toLowerCase()}">${statusLabels[r.status] || 'Chờ duyệt'}</span></div><p style="white-space:pre-wrap;margin:12px 0">${escapeHtml(r.note || 'Sinh viên chưa thêm nội dung ghi chú.')}</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải báo cáo hiện tại</a><button type="button" class="button secondary" data-report-history="${r.id}">Xem lịch sử chỉnh sửa (${Number(r.editCount || 0)})</button></div><div id="report-history-${r.id}" hidden></div><form class="report-review-form" data-report-id="${r.id}" style="border-top:1px solid #e2e8f0;padding-top:12px"><label>Trạng thái<select name="status"><option value="PENDING" ${r.status === 'PENDING' ? 'selected' : ''}>Chờ duyệt</option><option value="REJECTED" ${r.status === 'REJECTED' ? 'selected' : ''}>Từ chối</option><option value="APPROVED" ${r.status === 'APPROVED' ? 'selected' : ''}>Đã duyệt</option></select></label><label>Nhận xét của giảng viên hướng dẫn<textarea name="feedback" maxlength="2000" placeholder="Nhập nhận xét hoặc lý do từ chối">${escapeHtml(r.advisorFeedback || '')}</textarea></label><small style="display:block;color:#64748b;margin:-8px 0 12px">Khi từ chối, cần ghi rõ lý do để nhóm biết nội dung cần sửa.</small><button class="button primary" type="submit">Lưu trạng thái và nhận xét</button></form></article>`).join('')}</div>` : '<p>Nhóm chưa nộp báo cáo.</p>');
             dialog.onclick = async event => {
                 if (event.target.closest('[data-report-dialog-close]')) { dialog.close(); return; }
+                const completeButton = event.target.closest('[data-confirm-topic-complete]');
+                if (completeButton) {
+                    if (!confirm('Xác nhận nhóm đã hoàn thành đề tài? Sau đó sinh viên có thể xem thông tin phản biện và lịch hội đồng khi khoa phân công.')) return;
+                    completeButton.disabled = true;
+                    try {
+                        await App.fetchApi(`${App.getContextPath()}/api/lecturer/student-groups/${groupId}/complete`, {method: 'POST'});
+                        dialog.close();
+                        await this.viewReports(groupId);
+                        await showAppMessage('Đã xác nhận hoàn thành đề tài.', 'success');
+                    } catch (error) { await showAppMessage(error.message); completeButton.disabled = false; }
+                    return;
+                }
                 const button = event.target.closest('[data-report-history]');
                 if (!button) return;
                 const reportId = button.dataset.reportHistory;
@@ -534,6 +551,19 @@ const LecturerCrud = {
                 }
             };
             dialog.onsubmit = async event => {
+                if (event.target.id === 'advisor-guidance-form') {
+                    event.preventDefault();
+                    const form = event.target;
+                    const button = form.querySelector('button[type="submit"]');
+                    button.disabled = true;
+                    try {
+                        await App.fetchApi(`${App.getContextPath()}/api/lecturer/student-groups/${groupId}/guidance`, {
+                            method: 'PUT', body: JSON.stringify({tasks: form.elements.tasks.value, requirements: form.elements.requirements.value})
+                        });
+                        await showAppMessage('Đã lưu nhiệm vụ và yêu cầu cho nhóm.', 'success');
+                    } catch (error) { await showAppMessage(error.message); } finally { button.disabled = false; }
+                    return;
+                }
                 const form = event.target.closest('.report-review-form');
                 if (!form) return;
                 event.preventDefault();

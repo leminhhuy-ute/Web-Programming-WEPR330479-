@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.ApiResponse;
 import topicmanagement.dto.request.GroupApprovalRequest;
+import topicmanagement.dto.request.AdvisorGuidanceRequest;
 import topicmanagement.dto.response.StudentGroupResponse;
 import topicmanagement.dto.response.PageResponse;
 import topicmanagement.security.CurrentUser;
@@ -23,6 +24,23 @@ public class ApiStudentGroupController {
     @Autowired
     public ApiStudentGroupController(StudentGroupService groupService) {
         this.groupService = groupService;
+    }
+
+    @GetMapping("/{id}/guidance")
+    public ApiResponse<StudentGroupService.Guidance> guidance(@PathVariable Long id) {
+        return ApiResponse.ok("Lấy nhiệm vụ hướng dẫn thành công.", groupService.getGuidance(id, accounts.user()));
+    }
+
+    @PutMapping("/{id}/guidance")
+    public ApiResponse<StudentGroupService.Guidance> updateGuidance(@PathVariable Long id,
+            @Valid @RequestBody AdvisorGuidanceRequest request) {
+        return ApiResponse.ok("Đã lưu nhiệm vụ và yêu cầu.",
+            groupService.updateGuidance(id, request.tasks(), request.requirements(), accounts.user()));
+    }
+
+    @PostMapping("/{id}/complete")
+    public ApiResponse<StudentGroupService.Guidance> complete(@PathVariable Long id) {
+        return ApiResponse.ok("Đã xác nhận hoàn thành đề tài.", groupService.confirmCompletion(id, accounts.user()));
     }
 
     @GetMapping

@@ -12,11 +12,12 @@ class EmailMigrationTest {
             connection.createStatement().execute("create table defenses(id bigint primary key)");
             connection.createStatement().execute("create table announcements(id bigint primary key, audience varchar(30), constraint ck_announcements_audience check (audience in ('ALL', 'STUDENT', 'LECTURER')))");
             connection.createStatement().execute("create table student_reports(id bigint primary key)");
+            connection.createStatement().execute("create table student_groups(id bigint primary key)");
         }
         var flyway=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/migration/mysql")
             .baselineOnMigrate(true).baselineVersion("5").load();
-        assertEquals(4,flyway.migrate().migrationsExecuted);
-        assertEquals("9",flyway.info().current().getVersion().toString());
+        assertEquals(5,flyway.migrate().migrationsExecuted);
+        assertEquals("10",flyway.info().current().getVersion().toString());
         assertEquals(0,flyway.migrate().migrationsExecuted);
         try(var connection=DriverManager.getConnection(url,"sa","")) {
             assertTrue(connection.getMetaData().getTables(null,null,"EMAIL_NOTIFICATIONS",null).next());
@@ -27,6 +28,7 @@ class EmailMigrationTest {
             assertTrue(connection.getMetaData().getColumns(null,null,"STUDENT_REPORTS","STATUS").next());
             assertTrue(connection.getMetaData().getColumns(null,null,"STUDENT_REPORTS","EDIT_COUNT").next());
             assertTrue(connection.getMetaData().getTables(null,null,"STUDENT_REPORT_EDITS",null).next());
+            assertTrue(connection.getMetaData().getColumns(null,null,"STUDENT_GROUPS","ADVISOR_COMPLETED_AT").next());
         }
     }
 }

@@ -66,6 +66,7 @@ public class AuditFixesRegressionTest {
     @Autowired private TopicRegistrationService registrationService;
     @Autowired private ReportService reportService;
     @Autowired private StudentService studentService;
+    @Autowired private StudentGroupService studentGroupService;
     @Autowired private UserService userService;
     @Autowired private RegistrationPeriodServiceV2 registrationPeriodService;
     @Autowired private CouncilService councilService;
@@ -78,6 +79,45 @@ public class AuditFixesRegressionTest {
 
     private static final byte[] VALID_PDF =
         "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF".getBytes();
+
+    @Test
+    void advisorGuidanceIsVisibleButDefenseDetailsWaitForCompletion() {
+        Department dept = createDept("GUIDANCE");
+        RegistrationPeriod period = createPeriod(RegistrationPeriodType.COURSE, null, null);
+        User advisor = createUser("guidance-advisor", Role.LECTURER, dept);
+        User other = createUser("guidance-other", Role.LECTURER, dept);
+        User student = createUser("guidance-student", Role.STUDENT, dept);
+        User chair = createUser("guidance-chair", Role.LECTURER, dept);
+        User secretary = createUser("guidance-secretary", Role.LECTURER, dept);
+        User reviewer = createUser("guidance-reviewer", Role.LECTURER, dept);
+        Topic topic = createTopic(dept, period, advisor, "GUIDANCE", TopicStatus.APPROVED);
+        StudentGroup group = createGroup(student, "GUIDANCE", period, topic, GroupStatus.APPROVED);
+        Council council = createCouncil("GUIDANCE", chair, secretary, reviewer);
+        Defense defense = new Defense();
+        defense.group = group;
+        defense.council = council;
+        defense.reviewer = reviewer;
+        defenses.saveAndFlush(defense);
+
+        assertThrows(AccessDeniedException.class, () ->
+            studentGroupService.updateGuidance(group.getId(), "Sai", "Sai", other));
+        assertThrows(AccessDeniedException.class, () ->
+            studentGroupService.confirmCompletion(group.getId(), other));
+
+        studentGroupService.updateGuidance(group.getId(), "Nhiệm vụ A", "Yêu cầu B", advisor);
+        var before = studentService.state(student.getUsername());
+        assertEquals("Nhiệm vụ A", before.guidance().tasks());
+        assertEquals("Yêu cầu B", before.guidance().requirements());
+        assertFalse(before.guidance().completed());
+        assertNull(before.defense());
+
+        studentGroupService.confirmCompletion(group.getId(), advisor);
+        var after = studentService.state(student.getUsername());
+        assertTrue(after.guidance().completed());
+        assertEquals(reviewer.getFullName(), after.defense().reviewer());
+        assertEquals(council.getDefenseDate(), after.defense().defenseDate());
+        assertEquals("A1-101", after.defense().room());
+    }
 
     // -------------------------------------------------------------------------
     // Scenario 1: Registration cancellation lifecycle

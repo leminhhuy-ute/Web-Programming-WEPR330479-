@@ -9,7 +9,13 @@ public record StudentStateResponse(
         StudentRegistrationView registration,
         List<TopicRegistrationResponse> registrationHistory,
         List<ReportSummaryResponse> reports,
-        List<StudentInvitation> invitations) {
+        List<StudentInvitation> invitations,
+        AdvisorGuidanceView guidance,
+        DefenseScheduleView defense) {
+
+    public record AdvisorGuidanceView(String tasks, String requirements, boolean completed) {}
+
+    public record DefenseScheduleView(String reviewer, String council, LocalDateTime defenseDate, String room) {}
 
     public record StudentPerson(String id, String name, String className) {}
 
