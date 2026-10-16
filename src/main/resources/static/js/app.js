@@ -127,7 +127,7 @@ function dashboard() {
       <div>
         <span class="eyebrow">HÀNH TRÌNH ĐỀ TÀI CỦA BẠN</span>
         <h2>${!state.group?'Bắt đầu từ một nhóm phù hợp':!r?'Nhóm đã sẵn sàng, hãy chọn đề tài':r.status==='APPROVED'?'Sẵn sàng cho cột mốc tiếp theo':'Theo dõi kết quả đăng ký của nhóm'}</h2>
-        <p>${!state.group?'Tạo nhóm, mời bạn cùng lớp và cùng nhau lựa chọn đề tài yêu thích.':r?esc(r.topic.title):'Khám phá các đề tài đã công bố, tìm hiểu yêu cầu và gửi đăng ký cho nhóm.'}</p>
+        <p>${!state.group?'Tạo nhóm, mời bạn cùng lớp và cùng nhau lựa chọn đề tài yêu thích.':r?'Đề tài của nhóm: <b>'+esc(r.topic.title)+'</b>':'Khám phá các đề tài đã công bố, tìm hiểu yêu cầu và gửi đăng ký cho nhóm.'}</p>
       </div>
       ${linkButton(next,!state.group?'Tạo nhóm ngay':!r?'Khám phá đề tài':r.status==='APPROVED'?'Nộp báo cáo':'Xem trạng thái')}
     </section>

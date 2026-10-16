@@ -275,6 +275,11 @@ body {
     box-shadow: 0 2px 6px rgba(0, 89, 148, 0.2);
 }
 
+.sidebar nav a.nav-sub {
+    padding: 8px 14px 8px 30px;
+    font-size: 13px;
+}
+
 .sidebar nav a.active .nav-icon {
     color: #ffffff;
 }
@@ -549,17 +554,41 @@ tbody tr:last-child td {
 /* Specific Table Column Widths */
 .users-table {
     width: 100%;
-    min-width: 1200px;
+    min-width: 1085px;
 }
 
-.users-table .col-code { width: 90px; }
-.users-table .col-username { width: 110px; }
-.users-table .col-name { width: 200px; }
-.users-table .col-email { width: 260px; }
-.users-table .col-role { width: 120px; }
-.users-table .col-department { width: 195px; }
-.users-table .col-status { width: 115px; }
-.users-table .col-actions { width: 175px; }
+.users-table .col-code { width: 80px; }
+.users-table .col-username { width: 100px; }
+.users-table .col-name { width: 150px; }
+.users-table .col-email { width: 215px; }
+.users-table .col-role { width: 115px; }
+.users-table .col-department { width: 130px; }
+.users-table .col-status { width: 105px; }
+.users-table .col-actions { width: 190px; }
+
+/* Keep row actions reachable when the table scrolls horizontally on narrow screens. */
+.users-table th:last-child,
+.users-table td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: #ffffff;
+    box-shadow: inset 1px 0 0 var(--border-light);
+}
+
+.users-table th:last-child {
+    background: #f8fafc;
+}
+
+.users-table tbody tr:hover td:last-child {
+    background: #f8fafd;
+}
+
+.users-table th,
+.users-table td {
+    padding-left: 12px;
+    padding-right: 12px;
+}
 
 .users-table td:nth-child(1),
 .users-table td:nth-child(2),
@@ -569,7 +598,8 @@ tbody tr:last-child td {
 }
 
 .users-table td:nth-child(4) {
-    word-break: break-all;
+    overflow-wrap: anywhere;
+    font-size: 13px;
 }
 
 /* --------------------------------------------------------------------------
@@ -935,14 +965,8 @@ tbody tr:last-child td {
         height: 36px;
     }
 
-    .header-user-copy strong {
-        max-width: 120px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .topbar-context {
+    /* Name and role do not fit beside the brand on phones; the avatar remains. */
+    .topbar-right-copy {
         display: none;
     }
 

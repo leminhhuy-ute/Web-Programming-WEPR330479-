@@ -12,18 +12,7 @@
         "email-notifications": ["Email thông báo điểm", "Theo dõi việc gửi kết quả cho sinh viên."],
         announcements: ["Quản lý thông báo", "Soạn thảo và công bố thông tin dành cho người học, giảng viên."],
     };
-    const navigation = [
-        ["dashboard", "Bảng điều khiển", "/admin/dashboard.html"],
-        ["users", "Tài khoản", "/admin/users/list.html"],
-        ["departments", "Bộ môn", "/admin/departments/list.html"],
-        ["registration-periods", "Đợt đăng ký", "/admin/registration-periods/list.html"],
-        ["announcements", "Thông báo", "/admin/announcements/list.html"],
-        ["topics", "Đề tài & nhóm", "/lecturer/dashboard.html"],
-        ["councils", "Hội đồng & kết quả", "/councils/index.html"],
-        ["exports", "Xuất Excel / PDF", "/admin/exports.html"],
-        ["email-notifications", "Email thông báo điểm", "/admin/email-notifications.html"],
-        ["profile", "Hồ sơ cá nhân", "/profile.html"],
-    ];
+    const navigation = DEAN_NAVIGATION;
 
     const roleLabels = {
         DEAN: "Trưởng khoa",

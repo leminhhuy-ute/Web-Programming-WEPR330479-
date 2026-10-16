@@ -17,10 +17,28 @@
   padding: 26px 28px;
 }
 
+/* Let the title keep a readable width and wrap the four dean buttons instead of squeezing it. */
+.page-header > div:first-child {
+  flex: 1 1 auto;
+  min-width: min(340px, 100%);
+}
+
+#admin-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .council-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 20px;
+}
+
+.council-card > .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .council-card {
@@ -407,6 +425,15 @@ dialog#council-dialog::backdrop {
 @media (max-width: 768px) {
   .council-main {
     padding: 16px 12px 40px;
+  }
+  #admin-actions {
+    justify-content: stretch;
+  }
+  #admin-actions > * {
+    flex: 1 1 100%;
+  }
+  .council-section {
+    padding: 20px 16px;
   }
   .form-row,
   .member-input {

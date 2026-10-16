@@ -19,5 +19,4 @@
 @media (max-width: 720px) {
   .profile-card { padding: 24px 20px; }
   .profile-column { width: 100%; }
-  .topbar .topbar-right-copy { display: none; }
 }

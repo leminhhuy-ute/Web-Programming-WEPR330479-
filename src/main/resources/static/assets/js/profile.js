@@ -27,17 +27,9 @@ function profileNavigation(role) {
     ['Nộp báo cáo', '/student#reports'],
     ['Kết quả đánh giá', '/student#results']
   ];
-  const deanLinks = [
-    ['Bảng điều khiển', home],
-    ['Tài khoản', '/admin/users/list.html'],
-    ['Bộ môn', '/admin/departments/list.html'],
-    ['Đợt đăng ký', '/admin/registration-periods/list.html'],
-    ['Thông báo', '/admin/announcements/list.html'],
-    ['Đề tài & nhóm', '/lecturer/dashboard.html'],
-    ['Hội đồng & kết quả', '/councils/index.html'],
-    ['Xuất Excel / PDF', '/admin/exports.html'],
-    ['Email thông báo điểm', '/admin/email-notifications.html']
-  ];
+  const deanLinks = DEAN_NAVIGATION
+    .filter(([key]) => key !== 'profile')
+    .map(([, label, href]) => [label, href]);
   const lecturerLinks = [
     ['Bảng điều khiển', home],
     ['Tất cả đề tài', '/lecturer/topics/list.html'],

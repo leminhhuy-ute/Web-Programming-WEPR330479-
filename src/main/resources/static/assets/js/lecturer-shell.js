@@ -62,7 +62,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Sidebar navigation items
     const navContainer = document.querySelector('.sidebar nav');
-    if (navContainer) {
+    if (navContainer && user.role === 'DEAN') {
+        // The dean keeps the admin sidebar on shared lecturer/council pages; topic pages add their sub-links.
+        const path = location.pathname;
+        const activeKey = path.includes('/councils/') ? 'councils' : 'topics';
+        const topicLinks = path.includes('/lecturer/') ? [
+            ['Tất cả đề tài', '/lecturer/topics/list.html'],
+            ['Đề xuất đề tài', '/lecturer/topics/form.html'],
+            ['Nhóm sinh viên hướng dẫn', '/lecturer/topics/student-groups.html'],
+            ['Duyệt đề tài bộ môn', '/lecturer/topics/approval.html'],
+        ] : [];
+        const link = (label, href, active, sub) => {
+            const anchor = document.createElement('a');
+            anchor.href = App.getContextPath() + href;
+            anchor.textContent = label;
+            if (sub) anchor.classList.add('nav-sub');
+            if (active) {
+                anchor.classList.add('active');
+                anchor.setAttribute('aria-current', 'page');
+            }
+            return anchor;
+        };
+        const subActive = topicLinks.some(([, href]) => path.endsWith(href));
+        navContainer.replaceChildren();
+        for (const [key, label, href] of DEAN_NAVIGATION) {
+            navContainer.append(link(label, href, key === activeKey && !subActive, false));
+            if (key === 'topics') {
+                for (const [subLabel, subHref] of topicLinks) {
+                    navContainer.append(link(subLabel, subHref, path.endsWith(subHref), true));
+                }
+            }
+        }
+    } else if (navContainer) {
         if (user.role === 'HEAD_OF_DEPT' && !navContainer.querySelector('a[href*="/lecturer/announcements.html"]')) {
             const announcementLink = document.createElement('a');
             announcementLink.href = App.getContextPath() + '/lecturer/announcements.html';
@@ -82,13 +113,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.href = '/councils/index.html';
             link.textContent = 'Hội đồng & chấm điểm';
             navContainer.append(link);
-        }
-        // If DEAN, ensure admin link exists without emoji
-        if (user.role === 'DEAN' && !navContainer.querySelector('a[href*="/admin/"]')) {
-            const adminLink = document.createElement('a');
-            adminLink.href = '/admin/dashboard.html';
-            adminLink.textContent = 'Quản trị hệ thống';
-            navContainer.prepend(adminLink);
         }
     }
 

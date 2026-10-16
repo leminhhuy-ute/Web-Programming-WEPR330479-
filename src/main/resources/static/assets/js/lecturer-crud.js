@@ -76,14 +76,14 @@ const LecturerCrud = {
             const depts = await App.fetchApi(App.getContextPath() + '/api/common/departments');
             const deptSelect = document.getElementById('filter-dept');
             if (deptSelect) {
-                deptSelect.innerHTML = '<option value="">-- Tất cả Bộ môn --</option>' +
+                deptSelect.innerHTML = '<option value="">Tất cả bộ môn</option>' +
                     depts.data.map(d => `<option value="${d.id}">${escapeHtml(d.name)} (${escapeHtml(d.code)})</option>`).join('');
             }
 
             const periods = await App.fetchApi(App.getContextPath() + '/api/common/registration-periods');
             const periodSelect = document.getElementById('filter-period');
             if (periodSelect) {
-                periodSelect.innerHTML = '<option value="">-- Tất cả Đợt đăng ký --</option>' +
+                periodSelect.innerHTML = '<option value="">Tất cả đợt đăng ký</option>' +
                     periods.data.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
             }
         } catch (e) {
