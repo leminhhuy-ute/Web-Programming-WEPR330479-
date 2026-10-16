@@ -89,21 +89,13 @@ File này và cập nhật README/API được commit riêng cuối cùng. Các 
 
 Không còn commit có tác giả/người tạo Codex trong các nhánh/tag đã kiểm tra; GitHub xác nhận cả tác giả và người tạo của 9 commit mới là `leminhhuy-ute`. Riêng thống kê Contributors đang cập nhật không đồng nhất: có lần API chỉ trả hai tài khoản của nhóm, nhưng lần kiểm tra cuối vẫn trả lại dữ liệu cũ có Codex. Vì vậy chưa khẳng định Codex đã biến mất trên giao diện Contributors. [GitHub ghi nhận thống kê có thể cần khoảng 24 giờ](https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository/viewing-a-projects-contributors#contributor-data-is-stale-after-history-changes); nếu vẫn sai sau thời gian này, chủ repo có thể yêu cầu GitHub Support kiểm tra. Không có thao tác xóa trực tiếp cache Contributors được tài liệu này cung cấp.
 
-## 5. SMTP đề xuất và phần cần cấu hình
+## 5. SMTP: trạng thái và yêu cầu gửi thật
 
-Đề xuất **Brevo**, gói miễn phí hiện có **300 email/ngày**, phù hợp để demo thông báo điểm của đề tài. [Thông tin gói](https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans), [SMTP chính thức](https://developers.brevo.com/docs/smtp-integration).
+Cấu hình hiện tại dùng **Mailjet SMTP** với host `in-v3.mailjet.com`, port `2525`, API key và Secret Key. Khai báo các khóa trong môi trường Render; không lưu chúng trong Git. Xem hướng dẫn cập nhật tại `docs/SMTP_SETUP.md`.
 
-| Biến môi trường | Giá trị |
-| --- | --- |
-| `MAIL_ENABLED` | Mặc định `false`; chỉ bật `true` khi đã cấu hình gửi. |
-| `SMTP_HOST` | `smtp-relay.brevo.com` |
-| `SMTP_PORT` | `587` |
-| `SMTP_USERNAME` | SMTP login trong tài khoản Brevo. |
-| `SMTP_PASSWORD` | SMTP key của Brevo, khác API key. |
-| `MAIL_FROM` | Địa chỉ người gửi đã xác minh trong Brevo. |
-| `SMTP_AUTH`, `SMTP_STARTTLS` | Mặc định `true`. |
+Điểm thật được xếp vào hàng đợi cho từng thành viên khi Trưởng khoa công bố kết quả đã tổng hợp. Nút kiểm tra SMTP chỉ gửi thư kỹ thuật không có điểm, không tạo bản ghi hàng đợi. `SENT` nghĩa máy chủ SMTP chấp nhận thư, không xác nhận sinh viên đã nhận/đọc thư.
 
-`.env.example` là mẫu tham khảo; Spring Boot không tự đọc `.env`. Thiết lập biến trong PowerShell hoặc môi trường chạy ứng dụng, rồi khởi động lại. Xem đầy đủ `docs/SMTP_SETUP.md`. Hiện tại chưa có tài khoản/khóa SMTP thực tế, nên thư chỉ được lưu ở trạng thái chờ; chức năng gửi thật sẽ hoạt động khi bạn cấu hình.
+Mailjet cần người gửi đã xác minh. Để giảm khả năng Gmail đưa thư vào Spam, dùng địa chỉ thuộc tên miền có quyền cấu hình DNS và xác thực SPF/DKIM; Gmail khuyến nghị thiết lập thêm DMARC. Xác minh địa chỉ Gmail cá nhân trong Mailjet không xác thực Mailjet thay cho miền `gmail.com`, và không bảo đảm thư vào Inbox. Xem [hướng dẫn người gửi Gmail](https://support.google.com/mail/answer/81126?hl=vi) và [cấu hình SMTP Mailjet](https://dev.mailjet.com/docs/smtp-relay/configuration).
 
 Worker lấy tối đa 20 thư/lượt, chạy cách nhau 30 giây; timeout kết nối/đọc/ghi 3 giây. Lỗi thử lại sau 1, 2, 4, 8 phút; thất bại ở lần thứ 5. SENT nghĩa SMTP đã chấp nhận thư, không xác nhận sinh viên đọc thư. SMTP có thể tạo thư trùng nếu máy dừng đúng lúc đã gửi nhưng chưa ghi trạng thái SENT.
 

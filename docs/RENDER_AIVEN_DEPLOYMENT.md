@@ -39,12 +39,14 @@ Giữ mật khẩu trong dashboard. Không gửi vào chat, ảnh chụp, GitHub
 
 | Key | Value |
 | --- | --- |
-| `SPRING_PROFILES_ACTIVE` | `cloud,cloud-demo` |
+| `SPRING_PROFILES_ACTIVE` | `cloud` |
 | `DB_URL` | `jdbc:mysql://HOST:PORT/defaultdb?sslMode=REQUIRED&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh` |
 | `DB_USERNAME` | User trong Aiven, thường `avnadmin` |
 | `DB_PASSWORD` | Password trong Aiven, nhập trực tiếp vào dashboard |
-| `MAIL_ENABLED` | `false` |
+| `MAIL_ENABLED` | `false` ban đầu; chỉ bật `true` sau khi xác thực người gửi SMTP |
 | `TZ` | `Asia/Ho_Chi_Minh` |
+
+Với Mailjet, đặt `SMTP_HOST=in-v3.mailjet.com`, `SMTP_PORT=2525`, `SMTP_USERNAME` là API key và `SMTP_PASSWORD` là Secret Key. Đặt `MAIL_FROM` thành địa chỉ trên tên miền bạn quản lý sau khi cấu hình SPF/DKIM trong Mailjet. Chỉ lưu thông tin xác thực trong Render Environment. Gmail có thể coi thư gửi qua Mailjet với địa chỉ cá nhân `@gmail.com` là giả mạo và chuyển vào Spam.
 
 Thay HOST, PORT và database name đúng thông tin của Aiven. Port Aiven có thể khác 3306.
 MySQL Connector/J dùng `sslMode=REQUIRED`, không dùng `sslmode=require` như ví dụ trong PDF.
@@ -61,19 +63,17 @@ Chỉ tạo MỘT Web Service bằng một trong hai cách.
 
 1. Trong Logs, tìm Flyway migrate thành công V1, V6, V7, V8 và `Started TopicManagementApplication`.
 2. Đợi trạng thái Render **Live**. Mở URL HTTPS do Render cấp, ví dụ `https://TEN-SERVICE.onrender.com/login.html`.
-3. Profile `cloud-demo` tạo 13 tài khoản mẫu nếu bảng users đang trống. Ví dụ: `dean01`, `hod01`, `lecturer01`, `student01`; mật khẩu ban đầu `Demo@12345`.
+3. Production dùng `cloud` và không tạo tài khoản mẫu. Chỉ thêm `cloud-demo` khi cố ý triển khai một DB trống dành riêng cho demo; profile này tạo 13 tài khoản mẫu, ví dụ `dean01`, `hod01`, `lecturer01`, `student01`, mật khẩu ban đầu `Demo@12345`.
 4. Đăng nhập Trưởng khoa, tạo một thông báo thử; đăng xuất, đăng nhập Sinh viên và kiểm tra hiển thị.
 5. Khởi động lại/redeploy Web Service, đăng nhập lại và kiểm tra thông báo vẫn còn. Phiên đăng nhập được lưu trong bộ nhớ nên cần đăng nhập lại sau restart.
 6. Mở URL trên điện thoại để kiểm tra HTTPS và giao diện. Không đưa mật khẩu DB vào ảnh minh chứng.
 
 Dữ liệu và byte nội dung tệp báo cáo nằm trong MySQL Aiven, không phụ thuộc ổ đĩa tạm của Render.
 DemoData không nạp lại hoặc đặt lại dữ liệu khi users đã có bản ghi.
-Sau khi có tài khoản cần thiết, có thể bỏ `cloud-demo` khỏi danh sách profile; `cloud` tiếp tục giữ dữ liệu hiện có.
-Tài khoản mẫu phục vụ buổi demo; không dùng mật khẩu mẫu cho dữ liệu thực.
+Nếu trước đây đã chạy `cloud-demo`, bỏ profile này sẽ ngăn nạp mẫu lần sau nhưng không xóa dữ liệu mẫu đã có trong Aiven. Kiểm tra và thay các tài khoản/email mẫu bằng dữ liệu được phép dùng trước khi gửi thông báo thật. Tài khoản mẫu chỉ phục vụ demo; không dùng mật khẩu mẫu cho dữ liệu thực.
 
 Render Free có thể ngủ sau khoảng 15 phút không truy cập, lần mở lại sẽ chậm.
-Render Free chặn các cổng SMTP 25/465/587: Gmail SMTP đã chạy ở localhost sẽ không gửi được từ gói này.
-Vì vậy giữ MAIL_ENABLED=false cho bài lab triển khai; email thật trên cloud cần giải pháp HTTPS API hoặc hạ tầng cho phép SMTP.
+Render Free chặn các cổng SMTP 25/465/587. Mailjet hỗ trợ cổng 2525, nhưng cần xác minh khả năng kết nối từ dịch vụ và cấu hình người gửi; Gmail SMTP dùng port 587 sẽ không gửi được từ gói Free. Chỉ bật `MAIL_ENABLED` khi người gửi đã được xác thực.
 
 ## 5. Build và kiểm thử cục bộ
 

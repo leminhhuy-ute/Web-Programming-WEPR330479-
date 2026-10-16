@@ -9,7 +9,7 @@ services:
     healthCheckPath: /login.html
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: cloud,cloud-demo
+        value: cloud
       - key: DB_URL
         sync: false
       - key: DB_USERNAME

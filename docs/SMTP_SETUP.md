@@ -1,32 +1,36 @@
 # Email thông báo điểm – cấu hình và kiểm thử
 
-Có thể dùng **Gmail** để kiểm thử cục bộ hoặc **Brevo** khi triển khai. Với Brevo, cần tạo và xác minh địa chỉ người gửi, sau đó lấy **SMTP login** và **SMTP key** ở mục SMTP & API. SMTP key khác API key.
+Ứng dụng gửi **điểm thật** qua hàng đợi sau khi Trưởng khoa công bố kết quả đã tổng hợp. Mỗi sinh viên nhận một email tại địa chỉ trong tài khoản; hệ thống không tạo điểm hoặc người nhận mẫu.
 
-Nguồn chính thức: [gói dịch vụ](https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans), [cấu hình SMTP](https://developers.brevo.com/docs/smtp-integration).
+Mailjet SMTP dùng host `in-v3.mailjet.com`, API key làm tên đăng nhập SMTP, Secret Key làm mật khẩu. Có thể dùng cổng `2525` với STARTTLS. Xác minh người gửi trong Mailjet trước khi gửi.
+
+**Lưu ý quan trọng về Gmail:** xác minh một địa chỉ `@gmail.com` trong Mailjet không đồng nghĩa với quyền gửi thư từ miền `gmail.com`. Gmail yêu cầu người gửi không giả mạo địa chỉ Gmail; nếu Mailjet gửi thư có `From` cá nhân Gmail, thư có thể bị đánh dấu Spam hoặc từ chối. Để giảm nguy cơ, cần dùng địa chỉ trên tên miền mình sở hữu và cấu hình SPF/DKIM theo các giá trị Mailjet cung cấp; thêm DMARC để bảo vệ miền. Không có cách bảo đảm tuyệt đối email luôn vào Inbox.
+
+Nguồn chính thức: [Mailjet SMTP configuration](https://dev.mailjet.com/docs/smtp-relay/configuration), [xác thực tên miền SPF/DKIM của Mailjet](https://documentation.mailjet.com/hc/en-us/articles/360049641733-Authenticating-Domains-with-SPF-and-DKIM-A-Complete-Guide), [hướng dẫn người gửi của Gmail](https://support.google.com/mail/answer/81126?hl=vi).
 
 ## Bật gửi thư bằng PowerShell
 
 ```powershell
-$env:SMTP_HOST = "smtp-relay.brevo.com"
-$env:SMTP_PORT = "587"
-$env:SMTP_USERNAME = "SMTP login trong Brevo"
-$env:SMTP_PASSWORD = "SMTP key trong Brevo"
-$env:MAIL_FROM = "địa chỉ người gửi đã xác minh"
+$env:SMTP_HOST = "in-v3.mailjet.com"
+$env:SMTP_PORT = "2525"
+$env:SMTP_USERNAME = "API key Mailjet"
+$env:SMTP_PASSWORD = "Secret Key Mailjet"
+$env:MAIL_FROM = "notifications@ten-mien-cua-ban.vn"
 $env:MAIL_ENABLED = "true"
 .\mvnw.cmd spring-boot:run
 ```
 
-Thiết lập các biến này ở môi trường chạy ứng dụng. `.env.example` chỉ là mẫu; Spring Boot không tự đọc `.env`. Không commit thông tin đăng nhập. Dùng port 587 với STARTTLS; timeout kết nối/đọc/ghi 3 giây.
+Thiết lập các biến này ở môi trường chạy ứng dụng. `.env.example` chỉ là mẫu; Spring Boot không tự đọc `.env`. Không commit thông tin đăng nhập. Mailjet hỗ trợ port 2525 với STARTTLS; timeout kết nối/đọc/ghi 3 giây.
 
-Với Gmail trong môi trường học tập, dùng `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USERNAME` và `MAIL_FROM` là địa chỉ Gmail của bạn, còn `SMTP_PASSWORD` là App Password được tạo sau khi bật xác minh hai bước. Chỉ nhập App Password tại máy chạy ứng dụng, không đưa vào Git hoặc báo cáo.
+Trong cấu hình production, đặt `SPRING_PROFILES_ACTIVE=cloud` để tránh nạp tài khoản/đề tài mẫu. `.env.example` đang để `cloud` làm cấu hình khuyến nghị; chỉ thêm profile demo khi chủ động muốn dữ liệu minh họa trên một cơ sở dữ liệu trống.
 
 ## Gửi email điểm thử
 
-Trưởng khoa mở **Email thông báo điểm** và bấm **Gửi email điểm thử**. Hệ thống gửi tới chính địa chỉ `MAIL_FROM` với tiêu đề **THỬ NGHIỆM** và điểm 8.00/10 được ghi rõ là minh họa. Thao tác này không công bố điểm, không sửa email sinh viên và không tạo bản ghi trong hàng đợi. Nút chỉ hoạt động khi `MAIL_ENABLED=true`. Thông báo thành công nghĩa là máy chủ SMTP đã chấp nhận thư; hãy kiểm tra thêm Hộp thư đến hoặc Spam.
+Trưởng khoa mở **Email thông báo điểm** và bấm **Gửi email kiểm tra SMTP**. Thư được gửi tới địa chỉ `MAIL_FROM` và không chứa điểm hoặc dữ liệu sinh viên. Thao tác này không công bố điểm và không tạo bản ghi trong hàng đợi. Nút chỉ hoạt động khi `MAIL_ENABLED=true`. Thông báo thành công chỉ xác nhận SMTP đã nhận lệnh gửi, không xác nhận email vào Inbox.
 
 ## Quy trình
 
-1. Chủ tịch tổng hợp điểm, trưởng khoa công bố kết quả.
+1. Chủ tịch hội đồng tổng hợp điểm; Trưởng khoa công bố kết quả đã tổng hợp.
 2. Cùng giao dịch công bố, hệ thống lưu một email cho từng thành viên nhóm. Gọi công bố lần nữa không tạo thêm email.
 3. Khi `MAIL_ENABLED=true`, tác vụ nền lấy tối đa 20 thư mỗi lượt, gửi tuần tự, 30 giây giữa các lượt. Cấu hình mặc định tắt gửi nhưng vẫn lưu hàng đợi.
 4. SMTP lỗi: thử lại sau 1, 2, 4, 8 phút; sau lần thứ 5 chuyển Thất bại. Trưởng khoa xem `/admin/email-notifications.html` và chọn Gửi lại.
