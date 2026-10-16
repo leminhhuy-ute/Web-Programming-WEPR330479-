@@ -17,6 +17,7 @@ Tầng lưu trữ dữ liệu của hệ thống được thiết kế hướng 
 erDiagram
     departments ||--o{ users : "thuộc về"
     departments ||--o{ topics : "quản lý chuyên môn"
+    departments ||--o{ announcements : "phạm vi thông báo bộ môn"
     
     users ||--o{ topics : "đề xuất / hướng dẫn"
     users ||--o{ student_groups : "làm nhóm trưởng"
@@ -24,10 +25,14 @@ erDiagram
     users ||--o{ group_invitations : "nhận lời mời"
     users ||--o{ council_members : "tham gia hội đồng"
     users ||--o{ defense_grades : "chấm điểm bảo vệ"
-    users ||--o{ student_reports : "nộp báo cáo"
+    users ||--o{ student_reports : "nộp báo cáo / GVHD nhận xét"
     users ||--o{ announcements : "tác giả thông báo"
+    users ||--o{ announcement_reads : "đánh dấu đã đọc"
+    users ||--o{ email_notifications : "nhận email kết quả"
     users ||--o{ audit_logs : "thực hiện thao tác"
     users ||--o{ advisor_quotas : "được phân bổ chỉ tiêu"
+
+    announcements ||--o{ announcement_reads : "lượt đọc"
 
     registration_periods ||--o{ topics : "thuộc đợt"
     registration_periods ||--o{ student_groups : "hoạt động trong đợt"
@@ -53,6 +58,7 @@ erDiagram
     councils ||--o{ defenses : "chấm bảo vệ"
 
     defenses ||--o{ defense_grades : "chi tiết điểm thành viên"
+    defenses ||--o{ email_notifications : "email công bố điểm"
 ```
 
 ---
@@ -92,7 +98,7 @@ Quản lý các đợt đăng ký và các mốc thời hạn theo quy chế đ�
 - `defense_date` (`DATE`, NULL): Ngày tổ chức hội đồng bảo vệ.
 - **Ràng buộc kiểm tra**:
   - `ck_period_times`: `lecturer_start_at < lecturer_end_at < student_start_at < student_end_at`.
-  - `ck_period_review`: Bắt buộc có hạn nộp và ngày bảo vệ đối với `TLCN` và `KLTN`.
+  - `ck_period_review`: `COURSE`/`NCKH` không có hạn GVPB và ngày hội đồng; `TLCN` bắt buộc hạn GVPB sau `student_end_at`; `KLTN` bắt buộc cả hạn GVPB và ngày hội đồng sau hạn GVPB.
 
 ### 3.4 `topics` (Đề tài học thuật)
 Lưu trữ danh sách các đề tài do giảng viên hoặc trưởng khoa đề xuất.
@@ -157,9 +163,15 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
 - `filename` (`VARCHAR(180)`, NOT NULL): Tên tệp gốc.
 - `content_type` (`VARCHAR(255)`, NOT NULL): Định dạng MIME (`application/pdf`, `.docx`).
 - `stage` (`VARCHAR(255)`, NOT NULL): Giai đoạn báo cáo (`Đề cương`, `Giữa kỳ`, `Cuối kỳ`).
+- `note` (`VARCHAR(1000)`, NOT NULL): Ghi chú của nhóm khi nộp.
+- `submitted_at` (`DATETIME(6)`, NOT NULL): Thời điểm nộp.
 - `content` (`LONGBLOB`, NOT NULL): Nội dung nhị phân của tệp báo cáo.
+- `report_size` (`BIGINT`, NULL): Kích thước tệp (byte).
 - `checksum` (`VARCHAR(64)`, NULL): Chuỗi mã băm SHA-256 đối soát toàn vẹn dữ liệu.
 - `late` (`BOOLEAN`, NOT NULL, DEFAULT FALSE): Đánh dấu nộp trễ nếu sau hạn chót.
+- `advisor_feedback` (`TEXT`, NULL): Nhận xét của giảng viên hướng dẫn (V8).
+- `feedback_by_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): GVHD viết nhận xét (V8).
+- `feedback_at` (`DATETIME(6)`, NULL): Thời điểm nhận xét (V8).
 
 ### 3.8 `councils` & `council_members` (Hội đồng bảo vệ & Thành viên)
 - **`councils`**:
@@ -194,6 +206,62 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
   - `score` (`DECIMAL(4,2)`, NOT NULL): Điểm số đánh giá cá nhân (0.00 đến 10.00).
   - `comment` (`VARCHAR(2000)`, NOT NULL): Nhận xét chuyên môn.
   - **Ràng buộc**: `uk_defense_evaluator UNIQUE (defense_id, evaluator_id)`.
+
+### 3.10 `group_invitations` (Lời mời vào nhóm)
+- `id` (`BIGINT`, PK, Auto-increment)
+- `group_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `student_groups(id)` ON DELETE CASCADE)
+- `student_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`): Sinh viên được mời.
+- `status` (`VARCHAR(30)`, NOT NULL, DEFAULT `PENDING`): `PENDING`, `ACCEPTED`, `DECLINED`.
+- `created_at` (`DATETIME(6)`, NOT NULL)
+- **Ràng buộc**: `uk_group_invitation UNIQUE (group_id, student_id)`.
+
+### 3.11 `advisor_quotas` (Chỉ tiêu hướng dẫn)
+- `id` (`BIGINT`, PK, Auto-increment)
+- `version` (`BIGINT`, Khóa lạc quan)
+- `registration_period_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `registration_periods(id)`)
+- `lecturer_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`)
+- `max_groups` (`INT`, NOT NULL): Số nhóm tối đa giảng viên được hướng dẫn trong đợt (1 đến 100).
+- **Ràng buộc**: `uk_quota_period_lecturer UNIQUE (registration_period_id, lecturer_id)`.
+
+### 3.12 `announcements` & `announcement_reads` (Thông báo & Lượt đọc)
+- **`announcements`**:
+  - `id` (`BIGINT`, PK, Auto-increment)
+  - `title` (`VARCHAR(255)`, NOT NULL): Tiêu đề thông báo.
+  - `content` (`TEXT`, NOT NULL): Nội dung thông báo.
+  - `audience` (`VARCHAR(30)`, NOT NULL): Đối tượng nhận (`ALL`, `HEAD_OF_DEPT`, `LECTURER`, `STUDENT`).
+  - `department_id` (`BIGINT`, NULL, FK $\rightarrow$ `departments(id)`): Giới hạn thông báo trong một bộ môn; NULL là thông báo toàn khoa (V8).
+  - `created_by` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Người đăng thông báo.
+  - `created_at` (`DATETIME(6)`)
+- **`announcement_reads`** (V8): Ghi nhận từng người đã đọc thông báo để đếm tin chưa đọc trên chuông thông báo.
+  - `id` (`BIGINT`, PK, Auto-increment)
+  - `announcement_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `announcements(id)` ON DELETE CASCADE)
+  - `user_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)` ON DELETE CASCADE)
+  - `read_at` (`DATETIME(6)`, NOT NULL): Thời điểm đọc.
+  - **Ràng buộc**: `uk_announcement_read UNIQUE (announcement_id, user_id)`, mỗi người chỉ có một lượt đọc cho mỗi thông báo.
+
+### 3.13 `email_notifications` (Hàng đợi email công bố điểm)
+Mỗi khi Trưởng khoa công bố kết quả, hệ thống tạo một thư cho từng sinh viên trong nhóm trong cùng giao dịch; worker gửi qua SMTP và thử lại khi lỗi (V6).
+- `id` (`BIGINT`, PK, Auto-increment)
+- `version` (`BIGINT`, Khóa lạc quan)
+- `defense_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `defenses(id)`): Kết quả bảo vệ được công bố.
+- `student_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`): Sinh viên nhận thư.
+- `recipient` (`VARCHAR(255)`, NOT NULL): Địa chỉ email nhận.
+- `subject` (`VARCHAR(255)`, NOT NULL), `body` (`TEXT`, NOT NULL): Tiêu đề và nội dung thư.
+- `status` (`VARCHAR(20)`, NOT NULL): `PENDING`, `SENT`, `FAILED`.
+- `attempts` (`INT`, NOT NULL, DEFAULT 0): Số lần đã thử gửi.
+- `created_at`, `next_attempt_at` (`DATETIME(6)`, NOT NULL): Thời điểm tạo và lần thử gửi kế tiếp.
+- `sent_at` (`DATETIME(6)`, NULL): Thời điểm gửi thành công.
+- `last_error` (`VARCHAR(300)`, NULL): Lỗi gần nhất khi gửi.
+- **Ràng buộc**: `uk_result_email UNIQUE (defense_id, student_id)` chống gửi trùng; chỉ mục `idx_email_due (status, next_attempt_at)` phục vụ worker.
+
+### 3.14 `audit_logs` (Nhật ký thao tác)
+- `id` (`BIGINT`, PK, Auto-increment)
+- `user_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)` ON DELETE SET NULL): Người thực hiện.
+- `action` (`VARCHAR(80)`, NOT NULL): Hành động (ví dụ: `APPROVE_TOPIC`, `PUBLISH_RESULT`).
+- `entity_name` (`VARCHAR(80)`, NOT NULL), `entity_id` (`VARCHAR(80)`, NULL): Đối tượng bị tác động.
+- `old_value`, `new_value` (`LONGTEXT`, NULL): Giá trị trước và sau thay đổi.
+- `ip_address` (`VARCHAR(64)`, NULL)
+- `created_at` (`DATETIME(6)`, NOT NULL)
 
 ---
 
