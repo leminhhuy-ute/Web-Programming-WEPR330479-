@@ -3,6 +3,20 @@ const APP_CONTEXT = location.pathname.startsWith("/topic-management/")
     : "";
 const api = (path) => APP_CONTEXT + path;
 
+// Single source for the dean's sidebar, shared by the admin, lecturer and profile shells.
+const DEAN_NAVIGATION = [
+    ["dashboard", "Bảng điều khiển", "/admin/dashboard.html"],
+    ["users", "Tài khoản", "/admin/users/list.html"],
+    ["departments", "Bộ môn", "/admin/departments/list.html"],
+    ["registration-periods", "Đợt đăng ký", "/admin/registration-periods/list.html"],
+    ["announcements", "Thông báo", "/admin/announcements/list.html"],
+    ["topics", "Đề tài & nhóm", "/lecturer/dashboard.html"],
+    ["councils", "Hội đồng & kết quả", "/councils/index.html"],
+    ["exports", "Xuất Excel / PDF", "/admin/exports.html"],
+    ["email-notifications", "Email thông báo điểm", "/admin/email-notifications.html"],
+    ["profile", "Hồ sơ cá nhân", "/profile.html"],
+];
+
 function formatDateTime(value) {
     if (value == null || value === "") return "—";
 

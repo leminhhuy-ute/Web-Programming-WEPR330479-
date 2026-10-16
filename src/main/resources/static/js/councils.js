@@ -104,7 +104,8 @@ async function loadCouncils() {
   const defenseList = c$('#defense-list');
   if (defenseList) {
     if (!councilState.defenses.length) {
-      defenseList.innerHTML = '<div class="empty-state"><p class="text-muted" style="margin:0;">Chưa có nhóm nào được phân công cho hội đồng của bạn.</p></div>';
+      const emptyDefenses = dean ? 'Chưa có nhóm nào được phân công bảo vệ.' : 'Chưa có nhóm nào được phân công cho hội đồng của bạn.';
+      defenseList.innerHTML = `<div class="empty-state"><p class="text-muted" style="margin:0;">${emptyDefenses}</p></div>`;
     } else {
       defenseList.innerHTML = '<div class="defense-stack">' + councilState.defenses.map(d => `
         <article class="defense-card">

@@ -90,6 +90,8 @@ function cellValue(key, value) {
         if (!name || name.toLowerCase() === "admin" || name.includes("Tru?ng khoa")) name = "Nguyễn Văn Minh";
         return esc(name);
     }
+    // Let long addresses wrap after "@" instead of mid-domain.
+    if (key === "email") return esc(value).replace("@", "@<wbr>");
     return esc(key.endsWith("At") || key === "createdAt" ? local(value) : value);
 }
 
