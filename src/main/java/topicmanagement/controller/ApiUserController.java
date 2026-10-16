@@ -62,6 +62,14 @@ public class ApiUserController {
       @PathVariable Long id, @Valid @RequestBody UserStatusRequest r) {
     return ApiResponse.ok("Đã cập nhật trạng thái.", users.setStatus(id, r.status()));
   }
+
+  @PatchMapping("/{id}/password")
+  public ApiResponse<Void> resetPassword(@PathVariable Long id,
+      @Valid @RequestBody AdminPasswordResetRequest request,
+      @AuthenticationPrincipal CurrentUser currentUser) {
+    users.resetPassword(id, request.newPassword(), currentUser.id());
+    return ApiResponse.ok("Đã đặt lại mật khẩu tài khoản.", null);
+  }
   @DeleteMapping("/{id}")
   public ApiResponse<Void> delete(
       @PathVariable Long id, @AuthenticationPrincipal CurrentUser currentUser) {

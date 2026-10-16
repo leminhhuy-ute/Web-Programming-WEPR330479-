@@ -112,6 +112,26 @@ class ProfileIntegrationTest {
             .andExpect(status().isForbidden());
     }
 
+    @Test void onlyDeanCanResetAnotherAccountPasswordWithoutExposingIt() throws Exception {
+        String body = "{\"newPassword\":\"Replacement123!\"}";
+        mvc.perform(patch("/api/admin/users/" + student.getId() + "/password")
+            .session(session(student)).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isForbidden());
+        mvc.perform(patch("/api/admin/users/" + dean.getId() + "/password")
+            .session(session(dean)).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isBadRequest());
+        mvc.perform(patch("/api/admin/users/" + student.getId() + "/password")
+            .session(session(dean)).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isOk());
+        User updated = users.findById(student.getId()).orElseThrow();
+        assertTrue(passwords.matches("Replacement123!", updated.getPasswordHash()));
+        assertNotNull(updated.getPasswordChangedAt());
+        mvc.perform(get("/api/admin/users/" + student.getId()).session(session(dean)))
+            .andExpect(status().isOk())
+            .andExpect(result -> assertFalse(result.getResponse().getContentAsString().contains("passwordHash")))
+            .andExpect(result -> assertFalse(result.getResponse().getContentAsString().contains("Replacement123!")));
+    }
+
     private User account(String kind, int n, Role role) {
         User user = new User();
         user.setUserCode(kind.toUpperCase() + n);

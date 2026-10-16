@@ -157,10 +157,41 @@ async function list() {
         }
         await populateDepartmentFilter();
         const table = document.querySelector("#rows");
+        const passwordDialog = page === "users" ? document.querySelector("#password-reset-dialog") : null;
+        if (passwordDialog) {
+            const passwordInput = passwordDialog.querySelector('#reset-password');
+            const eye = passwordDialog.querySelector('#reset-password-eye');
+            const eyeIcon = eye.innerHTML;
+            const eyeOffIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.9"/><path d="M6.2 6.2C3.5 8.1 2 12 2 12s3.6 7 10 7a10.4 10.4 0 0 0 3.1-.5"/></svg>';
+            const form = passwordDialog.querySelector('#password-reset-form');
+            passwordDialog.querySelector('#password-reset-cancel').onclick = () => passwordDialog.close();
+            passwordDialog.addEventListener('close', () => { form.reset(); passwordInput.type = 'password'; eye.innerHTML = eyeIcon; eye.setAttribute('aria-pressed', 'false'); eye.setAttribute('aria-label', 'Hiện mật khẩu mới'); eye.title = 'Hiện mật khẩu mới'; });
+            eye.onclick = () => {
+                const visible = passwordInput.type === 'password';
+                passwordInput.type = visible ? 'text' : 'password';
+                eye.setAttribute('aria-pressed', String(visible));
+                eye.setAttribute('aria-label', visible ? 'Ẩn mật khẩu mới' : 'Hiện mật khẩu mới');
+                eye.title = visible ? 'Ẩn mật khẩu mới' : 'Hiện mật khẩu mới';
+                eye.innerHTML = visible ? eyeOffIcon : eyeIcon;
+                passwordInput.focus();
+            };
+            form.onsubmit = async event => {
+                event.preventDefault();
+                const save = form.querySelector('button[type="submit"]');
+                save.disabled = true;
+                try {
+                    await request(`${cfg.url}/${form.dataset.userId}/password`, {
+                        method: 'PATCH', body: JSON.stringify({newPassword: passwordInput.value})
+                    });
+                    passwordDialog.close();
+                    await showAppMessage('Đã đặt lại mật khẩu. Hãy chuyển mật khẩu mới cho người dùng qua kênh riêng.', 'success');
+                } catch (error) { showError(error); } finally { save.disabled = false; }
+            };
+        }
         const load = async () => {
             try {
                 clearError();
-                table.innerHTML = '<tr><td colspan="10" class="loading-cell"><div class="loading-state"><span class="loading-spinner"></span><span>Đang tải dữ liệu...</span></div></td></tr>';
+                table.innerHTML = `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="loading-cell"><div class="loading-state"><span class="loading-spinner"></span><span>Đang tải dữ liệu...</span></div></td></tr>`;
                 const query = new URLSearchParams(
                     new FormData(document.querySelector("#search")),
                 );
@@ -169,9 +200,18 @@ async function list() {
                     data
                         .map(
                             (x) =>
-                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}<td class="action-cell">${actionButtons(x)}</td></tr>`,
+                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}${page === 'users' ? `<td class="password-cell"><span aria-label="Mật khẩu được bảo vệ">********</span> ${Number(x.id) === Number(user.id) ? '<a href="/profile.html" class="action-btn action-btn--edit">Đổi</a>' : `<button type="button" class="action-btn action-btn--edit" data-password-reset="${esc(x.id)}" data-account-name="${esc(x.fullName)}">Đặt lại</button>`}</td>` : ''}<td class="action-cell">${actionButtons(x)}</td></tr>`,
                         )
-                        .join("") || '<tr><td colspan="10" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>';
+                        .join("") || `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>`;
+
+                if (passwordDialog) table.querySelectorAll('[data-password-reset]').forEach(button => {
+                    button.onclick = () => {
+                        passwordDialog.querySelector('#password-reset-form').dataset.userId = button.dataset.passwordReset;
+                        passwordDialog.querySelector('#password-reset-account').textContent = `Tài khoản: ${button.dataset.accountName}`;
+                        passwordDialog.showModal();
+                        passwordDialog.querySelector('#reset-password').focus();
+                    };
+                });
 
                 table.querySelectorAll("[data-delete]").forEach(
                     (b) =>
@@ -203,7 +243,7 @@ async function list() {
                     }),
                 );
             } catch (error) {
-                table.innerHTML = '<tr><td colspan="10" class="empty-cell"><div class="empty-state"><span>Không thể tải dữ liệu.</span></div></td></tr>';
+                table.innerHTML = `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Không thể tải dữ liệu.</span></div></td></tr>`;
                 showError(error);
             }
         };

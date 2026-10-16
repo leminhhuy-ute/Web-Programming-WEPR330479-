@@ -15,7 +15,7 @@
         <div class="page-header">
             <div>
                 <h1>Tài khoản</h1>
-                <p class="page-subtitle">Quản lý thông tin, vai trò và trạng thái tài khoản.</p>
+                <p class="page-subtitle">Quản lý thông tin, vai trò, trạng thái và đặt lại mật khẩu tài khoản.</p>
             </div>
             <a class="button primary" href="form.html">+ Thêm tài khoản</a>
         </div>
@@ -43,6 +43,7 @@
                     <col class="col-role">
                     <col class="col-department">
                     <col class="col-status">
+                    <col class="col-password">
                     <col class="col-actions">
                 </colgroup>
                 <thead>
@@ -54,12 +55,27 @@
                         <th>Vai trò</th>
                         <th>Bộ môn</th>
                         <th>Trạng thái</th>
+                        <th>Mật khẩu</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="rows"></tbody>
             </table>
         </div>
+        <dialog id="password-reset-dialog" class="password-reset-dialog" aria-labelledby="password-reset-title">
+            <form id="password-reset-form">
+                <h2 id="password-reset-title">Đặt lại mật khẩu</h2>
+                <p id="password-reset-account"></p>
+                <p class="page-subtitle">Mật khẩu hiện tại được lưu dưới dạng mã hóa một chiều nên không thể xem lại. Nhập mật khẩu mới để thay thế.</p>
+                <label for="reset-password">Mật khẩu mới</label>
+                <div class="password-toggle-wrap">
+                    <input id="reset-password" name="newPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+                    <button type="button" id="reset-password-eye" class="password-visibility-toggle" aria-label="Hiện mật khẩu mới" aria-pressed="false" title="Hiện mật khẩu mới"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                </div>
+                <small>8–72 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</small>
+                <div class="form-actions"><button class="button primary" type="submit">Lưu mật khẩu mới</button><button class="button secondary" type="button" id="password-reset-cancel">Hủy</button></div>
+            </form>
+        </dialog>
     </main>
     <script src="../../assets/js/common.js"></script>
     <script src="../../assets/js/admin-shell.js"></script>

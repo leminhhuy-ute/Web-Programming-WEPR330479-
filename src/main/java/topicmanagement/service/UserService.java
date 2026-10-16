@@ -3,6 +3,7 @@ package topicmanagement.service;
 import java.util.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,11 +21,33 @@ public class UserService {
     private final UserRepository users;
     private final DepartmentRepository departments;
     private final PasswordEncoder passwords;
+    private final AuditLogService audit;
 
     public UserService(UserRepository users, DepartmentRepository departments, PasswordEncoder passwords) {
+        this(users, departments, passwords, null);
+    }
+
+    @Autowired
+    public UserService(UserRepository users, DepartmentRepository departments, PasswordEncoder passwords,
+            AuditLogService audit) {
         this.users = users;
         this.departments = departments;
         this.passwords = passwords;
+        this.audit = audit;
+    }
+
+    public void resetPassword(Long id, String newPassword, Long actorId) {
+        if (id.equals(actorId))
+            throw new IllegalArgumentException("Để đổi mật khẩu của chính mình, hãy dùng Hồ sơ cá nhân.");
+        if (newPassword == null || !newPassword.matches("(?=.{8,72}$)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9\\s])\\S+"))
+            throw new IllegalArgumentException("Mật khẩu mới cần 8–72 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt; không chứa khoảng trắng.");
+        User user = entity(id);
+        user.setPasswordHash(passwords.encode(newPassword));
+        user.setPasswordChangedAt(java.time.LocalDateTime.now());
+        users.save(user);
+        if (audit != null)
+            audit.log(users.findById(actorId).orElseThrow(() -> new ResourceNotFoundException("Tài khoản quản trị không tồn tại.")),
+                "RESET_USER_PASSWORD", "User", id, null, null);
     }
 
     @Transactional(readOnly = true)
