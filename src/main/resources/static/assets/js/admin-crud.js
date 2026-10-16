@@ -200,7 +200,7 @@ async function list() {
                     data
                         .map(
                             (x) =>
-                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}${page === 'users' ? `<td class="password-cell"><span aria-label="Mật khẩu được bảo vệ">********</span> ${Number(x.id) === Number(user.id) ? '<a href="/profile.html" class="action-btn action-btn--edit">Đổi</a>' : `<button type="button" class="action-btn action-btn--edit" data-password-reset="${esc(x.id)}" data-account-name="${esc(x.fullName)}">Đặt lại</button>`}</td>` : ''}<td class="action-cell">${actionButtons(x)}</td></tr>`,
+                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}${page === 'users' ? `<td class="password-cell"><span aria-label="Mật khẩu được bảo vệ">********</span> ${Number(x.id) === Number(user.id) ? '<a href="/profile.html" class="action-btn action-btn--edit">Đổi</a>' : `<button type="button" class="action-btn action-btn--edit" data-password-reset="${esc(x.id)}" data-account-name="${esc(x.fullName)}" title="Mật khẩu cũ không thể xem; mở để đặt lại"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Đặt lại</button>`}</td>` : ''}<td class="action-cell">${actionButtons(x)}</td></tr>`,
                         )
                         .join("") || `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>`;
 
