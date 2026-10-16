@@ -31,8 +31,8 @@ class CloudMySqlMigrationSmokeTest {
     @Autowired MockMvc mvc;
 
     @Test void emptyDatabaseMigratesAndDemoSeedingDoesNotResetUsers() throws Exception {
-        assertEquals("8", flyway.info().current().getVersion().toString());
-        assertEquals(4, flyway.info().applied().length); // V1, V6, V7, V8, no manual baseline
+        assertEquals("9", flyway.info().current().getVersion().toString());
+        assertEquals(5, flyway.info().applied().length); // V1, V6, V7, V8, V9; no manual baseline
         assertEquals(0, flyway.migrate().migrationsExecuted);
         assertEquals(13, users.count());
         assertEquals(0L, jdbc.queryForObject("select count(*) from email_notifications", Long.class));

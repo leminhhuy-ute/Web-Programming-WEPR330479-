@@ -22,6 +22,28 @@
 .app-message-dialog p { margin: 0 0 24px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .app-message-dialog button { min-width: 120px; }
 
+.password-toggle-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+.password-toggle-wrap > input { padding-right: 48px; }
+.password-visibility-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 6px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    box-shadow: none;
+}
+.password-visibility-toggle:hover { background: #edf3f8; color: #164f7d; }
+.password-visibility-toggle:focus-visible { outline: 2px solid #337ab7; }
+.password-visibility-toggle svg { width: 20px; height: 20px; }
+
 /* Shared Utility Classes */
 .page-nav {
     display: flex;
