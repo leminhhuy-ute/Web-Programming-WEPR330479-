@@ -15,8 +15,8 @@ class EmailMigrationTest {
         }
         var flyway=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/migration/mysql")
             .baselineOnMigrate(true).baselineVersion("5").load();
-        assertEquals(3,flyway.migrate().migrationsExecuted);
-        assertEquals("8",flyway.info().current().getVersion().toString());
+        assertEquals(4,flyway.migrate().migrationsExecuted);
+        assertEquals("9",flyway.info().current().getVersion().toString());
         assertEquals(0,flyway.migrate().migrationsExecuted);
         try(var connection=DriverManager.getConnection(url,"sa","")) {
             assertTrue(connection.getMetaData().getTables(null,null,"EMAIL_NOTIFICATIONS",null).next());
@@ -24,6 +24,9 @@ class EmailMigrationTest {
             assertTrue(connection.getMetaData().getColumns(null,null,"ANNOUNCEMENTS","DEPARTMENT_ID").next());
             assertTrue(connection.getMetaData().getTables(null,null,"ANNOUNCEMENT_READS",null).next());
             assertTrue(connection.getMetaData().getColumns(null,null,"STUDENT_REPORTS","ADVISOR_FEEDBACK").next());
+            assertTrue(connection.getMetaData().getColumns(null,null,"STUDENT_REPORTS","STATUS").next());
+            assertTrue(connection.getMetaData().getColumns(null,null,"STUDENT_REPORTS","EDIT_COUNT").next());
+            assertTrue(connection.getMetaData().getTables(null,null,"STUDENT_REPORT_EDITS",null).next());
         }
     }
 }

@@ -1,6 +1,7 @@
 package topicmanagement.dto.response;
 
 import java.time.LocalDateTime;
+import topicmanagement.enums.ReportStatus;
 
 public record ReportSummaryResponse(
     Long id,
@@ -19,4 +20,6 @@ public record ReportSummaryResponse(
     String submittedBy,
     String advisorFeedback,
     String feedbackBy,
-    LocalDateTime feedbackAt) {}
+    LocalDateTime feedbackAt,
+    ReportStatus status,
+    int editCount) {}

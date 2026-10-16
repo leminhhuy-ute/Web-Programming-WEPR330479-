@@ -3,7 +3,10 @@ package topicmanagement;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -120,6 +123,83 @@ class SystemImprovementTest {
             reportService.listForStudent(fixture.student, fixture.group).getFirst().advisorFeedback());
         assertThrows(AccessDeniedException.class,
             () -> reportService.saveAdvisorFeedback(fixture.otherLecturer, report.id, "Sửa trái phép"));
+    }
+
+    @Test
+    void studentReportEditsKeepPreviousFileAndAdvisorCanReviewStatus() throws Exception {
+        Fixture fixture = fixture(true);
+        Report report = upload(fixture);
+        byte[] originalBytes = report.content.clone();
+        var replacement = new MockMultipartFile("file", "report-v2.pdf", "application/pdf",
+            "%PDF-1.5\n2 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF".getBytes());
+
+        var edited = reportService.updateStudentReport(fixture.student, report.id,
+            "Đã bổ sung phần phương pháp.", replacement);
+        assertEquals("report-v2.pdf", edited.filename());
+        assertEquals("Đã bổ sung phần phương pháp.", edited.note());
+        assertEquals(ReportStatus.PENDING, edited.status());
+        assertEquals(1, edited.editCount());
+
+        var historyItems = reportService.editHistoryForAdvisor(fixture.advisor, report.id);
+        assertEquals(1, historyItems.size());
+        assertEquals("report.pdf", historyItems.getFirst().filename());
+        var previousVersion = reportService.editVersionDownloadForAdvisor(
+            fixture.advisor, report.id, historyItems.getFirst().id());
+        assertArrayEquals(originalBytes, previousVersion.content);
+
+        var rejected = reportService.reviewReport(fixture.advisor, report.id,
+            ReportStatus.REJECTED, "Bổ sung thêm kết quả thử nghiệm.");
+        assertEquals(ReportStatus.REJECTED, rejected.status());
+        assertEquals("Bổ sung thêm kết quả thử nghiệm.", rejected.advisorFeedback());
+
+        var resubmitted = reportService.updateStudentReport(fixture.student, report.id,
+            "Đã bổ sung kết quả thử nghiệm.", null);
+        assertEquals(ReportStatus.PENDING, resubmitted.status());
+        assertEquals("report-v2.pdf", resubmitted.filename(), "Bỏ trống tệp mới thì giữ tệp hiện tại.");
+        assertEquals(2, reportService.editHistoryForAdvisor(fixture.advisor, report.id).size());
+
+        reportService.reviewReport(fixture.advisor, report.id, ReportStatus.APPROVED, "Đạt yêu cầu.");
+        assertThrows(IllegalArgumentException.class,
+            () -> reportService.updateStudentReport(fixture.student, report.id, "Sửa sau duyệt", null));
+        assertThrows(IllegalArgumentException.class,
+            () -> reportService.reviewReport(fixture.advisor, report.id, ReportStatus.REJECTED, " "));
+        assertThrows(AccessDeniedException.class,
+            () -> reportService.reviewReport(fixture.otherLecturer, report.id, ReportStatus.APPROVED, "Duyệt trái phép"));
+        assertThrows(AccessDeniedException.class,
+            () -> reportService.editHistoryForAdvisor(fixture.otherLecturer, report.id));
+    }
+
+    @Test
+    void studentEditAndAdvisorReviewHttpEndpointsWorkWithRoleChecks() throws Exception {
+        Fixture fixture = fixture(true);
+        Report report = upload(fixture);
+        var editRequest = multipart("/api/student/reports/{id}", report.id)
+            .param("note", "Nội dung đã cập nhật qua API.")
+            .with(authentication(auth(fixture.student)))
+            .with(csrf())
+            .with(request -> { request.setMethod("PUT"); return request; });
+        mvc.perform(editRequest).andExpect(status().isOk());
+        assertEquals("Nội dung đã cập nhật qua API.",
+            reportRepository.findById(report.id).orElseThrow().note);
+
+        mvc.perform(get("/api/lecturer/reports/{id}/history", report.id)
+                .with(authentication(auth(fixture.advisor))))
+            .andExpect(status().isOk());
+        mvc.perform(put("/api/lecturer/reports/{id}/review", report.id)
+                .with(authentication(auth(fixture.advisor)))
+                .with(csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"APPROVED\",\"feedback\":\"Đạt yêu cầu.\"}"))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/lecturer/reports/{id}/history", report.id)
+                .with(authentication(auth(fixture.otherLecturer))))
+            .andExpect(status().isForbidden());
+        mvc.perform(put("/api/lecturer/reports/{id}/review", report.id)
+                .with(authentication(auth(fixture.otherLecturer)))
+                .with(csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"APPROVED\",\"feedback\":\"Không được duyệt.\"}"))
+            .andExpect(status().isForbidden());
     }
 
     @Test

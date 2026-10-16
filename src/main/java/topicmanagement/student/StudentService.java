@@ -284,6 +284,10 @@ public class StudentService {
         reportService.upload(actor,g,stage,note,file);
     }
 
+    @Transactional public void updateReport(String username,Long reportId,String note,MultipartFile file)throws IOException {
+        reportService.updateStudentReport(student(username),reportId,note,file);
+    }
+
     public Report download(String username,Long id) {
         return reportService.downloadForStudent(student(username),id);
     }

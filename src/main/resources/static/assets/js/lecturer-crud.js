@@ -502,28 +502,50 @@ const LecturerCrud = {
             if (!dialog) {
                 dialog = document.createElement('dialog');
                 dialog.id = 'lecturer-report-dialog';
-                dialog.style.maxWidth = '760px';
+                dialog.style.maxWidth = '1000px';
                 dialog.style.width = 'calc(100% - 32px)';
                 dialog.style.border = '0';
                 dialog.style.borderRadius = '12px';
                 dialog.style.padding = '24px';
+                dialog.style.maxHeight = '88vh';
+                dialog.style.overflow = 'auto';
                 document.body.appendChild(dialog);
             }
             const groupName = reports[0]?.groupName || `Nhóm #${groupId}`;
-            dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Giảng viên hướng dẫn có thể nhận xét từng tệp báo cáo.</p></div><button class="button outline" onclick="document.getElementById('lecturer-report-dialog').close()">Đóng</button></div>` +
-                (reports.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>Tệp</th><th>Cột mốc</th><th>Thời gian nộp</th><th>Nhận xét của giảng viên hướng dẫn</th><th></th></tr></thead><tbody>${reports.map(r => `<tr><td><strong>${escapeHtml(r.filename)}</strong><br><small>${(Number(r.size || 0) / 1024).toFixed(1)} KB</small></td><td>${escapeHtml(r.stage)}</td><td>${new Date(r.submittedAt).toLocaleString('vi-VN')}</td><td style="min-width:240px"><p style="white-space:pre-wrap">${escapeHtml(r.advisorFeedback || 'Chưa có nhận xét')}</p>${currentUser.role !== 'DEAN' ? `<form class="advisor-feedback-form" data-report-id="${r.id}"><label for="feedback-${r.id}">Nhập nhận xét</label><textarea id="feedback-${r.id}" name="feedback" maxlength="2000" required style="width:100%">${escapeHtml(r.advisorFeedback || '')}</textarea><button class="button secondary" type="submit">Lưu nhận xét</button></form>` : ''}</td><td><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải về</a></td></tr>`).join('')}</tbody></table></div>` : '<p>Nhóm chưa nộp báo cáo.</p>');
+            const statusLabels = {PENDING: 'Chờ duyệt', REJECTED: 'Từ chối', APPROVED: 'Đã duyệt'};
+            dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Xem lịch sử phiên bản, cập nhật trạng thái và gửi nhận xét cho sinh viên.</p></div><button type="button" class="button outline" data-report-dialog-close>Đóng</button></div>` +
+                (reports.length ? `<div style="display:grid;gap:16px">${reports.map(r => `<article class="card" style="padding:18px;border:1px solid #e2e8f0;border-radius:10px"><div style="display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap"><div><strong>${escapeHtml(r.filename)}</strong><div style="color:#64748b;font-size:13px">${(Number(r.size || 0) / 1024).toFixed(1)} KB · ${escapeHtml(r.stage)} · ${new Date(r.submittedAt).toLocaleString('vi-VN')}</div></div><span class="badge ${(r.status || 'PENDING').toLowerCase()}">${statusLabels[r.status] || 'Chờ duyệt'}</span></div><p style="white-space:pre-wrap;margin:12px 0">${escapeHtml(r.note || 'Sinh viên chưa thêm nội dung ghi chú.')}</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải báo cáo hiện tại</a><button type="button" class="button secondary" data-report-history="${r.id}">Xem lịch sử chỉnh sửa (${Number(r.editCount || 0)})</button></div><div id="report-history-${r.id}" hidden></div><form class="report-review-form" data-report-id="${r.id}" style="border-top:1px solid #e2e8f0;padding-top:12px"><label>Trạng thái<select name="status"><option value="PENDING" ${r.status === 'PENDING' ? 'selected' : ''}>Chờ duyệt</option><option value="REJECTED" ${r.status === 'REJECTED' ? 'selected' : ''}>Từ chối</option><option value="APPROVED" ${r.status === 'APPROVED' ? 'selected' : ''}>Đã duyệt</option></select></label><label>Nhận xét của giảng viên hướng dẫn<textarea name="feedback" maxlength="2000" placeholder="Nhập nhận xét hoặc lý do từ chối">${escapeHtml(r.advisorFeedback || '')}</textarea></label><small style="display:block;color:#64748b;margin:-8px 0 12px">Khi từ chối, cần ghi rõ lý do để nhóm biết nội dung cần sửa.</small><button class="button primary" type="submit">Lưu trạng thái và nhận xét</button></form></article>`).join('')}</div>` : '<p>Nhóm chưa nộp báo cáo.</p>');
+            dialog.onclick = async event => {
+                if (event.target.closest('[data-report-dialog-close]')) { dialog.close(); return; }
+                const button = event.target.closest('[data-report-history]');
+                if (!button) return;
+                const reportId = button.dataset.reportHistory;
+                const historyPanel = dialog.querySelector(`#report-history-${CSS.escape(reportId)}`);
+                button.disabled = true;
+                try {
+                    const historyResponse = await App.fetchApi(`${App.getContextPath()}/api/lecturer/reports/${reportId}/history`);
+                    const versions = historyResponse.data || [];
+                    historyPanel.hidden = false;
+                    historyPanel.innerHTML = versions.length ? `<h4>Lịch sử phiên bản</h4><div style="display:grid;gap:10px">${versions.map(version => `<div style="padding:12px;background:#f8fafc;border-radius:8px"><strong>${escapeHtml(version.filename)}</strong><div style="color:#64748b;font-size:13px">${(Number(version.size || 0) / 1024).toFixed(1)} KB · ${escapeHtml(version.editedBy || 'Sinh viên')} · ${new Date(version.editedAt).toLocaleString('vi-VN')}</div><p style="white-space:pre-wrap;margin:8px 0">${escapeHtml(version.note || 'Không có nội dung ghi chú.')}</p><a class="button secondary" href="${App.getContextPath()}/api/lecturer/reports/${reportId}/history/${version.id}/download">Tải phiên bản này</a></div>`).join('')}</div>` : '<p class="muted">Chưa có lần chỉnh sửa nào.</p>';
+                } catch (error) {
+                    await showAppMessage(error.message);
+                } finally {
+                    button.disabled = false;
+                }
+            };
             dialog.onsubmit = async event => {
-                const form = event.target.closest('.advisor-feedback-form');
+                const form = event.target.closest('.report-review-form');
                 if (!form) return;
                 event.preventDefault();
                 const button = form.querySelector('button');
                 button.disabled = true;
                 try {
-                    await App.fetchApi(`${App.getContextPath()}/api/lecturer/reports/${form.dataset.reportId}/feedback`, {
-                        method: 'POST', body: JSON.stringify({feedback: form.elements.feedback.value})
+                    await App.fetchApi(`${App.getContextPath()}/api/lecturer/reports/${form.dataset.reportId}/review`, {
+                        method: 'PUT', body: JSON.stringify({status: form.elements.status.value, feedback: form.elements.feedback.value})
                     });
                     dialog.close();
                     await this.viewReports(groupId);
+                    await showAppMessage('Đã cập nhật trạng thái và nhận xét báo cáo.', 'success');
                 } catch (error) {
                     await showAppMessage(error.message);
                     button.disabled = false;

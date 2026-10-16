@@ -39,6 +39,12 @@ public class StudentController {
     @PostMapping("/registrations") public Object register(Principal p,@Valid @RequestBody TopicChoice input) {service.register(p.getName(),input.topicId());return new MessageResponse("Đã đăng ký đề tài. Vui lòng chờ giảng viên duyệt.");}
     @PostMapping("/registrations/cancel") public Object cancel(Principal p,@Valid @RequestBody Cancellation input) {service.cancelRegistration(p.getName(),input.note());return new MessageResponse("Đã hủy đăng ký và giữ lại lịch sử.");}
     @PostMapping("/reports") public Object upload(Principal p,@RequestParam String stage,@RequestParam(defaultValue="") String note,@RequestParam MultipartFile file) throws java.io.IOException {service.upload(p.getName(),stage,note,file);return new MessageResponse("Đã nộp báo cáo và lưu vào lịch sử.");}
+    @PutMapping(value="/reports/{id}",consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Object editReport(Principal p,@PathVariable Long id,@RequestParam(defaultValue="") String note,
+            @RequestParam(required=false) MultipartFile file) throws java.io.IOException {
+        service.updateReport(p.getName(),id,note,file);
+        return new MessageResponse("Đã cập nhật báo cáo. Trạng thái chuyển về Chờ duyệt.");
+    }
     @GetMapping("/reports/{id}/download") public ResponseEntity<byte[]> download(Principal p,@PathVariable Long id) {
         Report r=service.download(p.getName(),id);
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,ContentDisposition.attachment().filename(r.filename,StandardCharsets.UTF_8).build().toString())

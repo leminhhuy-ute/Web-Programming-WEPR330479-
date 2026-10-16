@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.ApiResponse;
@@ -11,11 +12,14 @@ import topicmanagement.dto.response.ReportSummaryResponse;
 import topicmanagement.dto.response.PageResponse;
 import topicmanagement.security.CurrentAccount;
 import topicmanagement.student.*;
+import topicmanagement.enums.ReportStatus;
 
 @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
 @RestController
 public class ReportAccessController {
     public record AdvisorFeedbackRequest(@NotBlank(message="Vui lòng nhập nhận xét.")
+        @Size(max=2000,message="Nhận xét tối đa 2.000 ký tự.") String feedback) {}
+    public record ReportReviewRequest(@NotNull(message="Vui lòng chọn trạng thái.") ReportStatus status,
         @Size(max=2000,message="Nhận xét tối đa 2.000 ký tự.") String feedback) {}
     private final ReportService reports;
     private final CurrentAccount accounts;
@@ -54,6 +58,24 @@ public class ReportAccessController {
             reports.saveAdvisorFeedback(accounts.user(), id, request.feedback()));
     }
 
+    @PutMapping("/api/lecturer/reports/{id}/review")
+    public ApiResponse<ReportSummaryResponse> reviewReport(@PathVariable Long id,
+            @Valid @RequestBody ReportReviewRequest request) {
+        return ApiResponse.ok("Đã cập nhật trạng thái và nhận xét báo cáo.",
+            reports.reviewReport(accounts.user(), id, request.status(), request.feedback()));
+    }
+
+    @GetMapping("/api/lecturer/reports/{id}/history")
+    public ApiResponse<?> reportHistory(@PathVariable Long id) {
+        return ApiResponse.ok("Lịch sử chỉnh sửa báo cáo.", reports.editHistoryForAdvisor(accounts.user(), id));
+    }
+
+    @GetMapping("/api/lecturer/reports/{id}/history/{historyId}/download")
+    public ResponseEntity<byte[]> downloadReportVersion(@PathVariable Long id, @PathVariable Long historyId) {
+        ReportEditHistory version = reports.editVersionDownloadForAdvisor(accounts.user(), id, historyId);
+        return download(version.filename, version.contentType, version.content);
+    }
+
     @GetMapping("/api/council/defenses/{defenseId}/reports")
     public ApiResponse<?> councilReports(@PathVariable Long defenseId) {
         return ApiResponse.ok("Danh sách báo cáo của đề tài phản biện.",
@@ -78,12 +100,16 @@ public class ReportAccessController {
     }
 
     private ResponseEntity<byte[]> download(Report report) {
+        return download(report.filename, report.contentType, report.content);
+    }
+
+    private ResponseEntity<byte[]> download(String filename, String contentType, byte[] content) {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION,
-                ContentDisposition.attachment().filename(report.filename, StandardCharsets.UTF_8).build().toString())
+                ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
             .header(HttpHeaders.CACHE_CONTROL, "no-store")
             .header("X-Content-Type-Options", "nosniff")
-            .contentType(MediaType.parseMediaType(report.contentType))
-            .body(report.content);
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(content);
     }
 }

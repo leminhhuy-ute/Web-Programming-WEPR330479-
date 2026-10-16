@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import topicmanagement.council.DefenseRepository;
 import topicmanagement.council.Defense;
 import topicmanagement.dto.response.ReportSummaryResponse;
+import topicmanagement.dto.response.ReportEditHistoryResponse;
 import topicmanagement.dto.response.PageResponse;
 import topicmanagement.entity.*;
 import topicmanagement.enums.*;
@@ -30,24 +31,33 @@ public class ReportService {
     private final DefenseRepository defenses;
     private final AuditLogService audit;
     private final TopicRegistrationRepository topicRegistrations;
+    private final ReportEditHistoryRepository editHistory;
 
     public ReportService(ReportRepository reports, GroupMemberRepository members,
             StudentGroupRepository groups,
             DefenseRepository defenses, AuditLogService audit) {
-        this(reports, members, groups, defenses, audit, null);
+        this(reports, members, groups, defenses, audit, null, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public ReportService(ReportRepository reports, GroupMemberRepository members,
             StudentGroupRepository groups,
             DefenseRepository defenses, AuditLogService audit,
             @org.springframework.beans.factory.annotation.Autowired(required = false) TopicRegistrationRepository topicRegistrations) {
+        this(reports, members, groups, defenses, audit, topicRegistrations, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ReportService(ReportRepository reports, GroupMemberRepository members,
+            StudentGroupRepository groups, DefenseRepository defenses, AuditLogService audit,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) TopicRegistrationRepository topicRegistrations,
+            ReportEditHistoryRepository editHistory) {
         this.reports = reports;
         this.members = members;
         this.groups = groups;
         this.defenses = defenses;
         this.audit = audit;
         this.topicRegistrations = topicRegistrations;
+        this.editHistory = editHistory;
     }
 
     @Transactional
@@ -114,6 +124,8 @@ public class ReportService {
         report.contentType = contentType;
         report.stage = stage;
         report.note = note.strip();
+        report.statusUpdatedAt = report.submittedAt;
+        report.statusUpdatedBy = actor;
         report.reportSize = (long) bytes.length;
         report.checksum = sha256(bytes);
         report.storagePath = null; // Reserved for private object storage without changing the demo workflow.
@@ -127,6 +139,52 @@ public class ReportService {
     public List<ReportSummaryResponse> listForStudent(User actor, StudentGroup group) {
         assertGroupMember(actor, group);
         return reports.findSummariesByGroupId(group.getId());
+    }
+
+    @Transactional
+    public ReportSummaryResponse updateStudentReport(User actor, Long reportId, String note, MultipartFile file) throws IOException {
+        Report report = reports.findById(reportId).orElseThrow(this::denied);
+        assertGroupMember(actor, report.group);
+        if (!report.group.getLeader().getId().equals(actor.getId())) throw denied();
+        if (report.status == ReportStatus.APPROVED)
+            throw bad("Báo cáo đã được duyệt nên không thể chỉnh sửa.");
+        if (note == null || note.length() > 1000) throw bad("Nội dung báo cáo tối đa 1.000 ký tự.");
+        if (file != null && !file.isEmpty() && file.getSize() > 10L * 1024 * 1024)
+            throw bad("Chọn tệp PDF hoặc DOCX, tối đa 10 MB.");
+
+        ReportEditHistory snapshot = new ReportEditHistory();
+        snapshot.report = report;
+        snapshot.changedBy = actor;
+        snapshot.editedAt = LocalDateTime.now();
+        snapshot.filename = report.filename;
+        snapshot.contentType = report.contentType;
+        snapshot.note = report.note;
+        snapshot.reportSize = report.reportSize == null ? (long) report.content.length : report.reportSize;
+        snapshot.checksum = report.checksum;
+        snapshot.content = report.content.clone();
+        editHistory.save(snapshot);
+
+        String oldChecksum = report.checksum;
+        String oldFilename = report.filename;
+        report.note = note.strip();
+        if (file != null && !file.isEmpty()) {
+            String filename = sanitizeFilename(file.getOriginalFilename());
+            byte[] bytes = file.getBytes();
+            String contentType = validatedContentType(filename, bytes);
+            report.filename = filename;
+            report.contentType = contentType;
+            report.reportSize = (long) bytes.length;
+            report.checksum = sha256(bytes);
+            report.content = bytes;
+        }
+        report.editCount++;
+        report.status = ReportStatus.PENDING;
+        report.statusUpdatedAt = LocalDateTime.now();
+        report.statusUpdatedBy = actor;
+        reports.saveAndFlush(report);
+        audit.log(actor, "EDIT_REPORT", "Report", report.id, oldFilename + ",sha256=" + oldChecksum,
+            report.filename + ",sha256=" + report.checksum + ",version=" + report.editCount);
+        return reports.findSummaryById(report.id).orElseThrow(this::denied);
     }
 
     public List<ReportSummaryResponse> listForAdvisor(User actor, Long groupId) {
@@ -167,6 +225,23 @@ public class ReportService {
         return summary;
     }
 
+    public List<ReportEditHistoryResponse> editHistoryForAdvisor(User actor, Long reportId) {
+        Report report = reports.findById(reportId).orElseThrow(this::denied);
+        assertAssignedAdvisor(actor, report);
+        return editHistory.findSummariesByReportId(reportId);
+    }
+
+    @Transactional
+    public ReportEditHistory editVersionDownloadForAdvisor(User actor, Long reportId, Long historyId) {
+        Report report = reports.findById(reportId).orElseThrow(this::denied);
+        assertAssignedAdvisor(actor, report);
+        ReportEditHistory version = editHistory.findById(historyId).orElseThrow(this::denied);
+        if (!version.report.id.equals(reportId)) throw denied();
+        audit.log(actor, "DOWNLOAD_REPORT_VERSION", "Report", reportId, null,
+            "version=" + version.id + ",sha256=" + version.checksum);
+        return version;
+    }
+
     @Transactional
     public ReportSummaryResponse saveAdvisorFeedback(User actor, Long reportId, String feedback) {
         if (feedback == null || feedback.isBlank() || feedback.strip().length() > 2000)
@@ -181,6 +256,30 @@ public class ReportService {
         report.feedbackAt = LocalDateTime.now();
         reports.saveAndFlush(report);
         audit.log(actor, "COMMENT_REPORT", "Report", report.id, null, "Nhận xét báo cáo của nhóm.");
+        return reports.findSummaryById(report.id).orElseThrow(this::denied);
+    }
+
+    @Transactional
+    public ReportSummaryResponse reviewReport(User actor, Long reportId, ReportStatus status, String feedback) {
+        if (status == null) throw bad("Vui lòng chọn trạng thái báo cáo.");
+        String comment = Objects.toString(feedback, "").strip();
+        if (comment.length() > 2000) throw bad("Nhận xét tối đa 2.000 ký tự.");
+        if (status == ReportStatus.REJECTED && comment.isBlank())
+            throw bad("Cần ghi rõ lý do khi từ chối báo cáo.");
+
+        Report report = reports.findById(reportId).orElseThrow(this::denied);
+        assertAssignedAdvisor(actor, report);
+        ReportStatus previous = report.status;
+        LocalDateTime now = LocalDateTime.now();
+        report.status = status;
+        report.statusUpdatedAt = now;
+        report.statusUpdatedBy = actor;
+        report.advisorFeedback = comment.isBlank() ? null : comment;
+        report.feedbackBy = actor;
+        report.feedbackAt = now;
+        reports.saveAndFlush(report);
+        audit.log(actor, "REVIEW_REPORT", "Report", report.id, previous.name(),
+            status.name() + (comment.isBlank() ? "" : ": " + comment));
         return reports.findSummaryById(report.id).orElseThrow(this::denied);
     }
 
@@ -226,6 +325,13 @@ public class ReportService {
         boolean advisor = topic != null && ((topic.getAdvisor1() != null && topic.getAdvisor1().getId().equals(actor.getId()))
             || (topic.getAdvisor2() != null && topic.getAdvisor2().getId().equals(actor.getId())));
         if (!advisor && actor.getRole() != Role.DEAN) throw denied();
+    }
+
+    private void assertAssignedAdvisor(User actor, Report report) {
+        Topic topic = report.topic != null ? report.topic : report.group.getTopic();
+        boolean advisor = topic != null && ((topic.getAdvisor1() != null && topic.getAdvisor1().getId().equals(actor.getId()))
+            || (topic.getAdvisor2() != null && topic.getAdvisor2().getId().equals(actor.getId())));
+        if (!advisor) throw denied();
     }
 
     private void assertCouncilMember(User actor, topicmanagement.council.Defense defense) {

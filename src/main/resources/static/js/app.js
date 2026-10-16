@@ -22,6 +22,7 @@ document.querySelectorAll('[data-icon]').forEach(e => e.innerHTML = icon(e.datas
 
 const date = v => v == null ? 'Chưa thiết lập' : new Intl.DateTimeFormat('vi-VN', {dateStyle:'medium', timeStyle:'short'}).format(new Date(v));
 const statusText = {DRAFT:'Bản nháp', PENDING:'Chờ duyệt', APPROVED:'Đã được duyệt', REJECTED:'Bị từ chối', CANCELLED:'Đã hủy', ACCEPTED:'Đã tham gia', DECLINED:'Đã từ chối'};
+const reportStatusText = {PENDING:'Chờ duyệt', REJECTED:'Từ chối', APPROVED:'Đã duyệt'};
 const badge = (s, text) => `<span class="badge ${esc(s)}">${esc(text || statusText[s] || s)}</span>`;
 const initials = name => (name || 'SV').split(' ').filter(Boolean).slice(-2).map(x => x[0]).join('').toUpperCase();
 
@@ -270,7 +271,7 @@ function reportsPage() {
     </div>
     <section class="panel section-gap">
       <div class="panel-head"><h2>Lịch sử nộp báo cáo</h2>${badge('MEMBER', state.reports.length + ' tệp')}</div>
-      ${state.reports.length ? `<div class="table-wrap"><table><thead><tr><th>TÊN TỆP</th><th>LOẠI</th><th>THỜI GIAN NỘP</th><th>THAO TÁC</th></tr></thead><tbody>${state.reports.map(r => `<tr><td><b>${esc(r.filename)}</b><small>${(r.size/1024).toFixed(1)} KB · ${esc(cleanName(r.submittedBy))}</small>${r.note ? `<small>${esc(r.note)}</small>` : ''}</td><td>${esc(r.stage)}</td><td>${date(r.submittedAt)}</td><td><a href="/api/student/reports/${r.id}/download" class="button secondary small">Tải về</a></td></tr>`).join('')}</tbody></table></div>` : empty('Chưa có báo cáo', 'Các tệp do nhóm trưởng nộp sẽ hiển thị tại đây.', '', 'file')}
+      ${state.reports.length ? `<div class="table-wrap"><table><thead><tr><th>TÊN TỆP</th><th>LOẠI</th><th>TRẠNG THÁI</th><th>THỜI GIAN NỘP</th><th>THAO TÁC</th></tr></thead><tbody>${state.reports.map(r => `<tr><td><b>${esc(r.filename)}</b><small>${(r.size/1024).toFixed(1)} KB · ${esc(cleanName(r.submittedBy))}</small>${r.note ? `<small>${esc(r.note)}</small>` : ''}</td><td>${esc(r.stage)}</td><td>${badge(r.status, reportStatusText[r.status] || 'Chờ duyệt')}${r.editCount ? `<small>Đã chỉnh sửa ${r.editCount} lần</small>` : ''}</td><td>${date(r.submittedAt)}</td><td><a href="/api/student/reports/${r.id}/download" class="button secondary small">Tải về</a>${allowed && r.status !== 'APPROVED' ? ` <button type="button" class="button secondary small" data-report-edit="${r.id}">Sửa báo cáo</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : empty('Chưa có báo cáo', 'Các tệp do nhóm trưởng nộp sẽ hiển thị tại đây.', '', 'file')}
     </section>
     <section class="panel section-gap">
       <h2>Nhận xét của giảng viên hướng dẫn</h2>
@@ -348,13 +349,13 @@ function openDialog(title, body) {
   d.showModal();
 }
 
-async function mutate(path, body) {
+async function mutate(path, body, method) {
   if (busy) return;
   busy = true;
   const buttons = [...document.querySelectorAll('button')];
   buttons.forEach(b => b.disabled = true);
   try {
-    const result = await api(path, body);
+    const result = await api(path, body, method);
     $('#dialog').close();
     await refresh();
     toast(result.message);
@@ -375,6 +376,12 @@ document.addEventListener('click', e => {
   if (!b || busy) return;
   if (b.dataset.go) { location.hash = b.dataset.go; return; }
   if (b.dataset.action === 'close') { $('#dialog').close(); return; }
+  if (b.dataset.reportEdit) {
+    const report = state.reports.find(item => String(item.id) === b.dataset.reportEdit);
+    if (!report || !isLeader() || state.registration?.status !== 'APPROVED' || report.status === 'APPROVED') return;
+    openDialog('Sửa báo cáo', `<p class="muted">Bạn có thể cập nhật ghi chú và thay tệp nội dung báo cáo. Nếu không chọn tệp mới, tệp hiện tại sẽ được giữ. Sau khi lưu, báo cáo chuyển về trạng thái <b>Chờ duyệt</b>; giảng viên vẫn xem được lịch sử phiên bản trước.</p><form id="report-edit-form" data-report-id="${report.id}"><label>Ghi chú / nội dung cập nhật<textarea name="note" maxlength="1000">${esc(report.note || '')}</textarea></label><label>Thay tệp báo cáo (không bắt buộc)<input type="file" name="file" accept=".pdf,.docx"><small>PDF hoặc DOCX · Tối đa 10 MB. Bỏ trống để giữ tệp hiện tại.</small></label><button class="button primary" type="submit">Lưu thay đổi</button></form>`);
+    return;
+  }
   if (b.dataset.action === 'create') {
     const available = periodChoices.filter(p => p.open && !p.joined);
     if (!available.length) { toast('Không có đợt đang mở mà bạn chưa tham gia nhóm.', true); return; }
@@ -426,7 +433,7 @@ document.addEventListener('click', e => {
 
 document.addEventListener('submit', async e => {
   const form = e.target;
-  if (!['filter-form', 'create-form', 'invite-form', 'report-form', 'cancel-form'].includes(form.id)) return;
+  if (!['filter-form', 'create-form', 'invite-form', 'report-form', 'report-edit-form', 'cancel-form'].includes(form.id)) return;
   e.preventDefault();
   if (busy) return;
   const data = new FormData(form);
@@ -439,6 +446,14 @@ document.addEventListener('submit', async e => {
       return;
     }
     mutate('/reports', data);
+  }
+  if (form.id === 'report-edit-form') {
+    const file = data.get('file');
+    if (file && file.size > 10 * 1024 * 1024) {
+      toast('Tệp vượt quá giới hạn 10 MB.', true);
+      return;
+    }
+    mutate('/reports/' + encodeURIComponent(form.dataset.reportId), data, 'PUT');
   }
   if (form.id === 'filter-form') {
     filters = Object.fromEntries(data);
