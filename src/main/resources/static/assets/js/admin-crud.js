@@ -160,7 +160,7 @@ async function list() {
         const load = async () => {
             try {
                 clearError();
-                table.innerHTML = `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="loading-cell"><div class="loading-state"><span class="loading-spinner"></span><span>Đang tải dữ liệu...</span></div></td></tr>`;
+                table.innerHTML = `<tr><td colspan="${page === 'users' ? 8 : cfg.columns.length + 1}" class="loading-cell"><div class="loading-state"><span class="loading-spinner"></span><span>Đang tải dữ liệu...</span></div></td></tr>`;
                 const query = new URLSearchParams(
                     new FormData(document.querySelector("#search")),
                 );
@@ -169,9 +169,9 @@ async function list() {
                     data
                         .map(
                             (x) =>
-                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}${page === 'users' ? `<td class="password-cell"><span aria-label="Mật khẩu được bảo vệ">********</span></td>` : ''}<td class="action-cell">${actionButtons(x)}</td></tr>`,
+                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}<td class="action-cell">${actionButtons(x)}</td></tr>`,
                         )
-                        .join("") || `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>`;
+                        .join("") || `<tr><td colspan="${page === 'users' ? 8 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>`;
 
                 table.querySelectorAll("[data-delete]").forEach(
                     (b) =>
@@ -203,7 +203,7 @@ async function list() {
                     }),
                 );
             } catch (error) {
-                table.innerHTML = `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Không thể tải dữ liệu.</span></div></td></tr>`;
+                table.innerHTML = `<tr><td colspan="${page === 'users' ? 8 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Không thể tải dữ liệu.</span></div></td></tr>`;
                 showError(error);
             }
         };

@@ -564,7 +564,6 @@ tbody tr:last-child td {
 .users-table .col-role { width: 115px; }
 .users-table .col-department { width: 130px; }
 .users-table .col-status { width: 105px; }
-.users-table .col-password { width: 135px; }
 .users-table .col-actions { width: 190px; }
 
 /* Keep row actions reachable when the table scrolls horizontally on narrow screens. */
@@ -602,8 +601,6 @@ tbody tr:last-child td {
     overflow-wrap: anywhere;
     font-size: 13px;
 }
-
-.password-cell { white-space: nowrap; }
 
 /* --------------------------------------------------------------------------
    8. BADGES
