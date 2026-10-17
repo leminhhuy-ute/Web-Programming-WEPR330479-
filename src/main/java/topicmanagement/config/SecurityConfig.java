@@ -73,7 +73,7 @@ public class SecurityConfig {
                         "/index.html",
                         "/login.html",
                         "/login",
-                        "/assets/**", "/css/**", "/js/**", "/images/**", "/error",
+                        "/assets/**", "/css/**", "/js/**", "/images/**", "/favicon.svg", "/error",
                         "/api/auth/login",
                         "/api/auth/csrf")
                     .permitAll()
