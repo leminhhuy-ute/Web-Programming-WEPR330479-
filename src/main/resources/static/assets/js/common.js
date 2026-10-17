@@ -142,8 +142,8 @@ function showAppMessage(message, kind = 'error') {
         dialog.querySelector('button').addEventListener('click', () => dialog.close());
     }
     dialog.dataset.kind = kind;
-    dialog.querySelector('.app-message-icon').textContent = kind === 'success' ? '✓' : kind === 'info' ? 'i' : '!';
-    dialog.querySelector('h2').textContent = kind === 'success' ? 'Thao tác thành công' : kind === 'info' ? 'Thông tin bảo mật' : 'Không thể thực hiện';
+    dialog.querySelector('.app-message-icon').textContent = kind === 'success' ? '✓' : '!';
+    dialog.querySelector('h2').textContent = kind === 'success' ? 'Thao tác thành công' : 'Không thể thực hiện';
     dialog.querySelector('p').textContent = message || 'Vui lòng thử lại.';
     if (!dialog.open) dialog.showModal();
     return new Promise(resolve => dialog.addEventListener('close', resolve, {once: true}));

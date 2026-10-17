@@ -604,13 +604,6 @@ tbody tr:last-child td {
 }
 
 .password-cell { white-space: nowrap; }
-.password-cell .password-visibility-toggle {
-    position: static;
-    transform: none;
-    display: inline-grid;
-    margin-left: 8px;
-    vertical-align: middle;
-}
 
 /* --------------------------------------------------------------------------
    8. BADGES

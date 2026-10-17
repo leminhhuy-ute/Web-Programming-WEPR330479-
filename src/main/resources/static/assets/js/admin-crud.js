@@ -169,16 +169,9 @@ async function list() {
                     data
                         .map(
                             (x) =>
-                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}${page === 'users' ? `<td class="password-cell"><span aria-label="Mật khẩu được bảo vệ">********</span><button type="button" class="password-visibility-toggle" data-password-info aria-label="Thông tin về mật khẩu" title="Thông tin về mật khẩu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></td>` : ''}<td class="action-cell">${actionButtons(x)}</td></tr>`,
+                                `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}${page === 'users' ? `<td class="password-cell"><span aria-label="Mật khẩu được bảo vệ">********</span></td>` : ''}<td class="action-cell">${actionButtons(x)}</td></tr>`,
                         )
                         .join("") || `<tr><td colspan="${page === 'users' ? 9 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>`;
-
-                table.querySelectorAll('[data-password-info]').forEach(button => {
-                    button.onclick = () => showAppMessage(
-                        'Mật khẩu được lưu dưới dạng mã hóa một chiều nên không thể xem lại mật khẩu hiện tại. Để đổi mật khẩu, hãy chọn “Sửa” ở cùng hàng tài khoản.',
-                        'info',
-                    );
-                });
 
                 table.querySelectorAll("[data-delete]").forEach(
                     (b) =>

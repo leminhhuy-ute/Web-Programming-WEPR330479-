@@ -18,7 +18,6 @@
     font-size: 26px; font-weight: 800;
 }
 .app-message-dialog[data-kind="success"] .app-message-icon { background: #e8f5ef; color: #167b58; }
-.app-message-dialog[data-kind="info"] .app-message-icon { background: #e8f2fb; color: #075f99; }
 .app-message-dialog h2 { margin: 0 0 10px; font-size: 19px; }
 .app-message-dialog p { margin: 0 0 24px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .app-message-dialog button { min-width: 120px; }
