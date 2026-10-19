@@ -240,7 +240,7 @@ Mật khẩu chung cho toàn bộ tài khoản: **`Demo@12345`**
 | Vai trò | Tên đăng nhập | Họ và tên | Đơn vị / Chức vụ |
 | :--- | :--- | :--- | :--- |
 | **Trưởng khoa** | `dean01` | PGS. TS. Nguyễn Văn Thành | Trưởng Khoa CNTT (Toàn quyền) |
-| **Trưởng bộ môn** | `hod01` | TS. Nguyễn Hoàng Long | Trưởng Bộ môn Công nghệ Phần mềm (CNPM) |
+| **Giảng viên** | `lecturer06` | TS. Nguyễn Hoàng Long | Giảng viên Bộ môn Công nghệ Phần mềm (CNPM) |
 | **Giảng viên** | `lecturer01` | TS. Trần Hoàng Nam | Bộ môn Công nghệ Phần mềm (CNPM) |
 | **Giảng viên** | `lecturer02` | ThS. Đặng Thị Kim Ngân | Bộ môn Công nghệ Phần mềm (CNPM) |
 | **Giảng viên** | `lecturer03` | TS. Lê Văn Tuấn | Bộ môn Hệ thống Thông tin (HTTT) |

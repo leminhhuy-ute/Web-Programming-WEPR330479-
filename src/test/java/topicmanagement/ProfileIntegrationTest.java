@@ -36,7 +36,6 @@ class ProfileIntegrationTest {
     @Autowired PasswordEncoder passwords;
     User student;
     User lecturer;
-    User head;
     User dean;
 
     @BeforeEach void setup() {
@@ -45,12 +44,11 @@ class ProfileIntegrationTest {
         student.setStudentClass("24110CTNB");
         student = users.save(student);
         lecturer = users.save(account("lecturer", n, Role.LECTURER));
-        head = users.save(account("head", n, Role.HEAD_OF_DEPT));
         dean = users.save(account("dean", n, Role.DEAN));
     }
 
     @Test void everyRoleCanSeeOnlyItsOwnProfile() throws Exception {
-        for (User user : new User[] {student, lecturer, head, dean}) {
+        for (User user : new User[] {student, lecturer, dean}) {
             mvc.perform(get("/api/profile").session(session(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value(user.getUsername()))

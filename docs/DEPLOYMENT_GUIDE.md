@@ -37,8 +37,8 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-### 2.2 Nạp cấu trúc Schema ban đầu
-Nạp schema chuẩn từ tệp kịch bản của dự án:
+### 2.2 Nạp cấu trúc Schema nền
+Với profile `mysql`, nạp schema nền V5/V6-compatible từ tệp của dự án:
 ```bash
 mysql -u topic_app -p student_topic_management < database/schema.sql
 ```
@@ -49,7 +49,7 @@ mysql -u topic_app -p student_topic_management < database/seed.sql
 ```
 
 > [!NOTE]
-> Khi khởi chạy ở môi trường Production với profile `mysql`, Hibernate được cấu hình ở chế độ `ddl-auto=validate`. Ứng dụng sẽ kiểm tra tính toàn vẹn của schema mà không tự động chỉnh sửa cấu trúc bảng. Toàn bộ các thay đổi kiến trúc tiếp theo được quản lý tự động bởi Flyway Migration trong thư mục `database/migration/`.
+> Khi khởi chạy với profile `mysql`, Flyway baseline ở V5 và áp dụng V6–V12 từ `src/main/resources/db/migration/mysql/`; sau đó Hibernate chạy `ddl-auto=validate`. Không sửa các migration đã áp dụng. Với profile `cloud`, dùng database trống để Flyway chạy V1 rồi V6–V12, không nạp `schema.sql` thủ công.
 
 ---
 

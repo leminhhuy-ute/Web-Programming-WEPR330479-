@@ -43,6 +43,7 @@ class PeriodAndCouncilRegressionTest {
     @Autowired org.springframework.test.web.servlet.MockMvc mvc;
     @Autowired topicmanagement.notification.EmailNotificationController emailController;
     @Autowired topicmanagement.council.CouncilController councilController;
+    @Autowired topicmanagement.student.InvitationRepository invitations;
     Department department;
     User dean, advisor, advisor2, chair, secretary, reviewer, student;
     RegistrationPeriod period;
@@ -73,13 +74,35 @@ class PeriodAndCouncilRegressionTest {
         students.createGroup("student", "New group");
         var group = groups.findAll().getFirst();
         assertEquals(newer.getId(), group.getPeriod().getId());
+        var s2 = user("student2", Role.STUDENT);
+        var s3 = user("student3", Role.STUDENT);
+        students.invite("student", s2.getUserCode());
+        students.respond(s2.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s2.getId(), "PENDING").getFirst().id, true);
+        students.invite("student", s3.getUserCode());
+        students.respond(s3.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s3.getId(), "PENDING").getFirst().id, true);
         assertThrows(ConflictException.class, () -> students.register("student", topic.getTopicCode()));
         assertEquals(0, registrations.count());
         assertNull(group.getTopic());
     }
 
-    @Test void samePeriodRegistrationStillWorksWithOneStudent() {
+    @Test void registrationRequiresAtLeastThreeStudentsAndSamePeriodRegistrationWorks() {
         students.createGroup("student", "Valid group");
+        // Registration with 1 student must be rejected
+        assertThrows(IllegalArgumentException.class, () -> students.register("student", topic.getTopicCode()));
+
+        // Add second student
+        var s2 = user("student2", Role.STUDENT);
+        students.invite("student", s2.getUserCode());
+        students.respond(s2.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s2.getId(), "PENDING").getFirst().id, true);
+        // Registration with 2 students must still be rejected
+        assertThrows(IllegalArgumentException.class, () -> students.register("student", topic.getTopicCode()));
+
+        // Add third student
+        var s3 = user("student3", Role.STUDENT);
+        students.invite("student", s3.getUserCode());
+        students.respond(s3.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s3.getId(), "PENDING").getFirst().id, true);
+
+        // Registration with 3 students succeeds
         students.register("student", topic.getTopicCode());
         var group = groups.findAll().getFirst();
         assertEquals(topic.getId(), group.getTopic().getId());
@@ -90,6 +113,12 @@ class PeriodAndCouncilRegressionTest {
     @Test void studentCanExplicitlyChooseAnOlderOpenPeriodForANewGroup() {
         period("Newer overlapping period");
         students.createGroup("student", "Chosen period", period.getId());
+        var s2 = user("student2", Role.STUDENT);
+        var s3 = user("student3", Role.STUDENT);
+        students.invite("student", s2.getUserCode());
+        students.respond(s2.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s2.getId(), "PENDING").getFirst().id, true);
+        students.invite("student", s3.getUserCode());
+        students.respond(s3.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s3.getId(), "PENDING").getFirst().id, true);
         students.register("student", topic.getTopicCode());
         var view = students.state("student");
         assertEquals(period.getId(), view.group().periodId());
@@ -237,6 +266,7 @@ class PeriodAndCouncilRegressionTest {
 
     private Long assignedCouncil() {
         StudentGroup group = group("ASSIGNED", period); group.setTopic(topic); group.setStatus(GroupStatus.APPROVED);
+        group.setAdvisorCompletedAt(now); groups.save(group);
         councilService.create(input(roster(), now.plusDays(3), "B1"));
         Long id = councils.findAll().getFirst().getId();
         councilService.assign(group.getId(), id, reviewer.getId());

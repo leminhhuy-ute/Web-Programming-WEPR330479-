@@ -8,6 +8,9 @@ import topicmanagement.dto.response.DepartmentResponse;
 import topicmanagement.entity.Department;
 import topicmanagement.exception.*;
 import topicmanagement.repository.*;
+import topicmanagement.dto.response.PageResponse;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Service
 @Transactional
@@ -22,6 +25,12 @@ public class DepartmentServiceV2 {
 
   public List<DepartmentResponse> findAll(String q) {
     return departments.search(q == null ? "" : q.trim()).stream().map(this::map).toList();
+  }
+
+  public PageResponse<DepartmentResponse> findPage(String q, int page, int size) {
+    var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100),
+        Sort.by(Sort.Direction.DESC, "id"));
+    return PageResponse.from(departments.search(q == null ? "" : q.trim(), pageable).map(this::map));
   }
 
   public DepartmentResponse findById(Long id) {

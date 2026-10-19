@@ -51,7 +51,7 @@
                         Vai trò
                         <select name="role">
                             <option value="STUDENT">Sinh viên</option>
-                            <option value="HEAD_OF_DEPT">Trưởng bộ môn</option><option value="LECTURER">Giảng viên</option>
+                            <option value="LECTURER">Giảng viên</option>
                             <option value="DEAN">Trưởng khoa</option>
                         </select>
                     </label>
@@ -76,8 +76,11 @@
                     </label>
                     <label>
                         Mật khẩu
-                        <input name="password" type="password" minlength="8" placeholder="Nhập mật khẩu mới">
-                        <small>Để trống nếu không muốn thay đổi mật khẩu hiện tại.</small>
+                        <input name="password" type="password" minlength="8" maxlength="72"
+                               pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9\s])\S{8,72}"
+                               title="8–72 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt và không có khoảng trắng"
+                               placeholder="Nhập mật khẩu mới">
+                        <small>8–72 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt; để trống nếu không đổi.</small>
                     </label>
                 </div>
             </div>

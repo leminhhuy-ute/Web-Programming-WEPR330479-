@@ -27,4 +27,13 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
   Page<Announcement> search(
       @Param("keyword") String keyword, @Param("audience") AnnouncementAudience audience,
       Pageable pageable);
+
+  @EntityGraph(attributePaths = "createdBy")
+  @Query("select a from Announcement a where "
+      + "(a.audience=:allAudience or a.audience=:audience) and "
+      + "(a.department is null or a.department.id=:departmentId)")
+  Page<Announcement> findVisible(
+      @Param("allAudience") AnnouncementAudience allAudience,
+      @Param("audience") AnnouncementAudience audience,
+      @Param("departmentId") Long departmentId, Pageable pageable);
 }

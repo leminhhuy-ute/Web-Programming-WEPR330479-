@@ -9,17 +9,17 @@ flowchart TD
         A2 --> A3[Kích hoạt đợt đăng ký]
     end
 
-    subgraph P2["Giai đoạn 2: Đề xuất & Phê duyệt đề tài (Giảng viên & Trưởng bộ môn)"]
+    subgraph P2["Giai đoạn 2: Đề xuất & Phê duyệt đề tài (Giảng viên & Trưởng khoa)"]
         B1[Giảng viên / Trưởng khoa đề xuất đề tài] --> B2[Trạng thái: PENDING]
-        B2 --> B3{Trưởng bộ môn thẩm định}
+        B2 --> B3{Trưởng khoa thẩm định}
         B3 -->|Chấp thuận| B4[Gán 1-2 GVHD<br/>Trạng thái: APPROVED]
         B3 -->|Từ chối| B5[Nhập lý do từ chối<br/>Trạng thái: REJECTED]
     end
 
-    subgraph P3["Giai đoạn 3: Thành lập nhóm & Đăng ký đề tài (Sinh viên & Bộ môn)"]
-        C1[Sinh viên tạo nhóm: Nhóm trưởng] --> C2[Mời bạn qua MSSV: tối đa 3 thành viên]
+    subgraph P3["Giai đoạn 3: Thành lập nhóm & Đăng ký đề tài (Sinh viên & GVHD)"]
+        C1[Sinh viên tạo nhóm: Nhóm trưởng] --> C2[Mời bạn qua MSSV: nhóm từ 3 đến 5 thành viên]
         C2 --> C3[Nhóm trưởng chọn đề tài đã công bố]
-        C3 --> C4{Trưởng bộ môn / GVHD duyệt}
+        C3 --> C4{GVHD duyệt đơn đăng ký}
         C4 -->|Chấp thuận| C5[Đề tài chính thức giao cho nhóm<br/>Trạng thái: APPROVED]
         C4 -->|Từ chối| C6[Trạng thái: REJECTED]
     end
@@ -58,7 +58,7 @@ $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_
 
 1. **Cửa sổ đề xuất của Giảng viên** (`lecturer_start_at` $\rightarrow$ `lecturer_end_at`):
    - Giảng viên và Trưởng khoa khởi tạo, chỉnh sửa hoặc rút lại các đề xuất đề tài.
-   - Trưởng bộ môn tiến hành thẩm định và duyệt đề tài.
+   - Trưởng khoa tiến hành thẩm định, phê duyệt đề tài và phân công GVHD.
 2. **Cửa sổ đăng ký của Sinh viên** (`student_start_at` $\rightarrow$ `student_end_at`):
    - Chức năng chỉnh sửa đề tài của giảng viên tự động bị khóa.
    - Danh mục đề tài đã duyệt (`APPROVED`) hiển thị công khai cho sinh viên tìm kiếm và đăng ký.
@@ -77,14 +77,13 @@ $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_
 ### 3.1 Quy tắc đề xuất đề tài
 - **Giảng viên (`ROLE_LECTURER`)**: Chỉ được đề xuất đề tài thuộc đúng bộ môn chuyên môn mà tài khoản được phân công (`department_id`).
 - **Trưởng khoa (`ROLE_DEAN`)**: Có thẩm quyền đề xuất đề tài liên ngành hoặc cấp khoa cho bất kỳ bộ môn nào.
-- **Thông tin đề tài**: Tên đề tài, mô tả chi tiết ($\ge 10$ ký tự), yêu cầu đầu vào, số lượng sinh viên tối đa (1–3 sinh viên) và hình thức đề tài.
+- **Thông tin đề tài**: Tên đề tài, mô tả chi tiết ($\ge 10$ ký tự), yêu cầu đầu vào, số lượng sinh viên tối đa (3–5 sinh viên) và hình thức đề tài.
 
-### 3.2 Quy trình thẩm định của Trưởng bộ môn (`ROLE_HEAD_OF_DEPT`)
-- Trưởng bộ môn theo dõi các đề tài có trạng thái `PENDING` trong bộ môn mình phụ trách.
+### 3.2 Quy trình thẩm định của Trưởng khoa (`ROLE_DEAN`)
+- Trưởng khoa theo dõi danh sách các đề tài có trạng thái `PENDING` của tất cả bộ môn.
 - **Phê duyệt (`APPROVE`)**:
   - Người tạo đề tài phải đang ở trạng thái hoạt động (`ACTIVE`).
-  - Giảng viên hướng dẫn chính (`advisor1`) phải thuộc đúng bộ môn.
-  - Giảng viên hướng dẫn phụ (`advisor2`) là tùy chọn, nhưng nếu có thì phải khác với giảng viên hướng dẫn chính.
+  - Phân công Giảng viên hướng dẫn chính (`advisor1`) và có thể chỉ định thêm Giảng viên hướng dẫn phụ (`advisor2`, không trùng với `advisor1`).
   - Sau khi duyệt, đề tài tự động chuyển sang trạng thái sẵn sàng để sinh viên đăng ký.
 - **Từ chối (`REJECT`)**: Yêu cầu nhập lý do từ chối cụ thể (`rejection_reason`) để phản hồi cho giảng viên đề xuất.
 
@@ -97,7 +96,7 @@ $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_
 2. **Cô lập theo đợt (`Period Scoping`)**: Một sinh viên chỉ được tham gia tối đa **một nhóm trong một đợt đăng ký cụ thể** (ràng buộc bằng khóa duy nhất `uk_group_member_period_student`).
 3. **Quy trình mời thành viên**:
    - Nhóm trưởng gửi lời mời qua Mã số sinh viên (MSSV).
-   - Quy mô nhóm tối đa là 3 sinh viên.
+   - Nhóm mới tạo có thể có từ 1-2 thành viên tạm thời để gửi lời mời; khi đăng ký đề tài bắt buộc phải có từ 3 đến 5 sinh viên (tối đa 5 thành viên, từ chối thành viên thứ 6).
    - Sinh viên được mời có thể bấm **Đồng ý** (gia nhập nhóm) hoặc **Từ chối**.
 
 ### 4.2 Thao tác quản lý nhóm & Cơ chế an toàn
@@ -107,7 +106,7 @@ $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_
 
 ### 4.3 Đăng ký đề tài & Khóa bảo vệ hủy đăng ký
 - Chỉ Nhóm trưởng mới có quyền đại diện nhóm đăng ký đề tài trong cửa sổ thời gian quy định.
-- Trưởng bộ môn hoặc Giảng viên hướng dẫn duyệt đơn đăng ký của nhóm.
+- Giảng viên hướng dẫn duyệt đơn đăng ký của nhóm.
 - **Khóa bảo vệ hủy đăng ký (`assertCanCancel`)**:
   - Nhóm bị nghiêm cấm hủy đăng ký (`409 Conflict`) nếu rơi vào một trong hai trường hợp:
     1. Nhóm đã nộp ít nhất một báo cáo tiến độ.

@@ -3,7 +3,6 @@
 const roleNames = {
   STUDENT: 'Sinh viên',
   LECTURER: 'Giảng viên',
-  HEAD_OF_DEPT: 'Trưởng bộ môn',
   DEAN: 'Trưởng khoa'
 };
 
@@ -35,8 +34,6 @@ function profileNavigation(role) {
     ['Tất cả đề tài', '/lecturer/topics/list.html'],
     ['Đề xuất đề tài', '/lecturer/topics/form.html'],
     ['Nhóm sinh viên hướng dẫn', '/lecturer/topics/student-groups.html'],
-    ...(role === 'HEAD_OF_DEPT' ? [['Duyệt đề tài bộ môn', '/lecturer/topics/approval.html']] : []),
-    ...(role === 'HEAD_OF_DEPT' ? [['Gửi thông báo', '/lecturer/announcements.html']] : []),
     ['Hội đồng & chấm điểm', '/councils/index.html']
   ];
   const links = role === 'STUDENT' ? studentLinks : role === 'DEAN' ? deanLinks : lecturerLinks;

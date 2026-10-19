@@ -94,14 +94,10 @@ public class DepartmentTopicService {
                 topic.setAdvisor1(creator);
             }
             User adv1 = topic.getAdvisor1();
-            TopicPolicy.staff(adv1);
-            if (adv1.getRole() != topicmanagement.enums.Role.DEAN
-                    && (adv1.getDepartment() == null || !adv1.getDepartment().getId().equals(topic.getDepartment().getId()))) {
-                throw new IllegalArgumentException("GVHD 1 không thuộc bộ môn của đề tài.");
-            }
+            TopicPolicy.advisorForDepartment(adv1, topic.getDepartment(), "GVHD 1");
             if (topic.getAdvisor2() != null) {
                 User adv2 = topic.getAdvisor2();
-                TopicPolicy.staff(adv2);
+                TopicPolicy.advisorForDepartment(adv2, topic.getDepartment(), "GVHD 2");
                 if (adv2.getId().equals(adv1.getId())) {
                     throw new IllegalArgumentException("GVHD 1 và GVHD 2 không được trùng nhau.");
                 }
@@ -139,12 +135,8 @@ public class DepartmentTopicService {
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Giảng viên hướng dẫn 2."));
         }
 
-        TopicPolicy.staff(adv1);
-        if (adv1.getRole() != topicmanagement.enums.Role.DEAN
-                && (adv1.getDepartment() == null || !adv1.getDepartment().getId().equals(topic.getDepartment().getId()))) {
-            throw new IllegalArgumentException("GVHD 1 không thuộc bộ môn của đề tài.");
-        }
-        if (adv2 != null) TopicPolicy.staff(adv2);
+        TopicPolicy.advisorForDepartment(adv1, topic.getDepartment(), "GVHD 1");
+        if (adv2 != null) TopicPolicy.advisorForDepartment(adv2, topic.getDepartment(), "GVHD 2");
         long approvedGroups = groups.findByTopicIdAndStatus(topicId, topicmanagement.enums.GroupStatus.APPROVED).size();
         if (topic.getAdvisor1() == null || !topic.getAdvisor1().getId().equals(adv1.getId()))
             quotas.assertAvailable(topic.getPeriod(), adv1, approvedGroups);

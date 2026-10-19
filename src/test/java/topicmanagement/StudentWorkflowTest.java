@@ -34,7 +34,7 @@ class StudentWorkflowTest {
         reports.deleteAll();invitations.deleteAll();members.deleteAll();groups.deleteAll();
         topics.deleteAll();periods.deleteAll();users.deleteAll();departments.deleteAll();
         var d=new Department();d.setCode("TEST");d.setName("Bộ môn kiểm thử");departments.save(d);
-        for(int i=1;i<=4;i++)user("sv"+i,Role.STUDENT,d);
+        for(int i=1;i<=7;i++)user("sv"+i,Role.STUDENT,d);
         advisor=user("gv",Role.LECTURER,d);
         var p=new RegistrationPeriod();p.setName("Kiểm thử");p.setType(RegistrationPeriodType.COURSE);
         var now=LocalDateTime.now();p.setLecturerStartAt(now.minusDays(3));p.setLecturerEndAt(now.minusDays(2));
@@ -53,9 +53,9 @@ class StudentWorkflowTest {
         var u=users.findByUsername(id).orElseThrow();
         students.respond(id,invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(u.getId(),"PENDING").getFirst().id,true);
     }
-    @Test void groupHasAtMostThreeMembersAndOneGroupPerStudent() {
-        students.createGroup("sv1","Nhóm A");join("sv2");join("sv3");
-        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv4"));
+    @Test void groupHasAtMostFiveMembersAndOneGroupPerStudent() {
+        students.createGroup("sv1","Nhóm A");join("sv2");join("sv3");join("sv4");join("sv5");
+        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv6"));
         assertThrows(IllegalArgumentException.class,()->students.createGroup("sv2","Nhóm B"));
     }
     @Test void nonLeaderCannotRegisterOrTransfer() {
@@ -69,14 +69,27 @@ class StudentWorkflowTest {
         assertThrows(AccessDeniedException.class,()->students.respond("sv3",id,true));
     }
     @Test void registrationLocksMembershipAndAllowsMultipleGroupsPerTopic() {
-        students.createGroup("sv1","Nhóm A");students.register("sv1","TEST-TOPIC");
-        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv2"));
-        students.createGroup("sv3","Nhóm B");
-        assertDoesNotThrow(()->students.register("sv3","TEST-TOPIC"));
+        students.createGroup("sv1","Nhóm A");
+        // Minimum 3 members required to register
+        assertThrows(IllegalArgumentException.class, () -> students.register("sv1","TEST-TOPIC"));
+        join("sv2");
+        assertThrows(IllegalArgumentException.class, () -> students.register("sv1","TEST-TOPIC"));
+        join("sv3");
+        students.register("sv1","TEST-TOPIC");
+        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv4"));
+
+        students.createGroup("sv4","Nhóm B");
+        students.invite("sv4","sv5");
+        var u5 = users.findByUsername("sv5").orElseThrow();
+        students.respond("sv5", invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(u5.getId(),"PENDING").getFirst().id, true);
+        students.invite("sv4","sv6");
+        var u6 = users.findByUsername("sv6").orElseThrow();
+        students.respond("sv6", invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(u6.getId(),"PENDING").getFirst().id, true);
+        assertDoesNotThrow(()->students.register("sv4","TEST-TOPIC"));
         assertEquals(2, groups.findByTopicId(topics.findByTopicCode("TEST-TOPIC").orElseThrow().getId()).size());
     }
     @Test void fullWorkflowUsesSameGroupInLecturerAndStudentModules() throws Exception {
-        students.createGroup("sv1","Nhóm A");join("sv2");students.register("sv1","TEST-TOPIC");
+        students.createGroup("sv1","Nhóm A");join("sv2");join("sv3");students.register("sv1","TEST-TOPIC");
         var g=groups.findAll().getFirst();
         assertEquals(1,lecturerGroups.getGroupsForLecturer(advisor).size());
         var decision=new GroupApprovalRequest();decision.setStatus("APPROVED");
@@ -90,10 +103,10 @@ class StudentWorkflowTest {
         assertEquals(1,reports.size());
         Long reportId=((ReportSummaryResponse)reports.getFirst()).id();
         assertArrayEquals(pdf.getBytes(),students.download("sv2",reportId).content);
-        assertThrows(AccessDeniedException.class,()->students.download("sv3",reportId));
+        assertThrows(AccessDeniedException.class,()->students.download("sv4",reportId));
     }
     @Test void fakePdfIsRejected() {
-        students.createGroup("sv1","Nhóm A");students.register("sv1","TEST-TOPIC");
+        students.createGroup("sv1","Nhóm A");join("sv2");join("sv3");students.register("sv1","TEST-TOPIC");
         var decision=new GroupApprovalRequest();decision.setStatus("APPROVED");
         lecturerGroups.approveOrRejectGroup(groups.findAll().getFirst().getId(),decision,advisor);
         var file=new MockMultipartFile("file","fake.pdf","application/pdf","<script>bad</script>".getBytes());

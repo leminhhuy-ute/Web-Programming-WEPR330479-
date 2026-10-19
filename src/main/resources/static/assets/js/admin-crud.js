@@ -67,7 +67,7 @@ const esc = (v) =>
 const local = (v) => formatDateTime(v);
 
 const labels = {
-    HEAD_OF_DEPT: "Trưởng bộ môn", DEAN: "Trưởng khoa", LECTURER: "Giảng viên", STUDENT: "Sinh viên",
+    DEAN: "Trưởng khoa", LECTURER: "Giảng viên", STUDENT: "Sinh viên",
     ACTIVE: "Hoạt động", INACTIVE: "Không hoạt động", LOCKED: "Đã khóa",
     ALL: "Tất cả", COURSE: "Môn học", NCKH: "Nghiên cứu khoa học",
     TLCN: "Tiểu luận chuyên ngành", KLTN: "Khóa luận tốt nghiệp",
@@ -87,8 +87,7 @@ function cellValue(key, value) {
     if (key === "fullName") {
         let name = String(value ?? "");
         name = name.replace(/\s*\((demo|test|sample)\)/gi, "").replace(/\b(demo|test|sample)\b/gi, "").trim();
-        if (!name || name.toLowerCase() === "admin" || name.includes("Tru?ng khoa")) name = "Nguyễn Văn Minh";
-        return esc(name);
+        return esc(name || "—");
     }
     // Let long addresses wrap after "@" instead of mid-domain.
     if (key === "email") return esc(value).replace("@", "@<wbr>");
@@ -157,6 +156,18 @@ async function list() {
         }
         await populateDepartmentFilter();
         const table = document.querySelector("#rows");
+        let currentPage = 0;
+        const pager = document.createElement("div");
+        pager.className = "table-pagination";
+        pager.setAttribute("aria-label", "Phân trang");
+        table.closest("table").insertAdjacentElement("afterend", pager);
+        const renderPager = (data) => {
+            pager.innerHTML = `<button class="button secondary" type="button" data-page-prev ${data.first ? "disabled" : ""}>Trang trước</button>
+                <span>Trang ${data.totalPages ? data.page + 1 : 0}/${data.totalPages} · ${data.totalElements} bản ghi</span>
+                <button class="button secondary" type="button" data-page-next ${data.last || !data.totalPages ? "disabled" : ""}>Trang sau</button>`;
+            pager.querySelector("[data-page-prev]").onclick = () => { currentPage--; void load(); };
+            pager.querySelector("[data-page-next]").onclick = () => { currentPage++; void load(); };
+        };
         const load = async () => {
             try {
                 clearError();
@@ -164,14 +175,17 @@ async function list() {
                 const query = new URLSearchParams(
                     new FormData(document.querySelector("#search")),
                 );
-                const data = await request(cfg.url + "?" + query);
+                query.set("page", String(currentPage));
+                query.set("size", "20");
+                const data = await request(cfg.url + "/page?" + query);
                 table.innerHTML =
-                    data
+                    data.content
                         .map(
                             (x) =>
                                 `<tr>${cfg.columns.map((k) => `<td>${cellValue(k, x[k])}</td>`).join("")}<td class="action-cell">${actionButtons(x)}</td></tr>`,
                         )
                         .join("") || `<tr><td colspan="${page === 'users' ? 8 : cfg.columns.length + 1}" class="empty-cell"><div class="empty-state"><span>Chưa có dữ liệu.</span></div></td></tr>`;
+                renderPager(data);
 
                 table.querySelectorAll("[data-delete]").forEach(
                     (b) =>
@@ -181,6 +195,7 @@ async function list() {
                             await request(cfg.url + "/" + b.dataset.delete, {
                                 method: "DELETE",
                             });
+                            if (data.content.length === 1 && currentPage > 0) currentPage--;
                             await load();
                         } catch (error) {
                             showError(error);
@@ -210,7 +225,8 @@ async function list() {
 
         document.querySelector("#search").onsubmit = (e) => {
             e.preventDefault();
-            load();
+            currentPage = 0;
+            void load();
         };
 
         await load();

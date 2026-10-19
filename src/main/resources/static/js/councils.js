@@ -58,8 +58,7 @@ function formatCouncilDate(value) {
 const cleanCouncilName = (name) => {
   if (!name) return '—';
   let c = String(name).replace(/\s*\((demo|test|sample)\)/gi, '').replace(/\b(demo|test|sample)\b/gi, '').trim();
-  if (!c || c.toLowerCase() === 'admin' || c.toLowerCase() === 'admin demo' || c.includes('Tru?ng khoa')) return 'Nguyễn Văn Minh';
-  return c;
+  return c || '—';
 };
 
 async function loadCouncils() {

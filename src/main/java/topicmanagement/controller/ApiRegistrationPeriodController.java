@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.*;
 import topicmanagement.dto.request.RegistrationPeriodRequest;
 import topicmanagement.dto.response.RegistrationPeriodResponse;
+import topicmanagement.dto.response.PageResponse;
 import topicmanagement.enums.RegistrationPeriodType;
 import topicmanagement.service.RegistrationPeriodServiceV2;
 
@@ -25,6 +26,15 @@ public class ApiRegistrationPeriodController {
       @RequestParam(defaultValue = "") String keyword,
       @RequestParam(required = false) RegistrationPeriodType type) {
     return ApiResponse.ok("Danh sách đợt đăng ký.", s.findAll(keyword, type));
+  }
+
+  @GetMapping("/page")
+  public ApiResponse<PageResponse<RegistrationPeriodResponse>> page(
+      @RequestParam(defaultValue = "") String keyword,
+      @RequestParam(required = false) RegistrationPeriodType type,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ApiResponse.ok("Trang đợt đăng ký.", s.findPage(keyword, type, page, size));
   }
 
   @GetMapping("/{id}")

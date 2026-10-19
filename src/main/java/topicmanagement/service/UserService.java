@@ -14,6 +14,7 @@ import topicmanagement.entity.*;
 import topicmanagement.enums.*;
 import topicmanagement.exception.*;
 import topicmanagement.repository.*;
+import topicmanagement.security.PasswordPolicy;
 
 @Service
 @Transactional
@@ -39,8 +40,7 @@ public class UserService {
     public void resetPassword(Long id, String newPassword, Long actorId) {
         if (id.equals(actorId))
             throw new IllegalArgumentException("Để đổi mật khẩu của chính mình, hãy dùng Hồ sơ cá nhân.");
-        if (newPassword == null || !newPassword.matches("(?=.{8,72}$)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9\\s])\\S+"))
-            throw new IllegalArgumentException("Mật khẩu mới cần 8–72 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt; không chứa khoảng trắng.");
+        PasswordPolicy.requireStrong(newPassword);
         User user = entity(id);
         user.setPasswordHash(passwords.encode(newPassword));
         user.setPasswordChangedAt(java.time.LocalDateTime.now());
@@ -68,8 +68,8 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserResponse> getLecturersByDepartment(Long departmentId) {
         List<User> lecturers = departmentId == null
-            ? users.findByRoleIn(List.of(Role.LECTURER, Role.HEAD_OF_DEPT))
-            : users.findByDepartmentIdAndRoleIn(departmentId, List.of(Role.LECTURER, Role.HEAD_OF_DEPT));
+            ? users.findByRoleIn(List.of(Role.LECTURER))
+            : users.findByDepartmentIdAndRoleIn(departmentId, List.of(Role.LECTURER));
         return lecturers.stream().map(this::map).toList();
     }
 
@@ -115,8 +115,8 @@ public class UserService {
         if (duplicateCode(code, user.getId())) throw new ConflictException("Mã người dùng đã tồn tại.");
         if (duplicateUsername(username, user.getId())) throw new ConflictException("Tên đăng nhập đã tồn tại.");
         if (duplicateEmail(email, user.getId())) throw new ConflictException("Email đã được sử dụng.");
-        if ((request.role() == Role.LECTURER || request.role() == Role.HEAD_OF_DEPT) && request.departmentId() == null) {
-            throw new IllegalArgumentException("Giảng viên và Trưởng bộ môn bắt buộc phải thuộc một bộ môn.");
+        if (request.role() == Role.LECTURER && request.departmentId() == null) {
+            throw new IllegalArgumentException("Giảng viên bắt buộc phải thuộc một bộ môn.");
         }
         user.setUserCode(code);
         user.setUsername(username);
@@ -136,6 +136,7 @@ public class UserService {
         user.setDepartment(request.departmentId() == null ? null : departments.findById(request.departmentId())
             .orElseThrow(() -> new ResourceNotFoundException("Bộ môn đã chọn không tồn tại.")));
         if (request.password() != null && !request.password().isBlank()) {
+            PasswordPolicy.requireStrong(request.password());
             user.setPasswordHash(passwords.encode(request.password()));
             user.setPasswordChangedAt(java.time.LocalDateTime.now());
         } else if (create) {

@@ -113,7 +113,7 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 
 ---
 
-## 5. Nhóm API Quản lý Đề tài (`/api/topics` & `/api/department/topics`)
+## 5. Nhóm API Quản lý Đề tài (`/api/topics` & `/api/lecturer/department-topics`)
 
 | Phương thức | Endpoint | Quyền truy cập | Mô tả chức năng |
 | :--- | :--- | :--- | :--- |
@@ -122,8 +122,9 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 | `POST` | `/api/topics` | `LECTURER`, `DEAN` | Đề xuất đề tài mới. Trưởng khoa có quyền đề xuất liên bộ môn. |
 | `PUT` | `/api/topics/{id}` | `LECTURER`, `DEAN` | Chỉnh sửa đề tài trong cửa sổ thời gian đề xuất của giảng viên. |
 | `DELETE` | `/api/topics/{id}` | `LECTURER`, `DEAN` | Xóa đề tài đề xuất khi chưa được phê duyệt. |
-| `POST` | `/api/department/topics/{id}/approve` | `HEAD_OF_DEPT` | Duyệt đề tài bộ môn và phân công 1–2 GVHD. |
-| `POST` | `/api/department/topics/{id}/reject` | `HEAD_OF_DEPT` | Từ chối đề tài kèm lý do phản hồi. |
+| `GET` | `/api/lecturer/department-topics` | `LECTURER`, `DEAN` | Danh sách đề tài theo bộ môn và trạng thái. |
+| `POST` | `/api/lecturer/department-topics/{id}/approval` | `DEAN` | Trưởng khoa phê duyệt hoặc từ chối đề tài kèm lý do phản hồi. |
+| `POST` | `/api/lecturer/department-topics/{id}/assign-advisors` | `DEAN` | Trưởng khoa phân công 1–2 Giảng viên hướng dẫn (`advisor1`, `advisor2`). |
 
 ---
 
@@ -158,7 +159,7 @@ Hệ thống cung cấp giao diện lập trình ứng dụng RESTful an toàn q
 
 ## 7. Nhóm API Quản lý Hội đồng & Đánh giá bảo vệ (`/api/councils`)
 
-*Thẩm quyền: `ROLE_DEAN`, `ROLE_HEAD_OF_DEPT`, `ROLE_LECTURER`.*
+*Thẩm quyền: `ROLE_DEAN`, `ROLE_LECTURER`.*
 
 | Phương thức | Endpoint | Thẩm quyền | Mô tả chức năng |
 | :--- | :--- | :--- | :--- |
@@ -197,7 +198,7 @@ Công bố điểm giờ tạo hàng đợi email trong cùng giao dịch; công
 | --- | --- | --- | --- |
 | `GET` | `/api/notifications` | Đã đăng nhập | Danh sách thông báo theo vai trò và bộ môn, kèm số thông báo chưa đọc. |
 | `POST` | `/api/notifications/{id}/read` | Người nhận | Đánh dấu đã đọc riêng cho tài khoản hiện tại; không thể đọc thông báo ngoài phạm vi nhận. |
-| `POST` | `/api/notifications/department` | `HEAD_OF_DEPT` | Gửi thông báo cho sinh viên trong bộ môn mình; body gồm `title`, `content`, `audience: "STUDENT"`. |
+| `POST` | `/api/notifications/department` | `DEAN` | Gửi thông báo cấp bộ môn cho sinh viên; body gồm `title`, `content`, `audience: "STUDENT"`. |
 | `POST` | `/api/lecturer/reports/{id}/feedback` | Giảng viên hướng dẫn | Lưu nhận xét 1–2000 ký tự cho báo cáo; body `{"feedback":"..."}`. |
 
-Trưởng khoa có thể chọn thêm `HEAD_OF_DEPT` khi tạo thông báo qua API quản trị. Tạo hoặc sửa đề tài trùng tên (không phân biệt chữ hoa/thường) trả `409` cùng thông báo cụ thể.
+Trưởng khoa có thể chọn đối tượng nhận là Giảng viên, Sinh viên hoặc Tất cả (`LECTURER`, `STUDENT`, `ALL`) khi tạo thông báo qua API quản trị. Tạo hoặc sửa đề tài trùng tên (không phân biệt chữ hoa/thường) trả `409` cùng thông báo cụ thể.

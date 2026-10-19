@@ -4,6 +4,8 @@ import java.util.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import topicmanagement.entity.*;
 import topicmanagement.enums.*;
 import topicmanagement.exception.ResourceNotFoundException;
@@ -25,17 +27,23 @@ public class NotificationService {
   public record Feed(long unreadCount, List<Item> items) {}
 
   public Feed feed(User recipient) {
-    List<Announcement> visible = announcements.search("", null).stream()
-        .filter(a -> visibleTo(a, recipient)).toList();
-    if (visible.isEmpty()) return new Feed(0, List.of());
-    List<Announcement> recent = visible.stream().limit(30).toList();
+    AnnouncementAudience audience = switch (recipient.getRole()) {
+      case STUDENT -> AnnouncementAudience.STUDENT;
+      case LECTURER -> AnnouncementAudience.LECTURER;
+      default -> null;
+    };
+    Long departmentId = recipient.getDepartment() == null ? null : recipient.getDepartment().getId();
+    List<Announcement> recent = announcements.findVisible(AnnouncementAudience.ALL, audience, departmentId,
+        PageRequest.of(0, 30, Sort.by(Sort.Direction.DESC, "id"))).getContent();
+    long unreadCount = reads.countVisibleUnread(recipient.getId(), AnnouncementAudience.ALL, audience, departmentId);
+    if (recent.isEmpty()) return new Feed(unreadCount, List.of());
     Set<Long> readIds = new HashSet<>();
-    reads.findByUserIdAndAnnouncementIdIn(recipient.getId(), visible.stream().map(Announcement::getId).toList())
+    reads.findByUserIdAndAnnouncementIdIn(recipient.getId(), recent.stream().map(Announcement::getId).toList())
         .forEach(read -> readIds.add(read.getAnnouncement().getId()));
     List<Item> items = recent.stream().map(a -> new Item(a.getId(), a.getTitle(), a.getContent(),
         a.getCreatedBy() == null ? "Khoa CNTT" : a.getCreatedBy().getFullName(), a.getCreatedAt(),
         readIds.contains(a.getId()))).toList();
-    return new Feed(visible.stream().filter(a -> !readIds.contains(a.getId())).count(), items);
+    return new Feed(unreadCount, items);
   }
 
   @Transactional
@@ -56,7 +64,6 @@ public class NotificationService {
       case ALL -> true;
       case STUDENT -> role == Role.STUDENT;
       case LECTURER -> role == Role.LECTURER;
-      case HEAD_OF_DEPT -> role == Role.HEAD_OF_DEPT;
     };
     if (!audience) return false;
     return a.getDepartment() == null || (recipient.getDepartment() != null

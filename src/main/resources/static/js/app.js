@@ -29,6 +29,7 @@ const initials = name => (name || 'SV').split(' ').filter(Boolean).slice(-2).map
 let result = {published: false}, announcements = [], periodChoices = [], resultPeriods = [], resultPeriodId = '';
 let state, catalog = [], catalogMeta = {page: 0, totalElements: 0, totalPages: 0, first: true, last: true}, page = 'dashboard', toastTimer, busy = false;
 let filters = {q: '', department: '', type: ''};
+let selectedGroupId = sessionStorage.getItem('studentGroupId') || '';
 
 async function api(path, body, method) {
   const headers = {};
@@ -90,6 +91,13 @@ function linkButton(hash, label) {
   return `<button type="button" data-go="${hash}" class="button primary">${label} ${icon('arrow')}</button>`;
 }
 
+function groupContextPanel() {
+  if (!state.groups?.length) return '';
+  return `<section class="panel group-context"><label>Nhóm / đợt đang làm việc
+    <select id="group-context">${state.groups.map(group => `<option value="${group.id}" ${String(group.id) === String(state.group?.id) ? 'selected' : ''}>${esc(group.name)} · ${esc(group.periodName)}${group.leader ? ' · Nhóm trưởng' : ''}</option>`).join('')}</select>
+  </label></section>`;
+}
+
 function groupMembers(compact = false) {
   const canManage = !compact && isLeader() && !locked();
   return state.group.members.map((m, i) => {
@@ -113,7 +121,7 @@ function dashboard() {
     `<div class="grid metrics">
       <div class="panel metric">
         <span class="metric-icon">${icon('users')}</span>
-        <div><small>NHÓM SINH VIÊN</small><strong>${state.group?`${state.group.members.length} / 3 thành viên`:'Chưa tham gia'}</strong></div>
+        <div><small>NHÓM SINH VIÊN</small><strong>${state.group?`${state.group.members.length} / 5 thành viên`:'Chưa tham gia'}</strong></div>
       </div>
       <div class="panel metric">
         <span class="metric-icon">${icon('book')}</span>
@@ -135,7 +143,7 @@ function dashboard() {
     <div class="grid cols">
       <section class="panel">
         <div class="panel-head"><h2>Nhóm của tôi</h2><a href="#group">Quản lý nhóm →</a></div>
-        ${state.group?`<div class="panel-head"><h3>${esc(state.group.name)}</h3>${badge('MEMBER',`${state.group.members.length}/3 thành viên`)}</div>${groupMembers(true)}`:empty('Bạn chưa có nhóm','Tạo một nhóm mới hoặc chấp nhận lời mời từ bạn cùng lớp.',linkButton('group','Đến quản lý nhóm'))}
+        ${state.group?`<div class="panel-head"><h3>${esc(state.group.name)}</h3>${badge('MEMBER',`${state.group.members.length}/5 thành viên`)}</div>${groupMembers(true)}`:empty('Bạn chưa có nhóm','Tạo một nhóm mới hoặc chấp nhận lời mời từ bạn cùng lớp.',linkButton('group','Đến quản lý nhóm'))}
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Tiến trình thực hiện</h2></div>
@@ -145,7 +153,7 @@ function dashboard() {
     <section class="panel section-gap">
       <div class="panel-head"><h2>Thông tin cần lưu ý</h2>${badge('MEMBER','Quy chế đào tạo')}</div>
       <div class="grid cols">
-        <div><h3>Mỗi sinh viên tham gia một nhóm</h3><p class="muted">Nhóm có tối đa 3 thành viên và một nhóm trưởng. Nhóm trưởng thay mặt nhóm đăng ký đề tài và nộp báo cáo.</p></div>
+        <div><h3>Mỗi sinh viên tham gia một nhóm</h3><p class="muted">Nhóm có từ 3 đến 5 thành viên (tối đa 5 thành viên) và một nhóm trưởng. Nhóm trưởng thay mặt nhóm đăng ký đề tài và nộp báo cáo.</p></div>
         <div><h3>Kiểm tra thời gian đăng ký</h3><p class="muted">Chỉ đăng ký trong thời gian mở của đề tài. Kết quả xét duyệt được hiển thị tại mục Đề tài đang thực hiện.</p></div>
       </div>
     </section>`;
@@ -164,12 +172,12 @@ function groupPage() {
     `<section class="panel section-gap"><p><b>Đợt của nhóm:</b> ${esc(state.group?.periodName || 'Chưa tham gia nhóm')}</p>${state.group && periodChoices.some(p => p.open && !p.joined) ? '<button type="button" class="button secondary" data-action="create">Tạo nhóm trong đợt khác</button>' : ''}</section>` +
     `<div class="grid cols">
       <section class="panel">
-        <div class="panel-head"><h2>${state.group?esc(state.group.name):'Tạo nhóm sinh viên'}</h2>${state.group?badge('MEMBER',`${state.group.members.length}/3 thành viên`):''}</div>
-        ${state.group?`${groupMembers()}${isLocked?`<div class="hint">${icon('info')}Danh sách thành viên đã khóa vì nhóm đã đăng ký đề tài.</div>`:`<div class="hint">${icon('info')}Còn ${3-state.group.members.length} chỗ trống. Thành viên được thêm khi chấp nhận lời mời.</div>`}<div class="actions">${linkButton('topics','Tiếp tục chọn đề tài')}${!isLocked?(leader?'<button type="button" class="button danger" data-action="disband-group">Giải tán nhóm</button>':'<button type="button" class="button danger" data-action="leave-group">Rời nhóm</button>'):''}</div>`:empty('Cùng nhau bắt đầu','Người tạo nhóm sẽ là nhóm trưởng đầu tiên. Bạn có thể chuyển quyền cho một thành viên trong nhóm.','<button type="button" class="button primary" data-action="create">+ Tạo nhóm mới</button>')}
+        <div class="panel-head"><h2>${state.group?esc(state.group.name):'Tạo nhóm sinh viên'}</h2>${state.group?badge('MEMBER',`${state.group.members.length}/5 thành viên`):''}</div>
+        ${state.group?`${groupMembers()}${isLocked?`<div class="hint">${icon('info')}Danh sách thành viên đã khóa vì nhóm đã đăng ký đề tài.</div>`:`<div class="hint">${icon('info')}Còn ${5-state.group.members.length} chỗ trống (nhóm cần từ 3 đến 5 thành viên để đăng ký đề tài). Thành viên được thêm khi chấp nhận lời mời.</div>`}<div class="actions">${linkButton('topics','Tiếp tục chọn đề tài')}${!isLocked?(leader?'<button type="button" class="button danger" data-action="disband-group">Giải tán nhóm</button>':'<button type="button" class="button danger" data-action="leave-group">Rời nhóm</button>'):''}</div>`:empty('Cùng nhau bắt đầu','Người tạo nhóm sẽ là nhóm trưởng đầu tiên. Bạn có thể chuyển quyền cho một thành viên trong nhóm.','<button type="button" class="button primary" data-action="create">+ Tạo nhóm mới</button>')}
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Lời mời dành cho bạn</h2>${badge('MEMBER',state.invitations.length+' lời mời')}</div>
-        ${state.invitations.length?`<div class="stack">${state.invitations.map(i=>`<div class="invitation"><h3>${esc(i.groupName)}</h3><small class="muted">Được mời vào ${date(i.createdAt)}</small><div class="actions"><button type="button" class="button primary small" data-respond="${i.id}" data-accept="true">Tham gia nhóm</button><button type="button" class="button secondary small" data-respond="${i.id}" data-accept="false">Từ chối</button></div></div>`).join('')}</div>`:empty('Chưa có lời mời','Khi một nhóm mời bạn tham gia, lời mời sẽ xuất hiện tại đây.','','users')}
+        ${state.invitations.length?`<div class="stack">${state.invitations.map(i=>`<div class="invitation"><h3>${esc(i.groupName)}</h3><small class="muted">Được mời vào ${date(i.createdAt)}</small><div class="actions"><button type="button" class="button primary small" data-respond="${i.id}" data-group-id="${i.groupId}" data-accept="true">Tham gia nhóm</button><button type="button" class="button secondary small" data-respond="${i.id}" data-accept="false">Từ chối</button></div></div>`).join('')}</div>`:empty('Chưa có lời mời','Khi một nhóm mời bạn tham gia, lời mời sẽ xuất hiện tại đây.','','users')}
       </section>
     </div>
     ${state.group?`<section class="panel section-gap"><div class="panel-head"><h2>Lời mời của nhóm</h2></div>${state.group.invitations.length?`<div class="table-wrap"><table><thead><tr><th>SINH VIÊN</th><th>MSSV</th><th>THỜI GIAN</th><th>TRẠNG THÁI</th></tr></thead><tbody>${state.group.invitations.map(i=>`<tr><td>${esc(cleanName(i.studentName))}</td><td>${esc(i.studentId)}</td><td>${date(i.createdAt)}</td><td>${badge(i.status,i.status==='PENDING'?'Chờ xác nhận':null)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Nhóm chưa gửi lời mời nào.</p>'}</section>`:''}`;
@@ -323,7 +331,7 @@ function render() {
   $('#profile-name').textContent = displayName;
   $('#profile-avatar').textContent = initials(displayName);
   $('#invite-count').textContent = state.invitations.length || '';
-  $('#main').innerHTML = ({
+  $('#main').innerHTML = groupContextPanel() + ({
     dashboard: dashboard,
     group: groupPage,
     topics: topicsPage,
@@ -343,8 +351,21 @@ function render() {
 
 async function refresh() {
   const params = new URLSearchParams({...filters, page: String(catalogMeta.page || 0), size: '20'});
-  const values = await Promise.all([api('/me'), api('/topics/page?' + params), api('/result' + (resultPeriodId ? '?periodId=' + encodeURIComponent(resultPeriodId) : '')), api('/announcements'), api('/periods'), api('/result-periods')]);
+  const mePath = '/me' + (selectedGroupId ? '?groupId=' + encodeURIComponent(selectedGroupId) : '');
+  let currentState;
+  try {
+    currentState = await api(mePath);
+  } catch (error) {
+    if (!selectedGroupId) throw error;
+    selectedGroupId = '';
+    sessionStorage.removeItem('studentGroupId');
+    currentState = await api('/me');
+  }
+  const values = await Promise.all([Promise.resolve(currentState), api('/topics/page?' + params), api('/result' + (resultPeriodId ? '?periodId=' + encodeURIComponent(resultPeriodId) : '')), api('/announcements'), api('/periods'), api('/result-periods')]);
   state = values[0];
+  selectedGroupId = state.group?.id ? String(state.group.id) : '';
+  if (selectedGroupId) sessionStorage.setItem('studentGroupId', selectedGroupId);
+  else sessionStorage.removeItem('studentGroupId');
   catalogMeta = values[1];
   catalog = catalogMeta.content;
   result = values[2];
@@ -396,7 +417,7 @@ document.addEventListener('click', e => {
   if (b.dataset.action === 'create') {
     const available = periodChoices.filter(p => p.open && !p.joined);
     if (!available.length) { toast('Không có đợt đang mở mà bạn chưa tham gia nhóm.', true); return; }
-    openDialog('Tạo nhóm mới', `<p class="muted">Nhóm tối đa 3 sinh viên. Chọn đợt trước khi tạo nhóm.</p><form id="create-form"><label>Đợt đăng ký<select name="periodId" required>${available.map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.type)}</option>`).join('')}</select></label><label>Tên nhóm<input name="name" required maxlength="80" placeholder="Ví dụ: Nhóm Phát triển phần mềm"></label><button class="button primary" type="submit">Tạo nhóm</button></form>`);
+    openDialog('Tạo nhóm mới', `<p class="muted">Nhóm từ 3 đến 5 sinh viên (tối đa 5 sinh viên). Chọn đợt trước khi tạo nhóm.</p><form id="create-form"><label>Đợt đăng ký<select name="periodId" required>${available.map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.type)}</option>`).join('')}</select></label><label>Tên nhóm<input name="name" required maxlength="80" placeholder="Ví dụ: Nhóm Phát triển phần mềm"></label><button class="button primary" type="submit">Tạo nhóm</button></form>`);
   }
   if (b.dataset.action === 'invite') openDialog('Mời thành viên', '<p class="muted">Gửi lời mời bằng mã số sinh viên. Người nhận cần xác nhận trước khi được thêm vào nhóm.</p><form id="invite-form"><label>Mã số sinh viên<input name="studentId" required maxlength="30" placeholder="Ví dụ: 22110002"></label><button class="button primary" type="submit">Gửi lời mời</button></form>');
   if (b.dataset.action === 'cancel-registration') openDialog('Hủy đăng ký đề tài', '<p>Đăng ký sẽ chuyển sang trạng thái <b>Đã hủy</b> và lịch sử vẫn được giữ nguyên.</p><form id="cancel-form"><label>Lý do<textarea name="note" maxlength="2000" placeholder="Lý do hủy đăng ký"></textarea></label><button class="button danger" type="submit">Xác nhận hủy</button></form>');
@@ -404,29 +425,30 @@ document.addEventListener('click', e => {
     const member = state.group.members.find(m => m.id === b.dataset.transfer);
     openDialog('Chuyển quyền nhóm trưởng', `<p>Chọn <b>${esc(cleanName(member.name))}</b> làm nhóm trưởng? Sau khi chuyển, bạn sẽ là thành viên và không thể đăng ký hoặc nộp báo cáo thay nhóm.</p><button type="button" class="button primary" data-confirm-transfer="${esc(member.id)}">Xác nhận chuyển quyền</button>`);
   }
-  if (b.dataset.confirmTransfer) mutate('/groups/leader', {studentId: b.dataset.confirmTransfer});
+  if (b.dataset.confirmTransfer) mutate('/groups/leader', {studentId: b.dataset.confirmTransfer, groupId: state.group?.id});
   if (b.dataset.action === 'leave-group') {
     openDialog('Rời nhóm', `<p>Bạn có chắc muốn rời nhóm?</p><div class="actions" style="margin-top:16px;"><button type="button" class="button danger" data-confirm-leave="true">Xác nhận rời nhóm</button><button type="button" class="button secondary" data-action="close">Hủy</button></div>`);
   }
-  if (b.dataset.confirmLeave) mutate('/groups/leave', {});
+  if (b.dataset.confirmLeave) mutate('/groups/leave', {groupId: state.group?.id});
   if (b.dataset.action === 'disband-group') {
     openDialog('Giải tán nhóm', `<p>Bạn có chắc muốn giải tán nhóm?</p><p class="muted">Tất cả thành viên sẽ rời khỏi nhóm và dữ liệu nhóm sẽ bị xóa hoàn toàn.</p><div class="actions" style="margin-top:16px;"><button type="button" class="button danger" data-confirm-disband="true">Xác nhận giải tán nhóm</button><button type="button" class="button secondary" data-action="close">Hủy</button></div>`);
   }
-  if (b.dataset.confirmDisband) mutate('/groups/disband', {});
+  if (b.dataset.confirmDisband) mutate('/groups/disband', {groupId: state.group?.id});
   if (b.dataset.removeMember) {
     const member = state.group?.members?.find(m => m.id === b.dataset.removeMember);
     const mName = member ? cleanName(member.name) : b.dataset.removeMember;
     openDialog('Xóa thành viên', `<p>Bạn có chắc muốn xóa thành viên này?</p><p class="muted">Thành viên <b>${esc(mName)}</b> (${esc(b.dataset.removeMember)}) sẽ bị xóa khỏi nhóm.</p><div class="actions" style="margin-top:16px;"><button type="button" class="button danger" data-confirm-remove-member="${esc(b.dataset.removeMember)}">Xác nhận xóa</button><button type="button" class="button secondary" data-action="close">Hủy</button></div>`);
   }
-  if (b.dataset.confirmRemoveMember) mutate('/groups/members/remove', {studentId: b.dataset.confirmRemoveMember});
+  if (b.dataset.confirmRemoveMember) mutate('/groups/members/remove', {studentId: b.dataset.confirmRemoveMember, groupId: state.group?.id});
   if (b.dataset.respond) mutate('/invitations/' + b.dataset.respond + '/response', {accept: b.dataset.accept === 'true'});
   if (b.dataset.topic) {
     const item = catalog.find(x => x.topic.id === b.dataset.topic);
     const samePeriod = state.group?.periodId === item.topic.periodId;
-    const can = isLeader() && !locked() && item.open && samePeriod;
-    openDialog('Chi tiết đề tài', `${topicBody(item.topic)}<div class="notice">${!state.group ? 'Bạn cần tạo hoặc tham gia nhóm.' : !isLeader() ? 'Chỉ nhóm trưởng được đăng ký đề tài.' : locked() ? 'Nhóm đã có một đăng ký đề tài.' : !item.open ? 'Đã ngoài thời gian đăng ký.' : !samePeriod ? 'Đề tài thuộc đợt khác với nhóm. Hãy chọn đề tài cùng đợt.' : `Đăng ký cho nhóm <b>${esc(state.group.name)}</b>. Kết quả sẽ ở trạng thái chờ duyệt.`}</div>${can ? `<button type="button" class="button primary" data-register="${esc(item.topic.id)}">Xác nhận đăng ký đề tài</button>` : ''}`);
+    const hasValidSize = state.group && state.group.members.length >= 3 && state.group.members.length <= item.topic.capacity;
+    const can = isLeader() && !locked() && item.open && samePeriod && hasValidSize;
+    openDialog('Chi tiết đề tài', `${topicBody(item.topic)}<div class="notice">${!state.group ? 'Bạn cần tạo hoặc tham gia nhóm.' : !isLeader() ? 'Chỉ nhóm trưởng được đăng ký đề tài.' : locked() ? 'Nhóm đã có một đăng ký đề tài.' : !item.open ? 'Đã ngoài thời gian đăng ký.' : !samePeriod ? 'Đề tài thuộc đợt khác với nhóm. Hãy chọn đề tài cùng đợt.' : state.group.members.length < 3 ? 'Nhóm cần có từ 3 đến 5 thành viên để đăng ký đề tài (hiện có ' + state.group.members.length + ' thành viên).' : state.group.members.length > item.topic.capacity ? 'Số thành viên nhóm (' + state.group.members.length + ') vượt quá giới hạn của đề tài (' + item.topic.capacity + ' sinh viên).' : `Đăng ký cho nhóm <b>${esc(state.group.name)}</b>. Kết quả sẽ ở trạng thái chờ duyệt.`}</div>${can ? `<button type="button" class="button primary" data-register="${esc(item.topic.id)}">Xác nhận đăng ký đề tài</button>` : ''}`);
   }
-  if (b.dataset.register) mutate('/registrations', {topicId: b.dataset.register});
+  if (b.dataset.register) mutate('/registrations', {topicId: b.dataset.register, groupId: state.group?.id});
   if (b.dataset.action === 'reset-filter') {
     filters = {q: '', department: '', type: ''};
     catalogMeta.page = 0;
@@ -448,14 +470,19 @@ document.addEventListener('submit', async e => {
   e.preventDefault();
   if (busy) return;
   const data = new FormData(form);
-  if (form.id === 'create-form') mutate('/groups', {name: String(data.get('name')).trim(), periodId: Number(data.get('periodId'))});
-  if (form.id === 'invite-form') mutate('/groups/invitations', {studentId: String(data.get('studentId')).trim()});
-  if (form.id === 'cancel-form') mutate('/registrations/cancel', {note: String(data.get('note') || '').trim()});
+  if (form.id === 'create-form') {
+    selectedGroupId = '';
+    sessionStorage.removeItem('studentGroupId');
+    mutate('/groups', {name: String(data.get('name')).trim(), periodId: Number(data.get('periodId'))});
+  }
+  if (form.id === 'invite-form') mutate('/groups/invitations', {studentId: String(data.get('studentId')).trim(), groupId: state.group?.id});
+  if (form.id === 'cancel-form') mutate('/registrations/cancel', {note: String(data.get('note') || '').trim(), groupId: state.group?.id});
   if (form.id === 'report-form') {
     if (data.get('file').size > 10 * 1024 * 1024) {
       toast('Tệp vượt quá giới hạn 10 MB.', true);
       return;
     }
+    if (state.group?.id) data.append('groupId', state.group.id);
     mutate('/reports', data);
   }
   if (form.id === 'report-edit-form') {
@@ -519,6 +546,12 @@ if (menuToggle && sidebar) {
 
 // Only periods of the authenticated student's own groups are offered by the server.
 document.addEventListener('change', async event => {
+  if (event.target.id === 'group-context') {
+    selectedGroupId = event.target.value;
+    sessionStorage.setItem('studentGroupId', selectedGroupId);
+    try { await refresh(); } catch (error) { toast(error.message, true); }
+    return;
+  }
   if (event.target.id !== 'result-period') return;
   resultPeriodId = event.target.value;
   try {

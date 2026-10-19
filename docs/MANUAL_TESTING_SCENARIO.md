@@ -36,10 +36,9 @@ Hệ thống Quản lý Đề tài Sinh viên (Student Topic Management System) 
 ### 1.2. Các tác nhân và vai trò trong hệ thống (System Actors & Roles)
 | Vai trò (Role Enum) | Tên vai trò | Phạm vi trách nhiệm chính |
 | :--- | :--- | :--- |
-| **`DEAN`** | Trưởng khoa | Quản trị cao nhất: Thiết lập đợt đăng ký, quản lý người dùng, bộ môn, duyệt đề tài toàn khoa, thành lập hội đồng bảo vệ, phân công hội đồng, tổng hợp và công bố kết quả chính thức. |
-| **`HEAD_OF_DEPT`** | Trưởng bộ môn | Quản lý học thuật cấp Bộ môn: Thẩm định và phê duyệt đề tài của giảng viên trong bộ môn phụ trách, phân công Giảng viên hướng dẫn 1 (GVHD 1) và Giảng viên hướng dẫn 2 (GVHD 2). Tham gia hội đồng chấm điểm. |
-| **`LECTURER`** | Giảng viên | Đề xuất đề tài nghiên cứu, theo dõi và phê duyệt/từ chối nhóm sinh viên đăng ký đề tài của mình, giám sát tiến độ và tải báo cáo định kỳ của nhóm, tham gia hội đồng chấm điểm với vai trò Chủ tịch, Thư ký, Phản biện hoặc Ủy viên. |
-| **`STUDENT`** | Sinh viên | Tạo nhóm nghiên cứu (tối đa 3 thành viên), mời thành viên cùng lớp, đăng ký đề tài công bố trong đợt, nộp báo cáo tiến độ theo 3 giai đoạn bắt buộc, theo dõi phản hồi và tra cứu kết quả điểm đánh giá. |
+| **`DEAN`** | Trưởng khoa | Quản trị cao nhất và học thuật cấp khoa: Thiết lập đợt đăng ký, quản lý người dùng, bộ môn, thẩm định và phê duyệt đề tài toàn khoa, phân công GVHD 1 và GVHD 2, thành lập hội đồng bảo vệ, phân công hội đồng, tổng hợp và công bố kết quả chính thức. |
+| **`LECTURER`** | Giảng viên | Đề xuất đề tài nghiên cứu, theo dõi và phê duyệt/từ chối nhóm sinh viên đăng ký đề tài của mình, giám sát tiến độ và nhập nhận xét báo cáo định kỳ của nhóm, chấm điểm phản biện khi làm GVPB, tham gia hội đồng chấm điểm với vai trò Chủ tịch, Thư ký, Phản biện hoặc Ủy viên. |
+| **`STUDENT`** | Sinh viên | Tạo nhóm nghiên cứu (từ 3 đến 5 thành viên khi đăng ký đề tài; tối đa 5 thành viên), mời thành viên cùng lớp, đăng ký đề tài công bố trong đợt, nộp báo cáo tiến độ theo 3 giai đoạn bắt buộc, theo dõi phản hồi và tra cứu kết quả điểm đánh giá. |
 
 ### 1.3. Sơ đồ luồng nghiệp vụ khép kín (End-to-End Workflow Flow)
 
@@ -49,17 +48,17 @@ Hệ thống Quản lý Đề tài Sinh viên (Student Topic Management System) 
          │
          ▼
 [ BƯỚC 2: GIẢNG VIÊN (LECTURER) ]
-  └── Đề xuất Đề tài mới (Topic: PENDING) trong thời hạn của Giảng viên
+  └── Đề xuất Đề tài mới (Topic: PENDING, maxStudents từ 3 đến 5) trong thời hạn của Giảng viên
          │
          ▼
-[ BƯỚC 3: TRƯỞNG BỘ MÔN (HOD) / TRƯỞNG KHOA (DEAN) ]
+[ BƯỚC 3: TRƯỞNG KHOA (DEAN) ]
   └── Thẩm định đề tài, Phân công GVHD1 & GVHD2 -> Phê duyệt (APPROVED) hoặc Từ chối (REJECTED)
          │
          ▼
 [ BƯỚC 4: SINH VIÊN (STUDENT) ]
-  ├── 4.1. Nhóm trưởng tạo Nhóm sinh viên (1/3 thành viên)
-  ├── 4.2. Mời thành viên bằng MSSV -> Thành viên chấp nhận (Tối đa 3 thành viên)
-  └── 4.3. Tìm kiếm trong Kho đề tài -> Đăng ký đề tài (Topic Registration: PENDING)
+  ├── 4.1. Nhóm trưởng tạo Nhóm sinh viên (1 thành viên ban đầu)
+  ├── 4.2. Mời thành viên bằng MSSV -> Thành viên chấp nhận (Tối đa 5 thành viên, cần từ 3 đến 5 thành viên để đăng ký)
+  └── 4.3. Tìm kiếm trong Kho đề tài -> Đăng ký đề tài khi nhóm đạt từ 3 đến 5 thành viên (Topic Registration: PENDING)
          │
          ▼
 [ BƯỚC 5: GIẢNG VIÊN HƯỚNG DẪN (ADVISOR) ]
@@ -110,7 +109,7 @@ Mở terminal tại thư mục gốc dự án: `D:\HocFrontEnd\Web-Programming-W
 ```
 
 ### 2.3. Cấu hình Cơ sở dữ liệu
-* **Mặc định (In-Memory H2 Database):** Ứng dụng tự động khởi tạo lược đồ bảng từ `schema.sql` và dữ liệu mẫu từ `seed.sql`. Dữ liệu sẽ tự làm mới về trạng thái ban đầu mỗi lần restart server.
+* **Mặc định (H2 file Database):** Hibernate cập nhật lược đồ từ entity và profile demo nạp dữ liệu mẫu bằng mã khởi tạo. Dữ liệu H2 được giữ trong thư mục `data/` qua các lần khởi động.
   * Đường dẫn H2 Console (nếu bật): `http://localhost:8080/h2-console`
   * JDBC URL: `jdbc:h2:mem:topicdb`
 * **Môi trường MySQL (Production/Staging):** Kích hoạt bằng cờ profile:
@@ -136,8 +135,8 @@ Dưới đây là danh mục tài khoản định sẵn trong `database/seed.sql
 
 | Username | Password | Tên hiển thị | Vai trò (Role) | Đơn vị / Bộ môn | Mục đích kiểm thử chính |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`dean01`** | `Demo@12345` | PGS. TS. Nguyễn Văn Thành | **DEAN** | Toàn khoa CNTT | Quản lý đợt đăng ký, tạo hội đồng, phân công phản biện, tổng hợp & công bố kết quả. |
-| **`hod01`** | `Demo@12345` | TS. Nguyễn Hoàng Long | **HEAD_OF_DEPT** | Công nghệ phần mềm (CNPM) | Duyệt đề tài bộ môn CNPM, phân công GVHD1/GVHD2, tham gia hội đồng chấm điểm. |
+| **`dean01`** | `Demo@12345` | PGS. TS. Nguyễn Văn Thành | **DEAN** | Toàn khoa CNTT | Quản lý đợt đăng ký, thẩm định và duyệt đề tài toàn khoa, phân công GVHD, tạo hội đồng, phân công phản biện, tổng hợp & công bố kết quả. |
+| **`lecturer06`** | `Demo@12345` | TS. Nguyễn Hoàng Long | **LECTURER** | Công nghệ phần mềm (CNPM) | Đề xuất đề tài, tham gia hội đồng HD-CNTT-01 vai trò Thư ký (SECRETARY), hướng dẫn và phản biện. |
 | **`lecturer01`** | `Demo@12345` | TS. Trần Hoàng Nam | **LECTURER** | Công nghệ phần mềm (CNPM) | Đề xuất đề tài, duyệt nhóm sinh viên, xem và tải báo cáo của nhóm đề tài `DT-CNPM-202602`. |
 | **`lecturer02`** | `Demo@12345` | ThS. Đặng Thị Kim Ngân | **LECTURER** | Công nghệ phần mềm (CNPM) | Giảng viên có đề tài `DT-CNPM-202603` đang ở trạng thái `PENDING`. |
 | **`lecturer03`** | `Demo@12345` | TS. Lê Văn Tuấn | **LECTURER** | Hệ thống thông tin (HTTT) | Đề xuất đề tài bộ môn HTTT, tham gia hội đồng bảo vệ. |
@@ -215,7 +214,7 @@ Xác minh giảng viên (`LECTURER`) có thể đề xuất đề tài mới tro
    * **Tên đề tài:** `Nghiên cứu ứng dụng Kiến trúc Clean Architecture trong phát triển Spring Boot`
    * **Mô tả chi tiết:** `Nghiên cứu và triển khai hệ thống mẫu áp dụng Clean Architecture, Domain-Driven Design (DDD) trên nền Java 21 và Spring Boot 3.3.` (Độ dài > 10 ký tự)
    * **Yêu cầu kỹ thuật:** `Thành thạo Java Core, Spring Boot, thiết kế CSDL quan hệ MySQL.`
-   * **Số sinh viên tối đa:** `3` (Nhập số từ 1 đến 3)
+   * **Số sinh viên tối đa:** `3` (Nhập số từ 3 đến 5)
    * **Loại đề tài:** Chọn `Môn học` (`COURSE`)
    * **Bộ môn:** Chọn `Công nghệ phần mềm` (`CNPM`)
    * **Đợt đăng ký:** Chọn `Đợt đề xuất đề tài môn học Học kỳ I năm học 2026-2027` (Đợt đang mở cho GV)
@@ -234,7 +233,7 @@ Xác minh giảng viên (`LECTURER`) có thể đề xuất đề tài mới tro
 | :--- | :--- | :--- | :--- |
 | **TC-TOP-NEG-01** | Trùng mã đề tài đã có trong hệ thống | Nhập mã `DT-CNPM-202601` (đã có trong seed data) | Báo lỗi: Mã đề tài đã tồn tại. Không cho phép lưu. |
 | **TC-TOP-NEG-02** | Mô tả đề tài quá ngắn (< 10 ký tự) | Nhập Mô tả: `App web` | Báo lỗi validation: `Mô tả đề tài phải có ít nhất 10 ký tự`. |
-| **TC-TOP-NEG-03** | Số lượng sinh viên không hợp lệ | Nhập `maxStudents = 0` hoặc `maxStudents = 4` | Form chặn nhập hoặc API trả lỗi: Số lượng sinh viên phải từ 1 đến 3. |
+| **TC-TOP-NEG-03** | Số lượng sinh viên không hợp lệ | Nhập `maxStudents = 2` hoặc `maxStudents = 6` (Lưu ý: `maxStudents = 4` là hoàn toàn hợp lệ) | Form chặn nhập hoặc API trả lỗi: Số lượng sinh viên tối đa cho một đề tài phải từ 3 đến 5. |
 | **TC-TOP-NEG-04** | Đề xuất vào đợt đã đóng nhận đề tài | Chọn đợt `Đợt bảo vệ Khóa luận...` (đã qua `lecturerEndAt`) | API từ chối với thông báo: Đợt đăng ký hiện không mở cho giảng viên đề xuất. |
 | **TC-TOP-NEG-05** | Giảng viên sửa đề tài đã được duyệt | Đăng nhập `lecturer01`, mở form sửa đề tài `DT-CNPM-202601` (đã `APPROVED`) | Nút "Sửa" bị ẩn; nếu gửi API `PUT /api/lecturer/topics/{id}`, hệ thống báo lỗi không cho phép sửa đề tài đã duyệt. |
 | **TC-TOP-NEG-06** | IDOR: Giảng viên A cố xóa đề tài của Giảng viên B | Đăng nhập `lecturer01`, gửi `DELETE /api/lecturer/topics/3` (đề tài của `lecturer02`) | Hệ thống trả về lỗi **403 Forbidden** hoặc thông báo bạn không có quyền sửa đổi đề tài này. |
@@ -244,17 +243,17 @@ Xác minh giảng viên (`LECTURER`) có thể đề xuất đề tài mới tro
 ## 6. KỊCH BẢN KIỂM THỬ LUỒNG DUYỆT ĐỀ TÀI & PHÂN CÔNG GVHD (TOPIC APPROVAL AND PUBLISHING WORKFLOW)
 
 ### 6.1. Mục tiêu kiểm thử
-Xác minh Trưởng bộ môn (`HEAD_OF_DEPT`) và Trưởng khoa (`DEAN`) có thể thẩm định đề tài chờ duyệt, phân công Giảng viên hướng dẫn 1 và 2 (không trùng nhau), phê duyệt hoặc từ chối đề tài có lý do rõ ràng.
+Xác minh Trưởng khoa (`DEAN`) có thể thẩm định đề tài chờ duyệt của các bộ môn, phân công Giảng viên hướng dẫn 1 và 2 (không trùng nhau), phê duyệt hoặc từ chối đề tài có lý do rõ ràng.
 
 ### 6.2. Kịch bản Thành công: Phân công GVHD và Phê duyệt đề tài (TC-APP-01)
-* **Tài khoản thực hiện:** `hod01` (Trưởng bộ môn CNPM)
+* **Tài khoản thực hiện:** `dean01` (Trưởng khoa)
 * **Đường dẫn UI:** `/lecturer/topics/approval.html`
 * **Endpoint API ngầm:** 
   * Phân công GVHD: `POST /api/lecturer/department-topics/{id}/assign-advisors`
   * Duyệt đề tài: `POST /api/lecturer/department-topics/{id}/approval`
 
 #### Các bước thực hiện:
-1. Đăng nhập tài khoản `hod01` / `Demo@12345`.
+1. Đăng nhập tài khoản `dean01` / `Demo@12345`.
 2. Truy cập menu **"Duyệt đề tài bộ môn"** (`/lecturer/topics/approval.html`).
 3. Xác định đề tài `DT-CNPM-202603` (Trạng thái `Chờ duyệt` trong seed data).
 4. Bấm nút **"Gán giảng viên hướng dẫn"**:
@@ -274,7 +273,7 @@ Xác minh Trưởng bộ môn (`HEAD_OF_DEPT`) và Trưởng khoa (`DEAN`) có t
 ---
 
 ### 6.3. Kịch bản Thành công: Từ chối đề tài kèm lý do (TC-APP-02)
-1. Đăng nhập tài khoản `hod01`.
+1. Đăng nhập tài khoản `dean01`.
 2. Tạo nhanh một đề tài test hoặc chọn một đề tài PENDING.
 3. Bấm nút **"Từ chối"** tại dòng đề tài đó.
 4. Hộp thoại yêu cầu nhập lý do hiện ra: Nhập nội dung `Nội dung đề tài trùng lặp với đề tài năm học trước, yêu cầu cập nhật lại mục tiêu nghiên cứu.`
@@ -292,18 +291,18 @@ Xác minh Trưởng bộ môn (`HEAD_OF_DEPT`) và Trưởng khoa (`DEAN`) có t
 | Mã test case | Tình huống kiểm thử | Thao tác kiểm thử | Kết quả mong đợi |
 | :--- | :--- | :--- | :--- |
 | **TC-APP-NEG-01** | Gán GVHD 1 trùng với GVHD 2 | Chọn GVHD 1 = `lecturer01`, GVHD 2 = `lecturer01` | Modal báo lỗi: `GVHD 1 và GVHD 2 không được trùng nhau`. Nút lưu bị chặn. |
-| **TC-APP-NEG-02** | Trưởng bộ môn CNPM duyệt đề tài của Bộ môn HTTT | Đăng nhập `hod01` (CNPM), cố tình gọi API duyệt đề tài `DT-HTTT-202601` | Trả về mã lỗi **403 Forbidden**: Bạn không có quyền quản lý đề tài ngoài phạm vi bộ môn phụ trách. |
-| **TC-APP-NEG-03** | Giảng viên thường cố tình duyệt đề tài | Đăng nhập `lecturer01`, gửi request `POST /api/lecturer/department-topics/1/approval` | Hệ thống trả về lỗi **403 Forbidden**. |
+| **TC-APP-NEG-02** | Giảng viên không có thẩm quyền DEAN cố duyệt đề tài | Đăng nhập `lecturer01`, gửi request `POST /api/lecturer/department-topics/1/approval` | Hệ thống trả về lỗi **403 Forbidden**. |
+| **TC-APP-NEG-03** | Giảng viên không có thẩm quyền DEAN cố phân công GVHD | Đăng nhập `lecturer01`, gửi request `POST /api/lecturer/department-topics/1/assign-advisors` | Hệ thống trả về lỗi **403 Forbidden**. |
 
 ---
 
 ## 7. KỊCH BẢN KIỂM THỬ LUỒNG QUẢN LÝ NHÓM SINH VIÊN (STUDENT GROUP WORKFLOW)
 
 ### 7.1. Mục tiêu kiểm thử
-Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cùng lớp qua MSSV, xử lý lời mời (đồng ý / từ chối), chuyển quyền nhóm trưởng, rời nhóm, giải tán nhóm và bảo đảm các quy chế đào tạo: nhóm tối đa 3 người, mỗi sinh viên chỉ thuộc tối đa 1 nhóm trong một đợt đăng ký.
+Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cùng lớp qua MSSV, xử lý lời mời (đồng ý / từ chối), chuyển quyền nhóm trưởng, rời nhóm, giải tán nhóm và bảo đảm các quy chế đào tạo: nhóm mới tạo có từ 1-2 thành viên ở trạng thái chờ ghép nhóm, khi đăng ký đề tài bắt buộc phải đạt từ 3 đến 5 thành viên (tối đa 5 thành viên), mỗi sinh viên chỉ thuộc tối đa 1 nhóm trong một đợt đăng ký.
 
-### 7.2. Kịch bản Thành công: Tạo nhóm và Mời thành viên (TC-GRP-01)
-* **Tài khoản thực hiện:** `student03` (MSSV: 22110003 - Chưa có nhóm) và `student04` (MSSV: 22110004 - Chưa có nhóm)
+### 7.2. Kịch bản Thành công: Tạo nhóm và Mời đủ từ 3 đến 5 thành viên (TC-GRP-01)
+* **Tài khoản thực hiện:** `student03` (MSSV: 22110003 - Trưởng nhóm), `student04` (MSSV: 22110004) và `student05` (MSSV: 22110005)
 * **Đường dẫn UI:** `/` (Trang không gian sinh viên) ➔ Tab **"Nhóm của tôi"** (`#group`)
 
 #### Các bước thực hiện:
@@ -312,18 +311,19 @@ Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cù
 3. Khung màn hình hiển thị trạng thái chưa có nhóm. Bấm nút **"+ Tạo nhóm mới"**.
 4. Nhập tên nhóm: `Nhóm Phát triển Hệ thống Web Thông minh` ➔ Bấm **"Tạo nhóm"**.
    * Hệ thống thông báo: *"Đã tạo nhóm. Bạn là nhóm trưởng."*.
-   * Giao diện cập nhật danh sách thành viên: `Lê Hoàng Nam (Bạn) - MSSV: 22110003 - Badge: Nhóm trưởng` (Số lượng: 1 / 3 thành viên).
+   * Giao diện cập nhật danh sách thành viên: `Lê Hoàng Nam (Bạn) - MSSV: 22110003 - Badge: Nhóm trưởng` (Số lượng: 1 / 5 thành viên).
 5. Bấm nút **"+ Mời thành viên"**:
    * Nhập MSSV: `22110004` (Tài khoản của `student04`).
    * Bấm **"Gửi lời mời"**.
-   * Hệ thống thông báo đã gửi lời mời thành công. Bảng *"Lời mời của nhóm"* hiển thị dòng `Phạm Ngọc Anh - 22110004 - Chờ xác nhận`.
-6. Mở trình duyệt ẩn danh (Incognito) hoặc Đăng xuất, đăng nhập tài khoản `student04` / `Demo@12345`.
-7. `student04` truy cập tab **"Nhóm của tôi"** (`#group`):
-   * Khung *"Lời mời dành cho bạn"* hiển thị thẻ mời từ nhóm `Nhóm Phát triển Hệ thống Web Thông minh`.
-   * Bấm nút **"Tham gia nhóm"** (`POST /api/student/invitations/{id}/response` với `{ accept: true }`).
-8. Cả hai sinh viên tải lại trang:
-   * Danh sách thành viên nhóm hiển thị đủ 2 sinh viên (`student03` - Nhóm trưởng, `student04` - Thành viên).
-   * Huy hiệu thành viên cập nhật `2 / 3 thành viên`.
+   * Tiếp tục bấm nút **"+ Mời thành viên"**, nhập MSSV: `22110005` (Tài khoản của `student05`) ➔ Bấm **"Gửi lời mời"**.
+   * Hệ thống thông báo đã gửi lời mời thành công. Bảng *"Lời mời của nhóm"* hiển thị 2 dòng chờ xác nhận.
+6. Mở trình duyệt ẩn danh (Incognito) hoặc Đăng xuất, đăng nhập tài khoản `student04` / `Demo@12345`:
+   * Truy cập tab **"Nhóm của tôi"** (`#group`), bấm nút **"Tham gia nhóm"** từ nhóm của `student03`.
+7. Đăng xuất, đăng nhập tài khoản `student05` / `Demo@12345`:
+   * Truy cập tab **"Nhóm của tôi"** (`#group`), bấm nút **"Tham gia nhóm"** từ nhóm của `student03`.
+8. Tải lại trang với tài khoản `student03` (hoặc bất kỳ thành viên nào trong nhóm):
+   * Danh sách thành viên nhóm hiển thị đủ 3 sinh viên (`student03` - Nhóm trưởng, `student04` - Thành viên, `student05` - Thành viên).
+   * Huy hiệu thành viên cập nhật `3 / 5 thành viên` (đã đủ điều kiện từ 3 đến 5 sinh viên để thực hiện đăng ký đề tài).
 
 ---
 
@@ -358,7 +358,7 @@ Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cù
 | Mã test case | Tình huống kiểm thử | Thao tác / Dữ liệu kiểm thử | Kết quả mong đợi |
 | :--- | :--- | :--- | :--- |
 | **TC-GRP-NEG-01** | Mời thành viên đã có nhóm trong cùng đợt | Mời MSSV `22110001` (`student01` vốn đã ở nhóm `GRP-202601`) | Báo lỗi: Sinh viên này đã tham gia một nhóm khác trong đợt đăng ký này. Không thể gửi lời mời. |
-| **TC-GRP-NEG-02** | Mời vượt quá số lượng tối đa 3 thành viên | Nhóm đã có đủ 3 thành viên, tiếp tục gửi lời mời cho sinh viên thứ 4 | Báo lỗi nghiệp vụ: Nhóm đã đủ số lượng tối đa 3 thành viên. |
+| **TC-GRP-NEG-02** | Mời vượt quá số lượng tối đa 5 thành viên | Nhóm đã có đủ 5 thành viên, tiếp tục gửi lời mời cho sinh viên thứ 6 | Báo lỗi nghiệp vụ: Nhóm đã đủ 5 thành viên. |
 | **TC-GRP-NEG-03** | Thành viên (không phải nhóm trưởng) cố mời bạn | Đăng nhập tài khoản thành viên thường, gọi API `POST /api/student/groups/invitations` | Hệ thống báo lỗi: Chỉ nhóm trưởng mới có quyền gửi lời mời tham gia nhóm. |
 | **TC-GRP-NEG-04** | Thay đổi thành viên khi nhóm đã đăng ký đề tài | Nhóm đã nộp đăng ký đề tài (trạng thái `PENDING` hoặc `APPROVED`), cố gửi lời mời / xóa thành viên | Giao diện hiển thị cảnh báo: *"Danh sách thành viên đã khóa vì nhóm đã đăng ký đề tài"*. API từ chối sửa đổi. |
 | **TC-GRP-NEG-05** | Nhóm trưởng tự rời nhóm khi chưa chuyển quyền | Nhóm còn 2 thành viên, nhóm trưởng cố gọi API `leaveGroup` mà chưa chọn nhóm trưởng mới | Hệ thống yêu cầu nhóm trưởng phải chuyển quyền cho thành viên khác trước khi rời nhóm. |
@@ -421,6 +421,7 @@ Xác minh Nhóm trưởng đại diện đăng ký đề tài mở trong Kho đ�
 | **TC-REG-NEG-03** | Đăng ký đề tài đã hết hạn đợt | Cố đăng ký vào đề tài thuộc đợt có `studentEndAt` < thời điểm hiện tại | Hệ thống báo lỗi: Đã ngoài thời gian đăng ký đề tài của đợt. |
 | **TC-REG-NEG-04** | Nhóm cố đăng ký 2 đề tài cùng lúc | Nhóm đã có đề tài ở trạng thái `PENDING`/`APPROVED`, cố gọi API đăng ký thêm đề tài thứ hai | Báo lỗi nghiệp vụ: Nhóm hiện đã có một đăng ký đề tài đang được xử lý hoặc đã duyệt. |
 | **TC-REG-NEG-05** | Giảng viên hướng dẫn từ chối nhóm không nhập lý do | Giảng viên bấm "Từ chối" nhóm nhưng để trống lý do | Hệ thống yêu cầu bắt buộc nhập lý do từ chối để sinh viên nắm được thông tin. |
+| **TC-REG-NEG-06** | Nhóm chưa đủ 3 sinh viên cố đăng ký đề tài | Nhóm mới có 1 hoặc 2 thành viên, nhóm trưởng cố đăng ký đề tài | Báo lỗi nghiệp vụ: Nhóm phải có từ 3 đến 5 sinh viên mới được đăng ký đề tài. |
 
 ---
 
@@ -499,7 +500,7 @@ Xác minh Trưởng khoa (`DEAN`) có thể thành lập hội đồng bảo v�
    * **Thời gian báo cáo:** Chọn ngày giờ trong tương lai (VD: `2026-11-20T08:30`)
    * **Thành viên hội đồng:**
      * Giảng viên 1: Chọn `PGS. TS. Nguyễn Văn Thành` (`dean01`) — Vai trò: `Chủ tịch` (CHAIRPERSON)
-     * Giảng viên 2: Chọn `TS. Nguyễn Hoàng Long` (`hod01`) — Vai trò: `Thư ký` (SECRETARY)
+     * Giảng viên 2: Chọn `TS. Nguyễn Hoàng Long` (`lecturer06`) — Vai trò: `Thư ký` (SECRETARY)
      * Giảng viên 3: Chọn `TS. Võ Minh Trí` (`lecturer05`) — Vai trò: `Phản biện` (REVIEWER)
      * Giảng viên 4: Chọn `TS. Lê Văn Tuấn` (`lecturer03`) — Vai trò: `Ủy viên` (MEMBER)
      * Giảng viên 5: Để trống (`-- Không thêm --`)
@@ -555,7 +556,7 @@ Xác minh từng thành viên hội đồng có thể nhập điểm đánh giá
 * **Tài khoản thực hiện tuần tự:** 
   1. `lecturer05` (GVPB trong hội đồng `HD-CNTT-01`)
   2. `dean01` (Chủ tịch hội đồng)
-  3. `hod01` (Thư ký hội đồng)
+  3. `lecturer06` (Thư ký hội đồng)
 * **Đường dẫn UI:** `/councils/index.html`
 * **Endpoint API ngầm:** `POST /api/councils/defenses/{id}/grade`
 
@@ -571,7 +572,7 @@ Xác minh từng thành viên hội đồng có thể nhập điểm đánh giá
 3. Đăng xuất, đăng nhập tài khoản `dean01` / `Demo@12345`:
    * Vào `/councils/index.html`, bấm **"Nhập / sửa điểm của tôi"**.
    * Nhập điểm: `9.00` — Nhận xét: `Sản phẩm có tính ứng dụng cao, hoàn thành xuất sắc các yêu cầu.` ➔ Bấm **"Lưu đánh giá"**.
-4. Đăng xuất, đăng nhập tài khoản `hod01` / `Demo@12345`:
+4. Đăng xuất, đăng nhập tài khoản `lecturer06` / `Demo@12345`:
    * Vào `/councils/index.html`, bấm **"Nhập / sửa điểm của tôi"**.
    * Nhập điểm: `8.75` — Nhận xét: `Kiến trúc hệ thống tốt, cần tối ưu thêm giao diện người dùng.` ➔ Bấm **"Lưu đánh giá"**.
 5. Mở chi tiết phiếu đánh giá:
@@ -641,7 +642,7 @@ Xác minh Chủ tịch hội đồng/Trưởng khoa có thể tổng hợp đi�
 
 | Mã test case | Tình huống kiểm thử | Thao tác kiểm thử | Kết quả mong đợi |
 | :--- | :--- | :--- | :--- |
-| **TC-PUB-NEG-01** | Giảng viên không phải DEAN cố bấm công bố kết quả | Đăng nhập `hod01` hoặc `lecturer01`, gửi API `POST /api/councils/defenses/1/publish` | Hệ thống trả về lỗi **403 Forbidden**: Chỉ Trưởng khoa (DEAN) mới có thẩm quyền công bố điểm chính thức. |
+| **TC-PUB-NEG-01** | Giảng viên không phải DEAN cố bấm công bố kết quả | Đăng nhập `lecturer01` hoặc `lecturer06`, gửi API `POST /api/councils/defenses/1/publish` | Hệ thống trả về lỗi **403 Forbidden**: Chỉ Trưởng khoa (DEAN) mới có thẩm quyền công bố điểm chính thức. |
 | **TC-PUB-NEG-02** | Công bố kết quả khi chưa tổng hợp điểm | Cố gọi API `/publish` khi `finalized = false` | Hệ thống từ chối: Bắt buộc phải hoàn tất tổng hợp điểm trước khi công bố. |
 | **TC-PUB-NEG-03** | Sửa điểm sau khi đã tổng hợp | Gửi API `/grade` vào thẻ defense đã có `finalized = true` | Hệ thống từ chối: Điểm bảo vệ đã được tổng hợp và khóa, không thể chỉnh sửa thêm. |
 | **TC-PUB-NEG-04** | IDOR: Sinh viên nhóm B xem trộm kết quả của nhóm A | Đăng nhập `student03`, gọi `GET /api/student/result` khi nhóm của `student03` chưa bảo vệ xong | Hệ thống chỉ trả về kết quả nhóm của chính sinh viên đang đăng nhập (hoặc báo *"Chưa công bố kết quả"*), tuyệt đối không để lộ điểm của nhóm `student01`. |
@@ -658,7 +659,7 @@ Bảng tổng hợp kiểm thử bảo mật cần rà soát định kỳ trư�
 | 2 | **Tài khoản bị khóa (Locked Account)** | Đặt `status = 'LOCKED'` cho một user trong DB, sau đó thử đăng nhập. | Hệ thống từ chối đăng nhập với thông báo tài khoản đã bị khóa, liên hệ quản trị viên. | [ ] Đạt |
 | 3 | **Phân quyền vai trò (RBAC - Student)** | Đăng nhập tài khoản `STUDENT`, truy cập trực tiếp URL `/admin/dashboard.html` hoặc `/api/admin/users`. | Trả về mã lỗi **403 Forbidden** hoặc tự động chuyển hướng về không gian sinh viên. | [ ] Đạt |
 | 4 | **Phân quyền vai trò (RBAC - Lecturer)** | Đăng nhập tài khoản `LECTURER`, gửi request tạo đợt đăng ký `POST /api/admin/registration-periods`. | Trả về mã lỗi **403 Forbidden**. | [ ] Đạt |
-| 5 | **Phạm vi Bộ môn (Department Scoping)** | `hod01` (CNPM) gửi request cập nhật đề tài thuộc bộ môn HTTT (`department_id = 2`). | Bị chặn quyền với lỗi không thuộc phạm vi bộ môn quản lý. | [ ] Đạt |
+| 5 | **Phạm vi Bộ môn (Department Scoping)** | `lecturer01` (CNPM) gửi request cập nhật đề tài thuộc bộ môn HTTT (`department_id = 2`). | Bị chặn quyền với lỗi không thuộc phạm vi bộ môn phụ trách. | [ ] Đạt |
 | 6 | **Chống khai thác IDOR (File Download)** | Sinh viên lấy ID báo cáo của nhóm khác và gửi request `GET /api/student/reports/{otherGroupId}/download`. | Trả về mã lỗi **403 Forbidden**; sinh viên chỉ được phép tải báo cáo của nhóm mình. | [ ] Đạt |
 | 7 | **Hủy phiên khi đổi mật khẩu** | Đổi mật khẩu tài khoản tại phiên A, kiểm tra xem phiên đăng nhập B cũ còn hoạt động không. | Phiên cũ bị hủy hiệu lực; mọi thao tác tiếp theo yêu cầu đăng nhập lại (`password_changed_at` check). | [ ] Đạt |
 | 8 | **Bảo vệ chống tấn công CSRF** | Gửi một request `POST` qua Postman/cURL mà không kèm header `X-XSRF-TOKEN` hoặc `_csrf`. | Máy chủ từ chối xử lý với mã lỗi **403 Forbidden (Invalid CSRF Token)**. | [ ] Đạt |
@@ -702,7 +703,7 @@ FROM student_groups g
 JOIN group_members gm ON g.id = gm.group_id
 JOIN users u ON gm.student_id = u.id
 ORDER BY g.id, gm.member_role DESC;
--- Kiểm tra: Mỗi nhóm có tối đa 3 thành viên; ràng buộc uk_group_member_period_student không bị vi phạm.
+-- Kiểm tra: Mỗi nhóm có từ 1 đến 5 thành viên (ck_groups_size); khi đăng ký đề tài phải đạt từ 3 đến 5 thành viên; ràng buộc uk_group_member_period_student không bị vi phạm.
 ```
 
 ### 14.4. Kiểm tra Lịch sử thay đổi trạng thái Đăng ký đề tài
@@ -753,13 +754,13 @@ Tester hoặc Nhóm phát triển có thể dùng bảng kiểm này để đán
 
 - [ ] **Bước 1 (DEAN):** Đăng nhập `dean01`, tạo đợt đăng ký mới với cấu hình thời gian chuẩn.
 - [ ] **Bước 2 (DEAN):** Kiểm tra bộ lọc người dùng, bộ môn và đăng thông báo chung toàn khoa.
-- [ ] **Bước 3 (LECTURER):** Đăng nhập `lecturer01`, đề xuất đề tài mới `DT-CNPM-202699` (Mô tả >= 10 ký tự, max 3 sinh viên).
-- [ ] **Bước 4 (HOD):** Đăng nhập `hod01`, mở trang Duyệt đề tài bộ môn, phân công GVHD1 và GVHD2, bấm Duyệt đề tài.
+- [ ] **Bước 3 (LECTURER):** Đăng nhập `lecturer01`, đề xuất đề tài mới `DT-CNPM-202699` (Mô tả >= 10 ký tự, maxStudents từ 3 đến 5 sinh viên).
+- [ ] **Bước 4 (DEAN):** Đăng nhập `dean01`, mở trang Duyệt đề tài bộ môn, phân công GVHD1 và GVHD2, bấm Duyệt đề tài.
 - [ ] **Bước 5 (STUDENT):** Đăng nhập `student03`, vào tab Kho đề tài, xác nhận đề tài vừa duyệt đã xuất hiện công khai.
 - [ ] **Bước 6 (STUDENT):** `student03` vào tab Nhóm của tôi, tạo nhóm mới `Nhóm Nghiên cứu Kỹ thuật Phần mềm`.
-- [ ] **Bước 7 (STUDENT):** `student03` gửi lời mời tham gia nhóm cho `student04` (MSSV: 22110004).
-- [ ] **Bước 8 (STUDENT):** `student04` đăng nhập, chấp nhận lời mời tham gia nhóm thành công (Nhóm đạt 2 thành viên).
-- [ ] **Bước 9 (STUDENT):** Nhóm trưởng vào Kho đề tài, thực hiện Đăng ký đề tài vừa duyệt.
+- [ ] **Bước 7 (STUDENT):** `student03` gửi lời mời tham gia nhóm cho `student04` (MSSV: 22110004) và `student05` (MSSV: 22110005).
+- [ ] **Bước 8 (STUDENT):** `student04` và `student05` lần lượt đăng nhập, chấp nhận lời mời tham gia nhóm thành công (Nhóm đạt đủ 3 thành viên).
+- [ ] **Bước 9 (STUDENT):** Nhóm trưởng vào Kho đề tài, thực hiện Đăng ký đề tài vừa duyệt khi nhóm đã đủ 3 thành viên.
 - [ ] **Bước 10 (LECTURER):** Giảng viên hướng dẫn vào trang Nhóm sinh viên đăng ký, bấm Nhận nhóm sinh viên.
 - [ ] **Bước 11 (STUDENT):** Nhóm trưởng vào tab Nộp báo cáo, nộp tuần tự 3 tệp báo cáo: Đề cương ➔ Giữa kỳ ➔ Cuối kỳ (PDF/DOCX <= 10MB).
 - [ ] **Bước 12 (LECTURER & COUNCIL):** Giảng viên hướng dẫn bấm xem và tải về thành công các tệp báo cáo đã nộp.

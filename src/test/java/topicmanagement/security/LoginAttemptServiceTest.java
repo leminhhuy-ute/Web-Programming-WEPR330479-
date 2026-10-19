@@ -1,46 +1,37 @@
 package topicmanagement.security;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.LockedException;
 
 class LoginAttemptServiceTest {
+  @Test
+  void entriesExpireAndTrackingRemainsBounded() {
+    Instant start = Instant.parse("2026-01-01T00:00:00Z");
+    LoginAttemptService service = new LoginAttemptService(
+        Clock.fixed(start, ZoneOffset.UTC), Duration.ofMinutes(15), 10);
+    for (int i = 0; i < 100; i++) service.failed("127.0.0.1", "user-" + i);
+    assertTrue(service.trackedKeyCount() <= 10);
+
+    service.purgeExpired(start.plus(Duration.ofMinutes(16)));
+    assertEquals(0, service.trackedKeyCount());
+  }
 
   @Test
-  void blocksAnIdentifierAfterFiveFailuresFromTheSameAddress() {
+  void repeatedFailuresAreLimitedByIdentifierAndByAddress() {
     LoginAttemptService service = new LoginAttemptService();
+    for (int i = 0; i < 5; i++) service.failed("10.0.0.1", "same-user");
+    assertThrows(LockedException.class, () -> service.assertAllowed("10.0.0.1", "same-user"));
+    assertDoesNotThrow(() -> service.assertAllowed("10.0.0.1", "another-user"));
 
-    for (int attempt = 0; attempt < 5; attempt++) {
-      service.failed("127.0.0.1", "Dean01");
-    }
-
+    LoginAttemptService addressLimited = new LoginAttemptService();
+    for (int i = 0; i < 50; i++) addressLimited.failed("10.0.0.2", "rotating-" + i);
     assertThrows(LockedException.class,
-        () -> service.assertAllowed("127.0.0.1", "dean01"));
-  }
-
-  @Test
-  void successfulLoginClearsTheFailureHistory() {
-    LoginAttemptService service = new LoginAttemptService();
-
-    for (int attempt = 0; attempt < 5; attempt++) {
-      service.failed("127.0.0.1", "dean01");
-    }
-    service.succeeded("127.0.0.1", "DEAN01");
-
-    assertDoesNotThrow(() -> service.assertAllowed("127.0.0.1", "dean01"));
-  }
-
-  @Test
-  void failuresAreScopedByAddressAndIdentifier() {
-    LoginAttemptService service = new LoginAttemptService();
-
-    for (int attempt = 0; attempt < 5; attempt++) {
-      service.failed("127.0.0.1", "dean01");
-    }
-
-    assertDoesNotThrow(() -> service.assertAllowed("127.0.0.2", "dean01"));
-    assertDoesNotThrow(() -> service.assertAllowed("127.0.0.1", "lecturer01"));
+        () -> addressLimited.assertAllowed("10.0.0.2", "never-seen-before"));
   }
 }

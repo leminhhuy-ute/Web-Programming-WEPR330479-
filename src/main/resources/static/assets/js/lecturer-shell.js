@@ -1,17 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
     function sanitizeName(name, role) {
         if (!name) {
-            if (role === 'DEAN') return 'Nguyễn Văn Minh';
-            if (role === 'HEAD_OF_DEPT') return 'TS. Trần Hoàng Nam';
-            if (role === 'LECTURER') return 'TS. Trần Hoàng Nam';
-            if (role === 'STUDENT') return 'Lê Minh Tuấn';
-            return 'Cán bộ giảng viên';
+            return role === 'DEAN' ? 'Trưởng khoa' : (role === 'STUDENT' ? 'Sinh viên' : 'Giảng viên');
         }
         let cleaned = name.replace(/\s*\((demo|test|sample)\)/gi, '').replace(/\b(demo|test|sample)\b/gi, '').trim();
-        if (!cleaned || cleaned.toLowerCase() === 'admin' || cleaned.toLowerCase() === 'admin demo' || cleaned.includes('Tru?ng khoa')) {
-            return role === 'DEAN' ? 'Nguyễn Văn Minh' : 'TS. Trần Hoàng Nam';
-        }
-        return cleaned;
+        return cleaned || (role === 'DEAN' ? 'Trưởng khoa' : (role === 'STUDENT' ? 'Sinh viên' : 'Giảng viên'));
     }
 
     const user = await App.getCurrentUser();
@@ -28,9 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cleanFullName = sanitizeName(user.fullName, user.role);
     const moduleLabel = user.role === 'DEAN'
         ? 'Trưởng khoa'
-        : user.role === 'HEAD_OF_DEPT'
-            ? 'Trưởng bộ môn'
-            : 'Giảng viên';
+        : 'Giảng viên';
 
     const moduleLabelEl = document.getElementById('shell-module-label');
     if (moduleLabelEl) moduleLabelEl.textContent = moduleLabel;
@@ -47,9 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (userNameEl) userNameEl.textContent = cleanFullName;
     if (userRoleEl) {
-        let roleText = 'Giảng viên';
-        if (user.role === 'HEAD_OF_DEPT') roleText = 'Trưởng bộ môn';
-        else if (user.role === 'DEAN') roleText = 'Trưởng khoa';
+        let roleText = user.role === 'DEAN' ? 'Trưởng khoa' : 'Giảng viên';
         if (user.department && user.department.code) roleText += ` (${user.department.code})`;
         userRoleEl.textContent = roleText;
     }
@@ -70,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ['Tất cả đề tài', '/lecturer/topics/list.html'],
             ['Đề xuất đề tài', '/lecturer/topics/form.html'],
             ['Nhóm sinh viên hướng dẫn', '/lecturer/topics/student-groups.html'],
-            ['Duyệt đề tài bộ môn', '/lecturer/topics/approval.html'],
+            ['Duyệt đề tài', '/lecturer/topics/approval.html'],
         ] : [];
         const link = (label, href, active, sub) => {
             const anchor = document.createElement('a');
@@ -94,13 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     } else if (navContainer) {
-        if (user.role === 'HEAD_OF_DEPT' && !navContainer.querySelector('a[href*="/lecturer/announcements.html"]')) {
-            const announcementLink = document.createElement('a');
-            announcementLink.href = App.getContextPath() + '/lecturer/announcements.html';
-            announcementLink.textContent = 'Gửi thông báo';
-            if (location.pathname.endsWith('/lecturer/announcements.html')) announcementLink.classList.add('active');
-            navContainer.append(announcementLink);
-        }
         if (!navContainer.querySelector('a[href*="/profile.html"]')) {
             const profileLink = document.createElement('a');
             profileLink.href = App.getContextPath() + '/profile.html';
@@ -116,10 +98,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Show/Hide Department Approval menu if HEAD_OF_DEPT or DEAN
+    // Show/Hide Topic Approval menu for DEAN only
     const approvalNav = document.getElementById('nav-approval');
     if (approvalNav) {
-        if (user.role === 'HEAD_OF_DEPT' || user.role === 'DEAN') {
+        if (user.role === 'DEAN') {
             approvalNav.style.display = '';
         } else {
             approvalNav.style.display = 'none';

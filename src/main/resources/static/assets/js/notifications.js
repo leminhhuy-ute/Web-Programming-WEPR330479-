@@ -98,7 +98,7 @@
   function init() {
     mount();
     void refresh();
-    window.setInterval(() => { if (!document.hidden) void refresh(); }, 5000);
+    window.setInterval(() => { if (!document.hidden) void refresh(); }, 30000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) void refresh(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

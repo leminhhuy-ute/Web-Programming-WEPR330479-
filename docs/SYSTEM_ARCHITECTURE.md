@@ -28,7 +28,7 @@ graph TD
 
     subgraph DatabaseTier ["Tầng Cơ sở dữ liệu"]
         DB[("MySQL Server 8.0+ / H2 Database")]
-        Migrations["Bộ quản lý phiên bản Flyway (V2..V5)"]
+        Migrations["Bộ quản lý phiên bản Flyway (V1..V12 theo profile)"]
     end
 
     Client -->|HTTP / HTTPS + JSON / HTML| Filter
@@ -56,14 +56,14 @@ graph TD
 - **Đối tượng định danh `CurrentUser`**: Đại diện phiên người dùng an toàn luồng (thread-safe), chứa các thông tin ngữ cảnh: `id`, `username`, `role`, `departmentId`, `authenticatedAt`.
 - **`DatabaseAuthenticationProvider`**: Thực hiện truy vấn tài khoản không phân biệt hoa thường và đối soát mật khẩu với giải thuật băm BCrypt.
 - **Bộ lọc kiểm tra phiên `AccountRefreshFilter`**: Trên mỗi yêu cầu được xác thực, bộ lọc so sánh thời điểm đăng nhập của session với trường `password_changed_at` trong cơ sở dữ liệu. Nếu mật khẩu đã bị đổi sau thời điểm đăng nhập, phiên lập tức bị hủy bỏ và chuyển hướng về trang đăng nhập.
-- **Kiểm soát đăng nhập thất bại `LoginAttemptService`**: Theo dõi số lần đăng nhập sai theo IP/Username trong cửa sổ 15 phút để chủ động ngăn chặn tấn công brute-force.
-- **Bảo vệ CSRF & Cookie**: Sử dụng `CookieCsrfTokenRepository` với các cờ bảo mật `HttpOnly=true`, `SameSite=Lax`, cơ chế tự động đổi Session ID khi đăng nhập thành công.
+- **Kiểm soát đăng nhập thất bại `LoginAttemptService`**: Theo dõi số lần đăng nhập sai theo IP/Username trong cửa sổ 15 phút để chủ động ngăn chặn tấn công brute-force (cơ chế khóa tạm thời / throttling đăng nhập).
+- **Bảo vệ CSRF & Quản lý phiên**: Sử dụng `CookieCsrfTokenRepository.withHttpOnlyFalse()` để JavaScript phía client có thể đọc token CSRF và đính kèm vào header `X-XSRF-TOKEN` trong các request biến đổi trạng thái (`POST`, `PUT`, `DELETE`), trong khi cookie phiên `JSESSIONID` được cấu hình `HttpOnly=true` và `SameSite=Lax` nghiêm ngặt để ngăn chặn rò rỉ qua XSS.
 
 ### 2.3 Tầng Dịch vụ Nghiệp vụ (Business Service Layer)
 - Đóng gói toàn bộ các chính sách, quy tắc đào tạo và máy trạng thái nghiệp vụ:
   - **`RegistrationPeriodServiceV2`**: Thực thi quy tắc 4 mốc thời gian, kiểm soát vòng đời đợt đăng ký; ngăn chặn việc thay đổi loại đợt hoặc xóa đợt khi đã có đề tài hoặc nhóm sinh viên phát sinh.
-  - **`TopicService` & `DepartmentTopicService`**: Quản lý đề xuất đề tài, phân bổ chỉ tiêu giảng viên hướng dẫn, kiểm tra tính hợp lệ của người tạo và bộ môn của đề tài.
-  - **`StudentService`**: Xử lý tạo nhóm, gửi lời mời, chuyển quyền nhóm trưởng, rời nhóm, xóa thành viên và giải tán nhóm với phạm vi giới hạn theo từng đợt đăng ký.
+  - **`TopicService` & `DepartmentTopicService`**: Quản lý đề xuất đề tài, phân bổ chỉ tiêu giảng viên hướng dẫn, kiểm tra tính hợp lệ của người tạo và bộ môn của đề tài (quy mô `maxStudents` từ 3 đến 5).
+  - **`StudentService`**: Xử lý tạo nhóm, gửi lời mời, chuyển quyền nhóm trưởng, rời nhóm, xóa thành viên và giải tán nhóm với phạm vi giới hạn theo từng đợt đăng ký (nhóm cần từ 3 đến 5 thành viên để đăng ký đề tài; tối đa 5 thành viên).
   - **`TopicRegistrationService`**: Điều phối luồng đăng ký đề tài, duyệt đăng ký và kích hoạt cơ chế khóa hủy đăng ký khi nhóm đã bắt đầu nộp báo cáo.
   - **`ReportService`**: Ràng buộc nộp báo cáo tuần tự theo 3 giai đoạn (`Đề cương` $\rightarrow$ `Giữa kỳ` $\rightarrow$ `Cuối kỳ`), kiểm tra cấu trúc byte của tệp PDF và DOCX.
   - **`CouncilManagementService`, `CouncilService`, `DefenseService`**: Thực thi cơ cấu thành viên hội đồng (3-5 người), ngăn ngừa xung đột lợi ích (giảng viên hướng dẫn không được chấm đề tài mình), thu thập điểm số và tổng hợp điểm trung bình cộng.
@@ -72,7 +72,7 @@ graph TD
 ### 2.4 Tầng Truy xuất & Lưu trữ Dữ liệu (Persistence Layer)
 - **Spring Data JPA**: Cung cấp các giao diện repository trừu tượng hóa truy vấn, hỗ trợ phân trang và các phương thức truy vấn suy diễn (derived queries).
 - **Hibernate ORM**: Quản lý vòng đời thực thể, cơ chế dirty-checking, khóa lạc quan (`@Version`) và ánh xạ quan hệ bảng.
-- **Flyway Migrations**: Quản lý lịch sử tiến hóa cấu trúc cơ sở dữ liệu từ phiên bản `V2` đến `V5`, bảo đảm tính đồng nhất giữa môi trường phát triển và môi trường thực tế.
+- **Flyway Migrations**: Profile MySQL baseline V5 và chạy V6–V12; profile cloud tạo database trống từ V1 rồi chạy V6–V12. Các V2–V5 được giữ làm lịch sử nâng cấp, không tự chạy lại trên schema đã baseline.
 
 ---
 

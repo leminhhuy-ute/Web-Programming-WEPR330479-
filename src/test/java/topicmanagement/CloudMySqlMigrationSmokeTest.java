@@ -31,11 +31,31 @@ class CloudMySqlMigrationSmokeTest {
     @Autowired MockMvc mvc;
 
     @Test void emptyDatabaseMigratesAndDemoSeedingDoesNotResetUsers() throws Exception {
-        assertEquals("10", flyway.info().current().getVersion().toString());
-        assertEquals(6, flyway.info().applied().length); // V1, V6, V7, V8, V9, V10; no manual baseline
+        assertEquals("12", flyway.info().current().getVersion().toString());
+        assertEquals(8, flyway.info().applied().length); // V1, V6, V7, V8, V9, V10, V11, V12; no manual baseline
         assertEquals(0, flyway.migrate().migrationsExecuted);
         assertEquals(13, users.count());
         assertEquals(0L, jdbc.queryForObject("select count(*) from email_notifications", Long.class));
+
+        // Direct post-migration verification:
+        // 1. No users have role 'HEAD_OF_DEPT'
+        assertEquals(0L, jdbc.queryForObject("select count(*) from users where role = 'HEAD_OF_DEPT'", Long.class));
+
+        // 2. No announcements have audience 'HEAD_OF_DEPT'
+        assertEquals(0L, jdbc.queryForObject("select count(*) from announcements where audience = 'HEAD_OF_DEPT'", Long.class));
+
+        // 3. Constraint ck_users_role rejects 'HEAD_OF_DEPT'
+        assertThrows(Exception.class, () ->
+            jdbc.update("insert into users(user_code, username, password_hash, full_name, email, role, status) values (?, ?, ?, ?, ?, ?, ?)",
+                "INVALID_ROLE", "invalid_role_user", "hash", "Invalid Role", "invalid@test.com", "HEAD_OF_DEPT", "ACTIVE")
+        );
+
+        // 4. Constraint ck_announcements_audience rejects 'HEAD_OF_DEPT'
+        Long deanId = users.findByUsername("dean01").orElseThrow().getId();
+        assertThrows(Exception.class, () ->
+            jdbc.update("insert into announcements(title, content, audience, created_by) values (?, ?, ?, ?)",
+                "Test Invalid Audience", "Content", "HEAD_OF_DEPT", deanId)
+        );
 
         jdbc.update("update users set student_class=? where username=?", "24110CTNB", "student01");
         demo.run();

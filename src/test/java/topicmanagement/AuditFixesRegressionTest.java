@@ -161,6 +161,8 @@ public class AuditFixesRegressionTest {
 
         // Assign defense as DEAN
         SecurityContextHolder.getContext().setAuthentication(auth(dean));
+        group2.setAdvisorCompletedAt(LocalDateTime.now());
+        groups.save(group2);
         defenseService.assign(group2.getId(), council.getId(), reviewer.getId());
         entityManager.flush();
 
@@ -194,6 +196,8 @@ public class AuditFixesRegressionTest {
         Council council = createCouncil("HD02", chair, secretary, reviewer);
 
         SecurityContextHolder.getContext().setAuthentication(auth(dean));
+        group.setAdvisorCompletedAt(LocalDateTime.now());
+        groups.save(group);
         defenseService.assign(group.getId(), council.getId(), reviewer.getId());
         entityManager.flush();
 
@@ -259,6 +263,34 @@ public class AuditFixesRegressionTest {
 
         // But in period 1, member check prevents joining another group in same period
         assertTrue(members.existsByRegistrationPeriodIdAndStudentId(period1.getId(), student.getId()));
+
+        var selectedFirst = studentService.state(student.getUsername(), group1.getId());
+        var selectedSecond = studentService.state(student.getUsername(), group2.getId());
+        assertEquals(group1.getId(), selectedFirst.group().id());
+        assertEquals(group2.getId(), selectedSecond.group().id());
+        assertEquals(2, selectedSecond.groups().size());
+    }
+
+    @Test
+    void acceptingInvitationDeclinesOnlyInvitationsFromTheSamePeriod() {
+        Department dept = createDept("INV-PERIOD");
+        RegistrationPeriod firstPeriod = createPeriod(RegistrationPeriodType.COURSE, null, null);
+        RegistrationPeriod secondPeriod = createPeriod(RegistrationPeriodType.COURSE, null, null);
+        User firstLeader = createUser("invite-leader-1", Role.STUDENT, dept);
+        User secondLeader = createUser("invite-leader-2", Role.STUDENT, dept);
+        User invitee = createUser("invitee", Role.STUDENT, dept);
+        StudentGroup firstGroup = createGroup(firstLeader, "INV-1", firstPeriod, null, GroupStatus.DRAFT);
+        StudentGroup secondGroup = createGroup(secondLeader, "INV-2", secondPeriod, null, GroupStatus.DRAFT);
+
+        studentService.invite(firstLeader.getUsername(), invitee.getUserCode(), firstGroup.getId());
+        studentService.invite(secondLeader.getUsername(), invitee.getUserCode(), secondGroup.getId());
+        Invitation accepted = invitations.findByGroupIdAndStudentId(secondGroup.getId(), invitee.getId()).orElseThrow();
+        studentService.respond(invitee.getUsername(), accepted.id, true);
+
+        Invitation otherPeriod = invitations.findByGroupIdAndStudentId(firstGroup.getId(), invitee.getId()).orElseThrow();
+        assertEquals("ACCEPTED", accepted.status);
+        assertEquals("PENDING", otherPeriod.status);
+        assertEquals(secondGroup.getId(), studentService.state(invitee.getUsername()).group().id());
     }
 
     // -------------------------------------------------------------------------
@@ -269,7 +301,7 @@ public class AuditFixesRegressionTest {
         Department deptA = createDept("D4A");
         Department deptB = createDept("D4B");
         RegistrationPeriod period = createLecturerPeriod(RegistrationPeriodType.COURSE);
-        User hod = createUser("hod4", Role.HEAD_OF_DEPT, deptA);
+        User dean = createUser("dean4", Role.DEAN, deptA);
 
         // Inactive creator
         User inactiveLecturer = createUser("inactive4", Role.LECTURER, deptA);
@@ -292,7 +324,7 @@ public class AuditFixesRegressionTest {
 
         // Approval fails because creator is inactive
         IllegalArgumentException exInactive = assertThrows(IllegalArgumentException.class, () ->
-            departmentTopicService.approveOrRejectTopic(topic1.getId(), approveReq, hod)
+            departmentTopicService.approveOrRejectTopic(topic1.getId(), approveReq, dean)
         );
         assertTrue(exInactive.getMessage().contains("không hoạt động"));
 
@@ -306,14 +338,24 @@ public class AuditFixesRegressionTest {
         topic2.setStatus(TopicStatus.PENDING);
         topic2.setDepartment(deptA);
         topic2.setPeriod(period);
-        topic2.setCreatedBy(hod);
+        topic2.setCreatedBy(dean);
         topic2.setAdvisor1(lecturerDeptB); // Dept B advisor for Dept A topic
         topics.save(topic2);
 
         IllegalArgumentException exDept = assertThrows(IllegalArgumentException.class, () ->
-            departmentTopicService.approveOrRejectTopic(topic2.getId(), approveReq, hod)
+            departmentTopicService.approveOrRejectTopic(topic2.getId(), approveReq, dean)
         );
         assertTrue(exDept.getMessage().contains("không thuộc bộ môn"));
+
+        Topic topic3 = createTopic(deptA, period, dean, "T4C", TopicStatus.PENDING);
+        User lecturerDeptA = createUser("lect4a", Role.LECTURER, deptA);
+        AssignAdvisorsRequest advisors = new AssignAdvisorsRequest();
+        advisors.setAdvisor1Id(lecturerDeptA.getId());
+        advisors.setAdvisor2Id(lecturerDeptB.getId());
+        IllegalArgumentException secondAdvisor = assertThrows(IllegalArgumentException.class, () ->
+            departmentTopicService.assignAdvisors(topic3.getId(), advisors, dean));
+        assertTrue(secondAdvisor.getMessage().contains("GVHD 2")
+            && secondAdvisor.getMessage().contains("không thuộc bộ môn"));
     }
 
     // -------------------------------------------------------------------------
@@ -515,7 +557,7 @@ public class AuditFixesRegressionTest {
         deanTopicReq.setDepartmentId(deptB.getId());
         deanTopicReq.setPeriodId(period.getId());
         deanTopicReq.setTopicType("COURSE");
-        deanTopicReq.setMaxStudents(2);
+        deanTopicReq.setMaxStudents(3);
 
         assertDoesNotThrow(() -> topicService.createTopic(deanTopicReq, dean));
 
@@ -527,7 +569,7 @@ public class AuditFixesRegressionTest {
         lectTopicReq.setDepartmentId(deptB.getId());
         lectTopicReq.setPeriodId(period.getId());
         lectTopicReq.setTopicType("COURSE");
-        lectTopicReq.setMaxStudents(2);
+        lectTopicReq.setMaxStudents(3);
 
         assertThrows(AccessDeniedException.class, () ->
             topicService.createTopic(lectTopicReq, lecturerA)
@@ -574,6 +616,8 @@ public class AuditFixesRegressionTest {
         assertTrue(councils.findById(council.getId()).isEmpty());
 
         // 3. Group Operations: leaveGroup, removeMember, disbandGroup
+        period.setStudentStartAt(LocalDateTime.now().minusDays(1));
+        periods.save(period);
         User studentLeader = createUser("lead10", Role.STUDENT, deptA);
         User studentMember = createUser("mem10", Role.STUDENT, deptA);
 
@@ -657,6 +701,8 @@ public class AuditFixesRegressionTest {
         Council council1 = createCouncil("HD11-P1", period1.getDefenseDate().atTime(9, 0), chair1, sec1, rev1);
 
         SecurityContextHolder.getContext().setAuthentication(auth(dean));
+        group1.setAdvisorCompletedAt(LocalDateTime.now());
+        groups.save(group1);
         defenseService.assign(group1.getId(), council1.getId(), rev1.getId());
         Defense def1 = defenses.findByGroupId(group1.getId()).orElseThrow();
         def1.finalScore = new BigDecimal("7.50");
@@ -676,6 +722,8 @@ public class AuditFixesRegressionTest {
         User rev2 = createUser("rev11_2", Role.LECTURER, dept);
         Council council2 = createCouncil("HD11-P2", period2.getDefenseDate().atTime(9, 0), chair2, sec2, rev2);
 
+        group2.setAdvisorCompletedAt(LocalDateTime.now());
+        groups.save(group2);
         defenseService.assign(group2.getId(), council2.getId(), rev2.getId());
         Defense def2 = defenses.findByGroupId(group2.getId()).orElseThrow();
         def2.finalScore = new BigDecimal("9.50");

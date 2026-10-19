@@ -14,7 +14,7 @@ import topicmanagement.security.CurrentAccount;
 import topicmanagement.student.*;
 import topicmanagement.enums.ReportStatus;
 
-@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','LECTURER')")
 @RestController
 public class ReportAccessController {
     public record AdvisorFeedbackRequest(@NotBlank(message="Vui lòng nhập nhận xét.")

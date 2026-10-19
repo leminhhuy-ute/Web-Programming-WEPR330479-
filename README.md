@@ -22,20 +22,20 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 ### Trưởng khoa (`ROLE_DEAN`)
 - **Quản lý tài khoản**: Khởi tạo tài khoản người dùng, phân quyền vai trò, gán bộ môn chuyên môn, khóa/mở khóa tài khoản, đặt lại mật khẩu và giám sát bảo mật phiên đăng nhập.
 - **Quản lý bộ môn**: Quản lý danh mục các bộ môn chuyên ngành trong Khoa CNTT.
-- **Tạo đợt đăng ký**: Cấu hình các đợt đăng ký với 4 mốc thời gian tuần tự (cửa sổ giảng viên đề xuất và cửa sổ sinh viên đăng ký).
-- **Quản lý hội đồng**: Thành lập hội đồng đánh giá (3–5 thành viên với các chức danh Chủ tịch, Thư ký, Phản biện, Ủy viên), phân công nhóm bảo vệ và chỉ định giảng viên phản biện.
+- **Tạo đợt đăng ký**: Cấu hình các đợt đăng ký với 4 mốc thời gian tuần tự (cửa sổ giảng viên đề xuất và cửa sổ sinh viên đăng ký), thiết lập loại đợt (COURSE, NCKH, TLCN, KLTN), hạn nộp điểm GVPB, ngày báo cáo hội đồng.
+- **Phê duyệt đề tài & phân công GVHD**: Thẩm định, phê duyệt hoặc từ chối đề tài của tất cả bộ môn, phân công hoặc thay đổi giảng viên hướng dẫn chính/phụ (`advisor1`, `advisor2`), công bố danh sách đề tài.
+- **Quản lý hội đồng & phản biện**: Thành lập hội đồng đánh giá (3–5 thành viên với các chức danh Chủ tịch, Thư ký, Phản biện, Ủy viên), phân công nhóm bảo vệ và chỉ định giảng viên phản biện.
 - **Công bố kết quả**: Phê duyệt và công bố bảng điểm đánh giá của hội đồng cho sinh viên tra cứu.
-- **Gửi thông báo**: Trưởng khoa chọn đối tượng nhận là Trưởng bộ môn, Giảng viên, Sinh viên hoặc tất cả.
+- **Gửi thông báo**: Trưởng khoa chọn đối tượng nhận là Giảng viên, Sinh viên hoặc tất cả (`ALL`, `LECTURER`, `STUDENT`).
 
-### Trưởng bộ môn / Giảng viên (`ROLE_HEAD_OF_DEPT` / `ROLE_LECTURER`)
-- **Đề xuất đề tài**: Giảng viên đề xuất đề tài thuộc bộ môn trong cửa sổ thời gian cho phép; Trưởng khoa có quyền đề xuất đề tài liên bộ môn.
-- **Quản lý đề tài**: Trưởng bộ môn thẩm định, phê duyệt đề tài, phân công giảng viên hướng dẫn chính/phụ (`advisor1`, `advisor2`), hoặc từ chối đề tài kèm lý do phản hồi.
+### Giảng viên (`ROLE_LECTURER`)
+- **Đề xuất đề tài**: Giảng viên đề xuất đề tài trong thời gian cho phép của đợt đăng ký.
+- **Được phân công hướng dẫn & phản biện**: Được phân công làm giảng viên hướng dẫn (GVHD chính/phụ) hoặc giảng viên phản biện (GVPB).
 - **Hướng dẫn sinh viên**: Giảng viên hướng dẫn duyệt các nhóm sinh viên đăng ký đề tài của mình, theo dõi tiến độ, tải tệp và nhập nhận xét cho từng báo cáo; chỉ giảng viên hướng dẫn được sửa nhận xét.
-- **Thông báo bộ môn**: Trưởng bộ môn gửi thông báo cho sinh viên thuộc bộ môn mình phụ trách.
-- **Tham gia đánh giá**: Tham gia hội đồng chấm bảo vệ, nhập điểm số độc lập ($0.00 - 10.00$) và nhận xét chuyên môn (với điều kiện không hướng dẫn đề tài đó).
+- **Tham gia đánh giá**: Chấm điểm phản biện khi được phân công làm GVPB; tham gia hội đồng chấm bảo vệ, nhập điểm số độc lập ($0.00 - 10.00$) và nhận xét chuyên môn (với điều kiện không hướng dẫn đề tài đó).
 
 ### Sinh viên (`ROLE_STUDENT`)
-- **Tạo nhóm tối đa 3 thành viên**: Khởi tạo nhóm sinh viên mới, người tạo tự động là Nhóm trưởng. Mỗi sinh viên chỉ được thuộc đúng 1 nhóm trong một đợt đăng ký.
+- **Quản lý nhóm (3–5 thành viên khi đăng ký đề tài)**: Khởi tạo nhóm sinh viên mới (trạng thái chờ từ 1–2 thành viên, nhóm trưởng gửi lời mời). Khi đăng ký đề tài, nhóm bắt buộc phải có từ 3 đến 5 thành viên (tối đa 5 thành viên, từ chối thành viên thứ 6). Mỗi sinh viên chỉ được thuộc đúng 1 nhóm trong một đợt đăng ký.
 - **Mời thành viên**: Nhóm trưởng gửi lời mời tham gia qua Mã số sinh viên (MSSV); thành viên nhận lời mời có quyền Đồng ý hoặc Từ chối.
 - **Chọn nhóm trưởng**: Nhóm trưởng có quyền chuyển giao vai trò trưởng nhóm cho thành viên khác trong nhóm.
 - **Rời nhóm & Giải tán nhóm**: Thành viên có thể rời nhóm hoặc nhóm trưởng giải tán nhóm khi nhóm chưa đăng ký đề tài.
@@ -86,7 +86,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 | **Bảo mật & Phân quyền (Security)** | Spring Security 6 | Xác thực người dùng, băm mật khẩu BCrypt, phòng chống tấn công CSRF, kiểm soát phiên, chống brute-force và phân quyền truy cập theo vai trò (RBAC) |
 | **Cơ sở dữ liệu Production** | MySQL Server 8.0+ | Hệ quản trị cơ sở dữ liệu quan hệ chính thức, lưu trữ bền vững với Storage Engine InnoDB và bảng mã `utf8mb4_unicode_ci` |
 | **Cơ sở dữ liệu Demo & Test** | H2 Database | Cơ sở dữ liệu nhúng (file-based và in-memory), phục vụ khởi chạy demo tức thì và chạy bộ kiểm thử tự động |
-| **Quản lý Migration Schema** | Flyway | Tự động áp dụng V6 (email), V7 (lớp sinh viên) và V8 (thông báo, nhận xét báo cáo) ở profile MySQL; baseline V5 trên schema hiện hành, không chạy lại các SQL V2–V5 cũ |
+| **Quản lý Migration Schema** | Flyway | Profile MySQL baseline schema hiện hành ở V5 rồi tự động áp dụng V6–V12; profile cloud tạo mới từ V1 và tiếp tục V6–V12 |
 | **Giao diện người dùng (Frontend)** | Thymeleaf, HTML5, CSS3, JS | Giao diện web responsive, kết nối Fetch API, chuẩn nhận diện màu sắc và kiểu chữ của Trường ĐH Sư phạm Kỹ thuật TP.HCM |
 | **Công cụ đóng gói (Build Tool)** | Apache Maven 3.9+ | Quản lý thư viện phụ thuộc và đóng gói toàn bộ dự án thành tệp thực thi duy nhất (Executable Fat JAR) |
 
@@ -99,8 +99,8 @@ Web-Programming-WEPR330479--main/
 ├── .github/                         # Quy trình tự động hóa GitHub Actions
 ├── .mvn/                            # Cấu hình bộ nạp Maven Wrapper
 ├── database/                        # Cơ sở dữ liệu và kịch bản nâng cấp
-│   ├── migration/                   # SQL lịch sử V2..V6 để tra cứu
-│   ├── schema.sql                   # Cấu trúc cơ sở dữ liệu chuẩn đầy đủ cho MySQL
+│   ├── migration/                   # SQL lịch sử V2..V7 để tra cứu
+│   ├── schema.sql                   # Schema bootstrap V5/V6-compatible cho MySQL; Flyway hoàn tất V6–V12
 │   └── seed.sql                     # Dữ liệu mẫu (tài khoản demo, bộ môn, đề tài mẫu)
 ├── docs/                            # Toàn bộ tài liệu kỹ thuật hệ thống (Tiếng Việt)
 │   ├── API_DOCUMENTATION.md         # Danh mục chi tiết các endpoint REST API và mã lỗi
@@ -148,13 +148,13 @@ Sử dụng các tài khoản demo được cung cấp để kiểm thử các v
 
 | Tài khoản | Vai trò | Mục đích kiểm thử |
 | :--- | :--- | :--- |
-| `dean01` | **Trưởng khoa** (`ROLE_DEAN`) | Quản trị toàn khoa, tạo đợt đăng ký, đề xuất đề tài liên bộ môn, lập hội đồng, phân công phản biện, công bố điểm |
-| `hod01` | **Trưởng bộ môn** (`ROLE_HEAD_OF_DEPT`) | Duyệt đề tài bộ môn CNPM, phân công GVHD, duyệt nhóm sinh viên đăng ký đề tài |
+| `dean01` | **Trưởng khoa** (`ROLE_DEAN`) | Quản trị toàn khoa, tạo đợt đăng ký, duyệt đề tài và phân công GVHD, lập hội đồng, phân công phản biện, công bố kết quả |
 | `lecturer01` | **Giảng viên** (`ROLE_LECTURER`) | Giảng viên bộ môn CNPM, đề xuất đề tài, duyệt nhóm, hướng dẫn đề tài demo, chấm điểm hội đồng |
 | `lecturer02` | **Giảng viên** (`ROLE_LECTURER`) | Giảng viên bộ môn CNPM, tham gia phản biện và chấm điểm hội đồng |
 | `lecturer03` | **Giảng viên** (`ROLE_LECTURER`) | Giảng viên bộ môn HTTT, tham gia hội đồng chấm điểm bảo vệ |
 | `lecturer04` | **Giảng viên** (`ROLE_LECTURER`) | Giảng viên bộ môn KHDL, tham gia hội đồng chấm điểm bảo vệ |
 | `lecturer05` | **Giảng viên** (`ROLE_LECTURER`) | Giảng viên bộ môn MMT, kiểm thử phân quyền và khả năng tham gia hội đồng |
+| `lecturer06` | **Giảng viên** (`ROLE_LECTURER`) | TS. Nguyễn Hoàng Long (CNPM), kiểm thử vai trò Thư ký hội đồng, hướng dẫn và phản biện |
 | `student01` | **Sinh viên** (`ROLE_STUDENT`) | Nhóm trưởng nhóm demo `GRP-202601`, kiểm thử nộp báo cáo tiến độ và xem bảng điểm kết quả |
 | `student02` | **Sinh viên** (`ROLE_STUDENT`) | Thành viên nhóm `GRP-202601`, kiểm thử phân quyền thành viên thường (không thể nộp báo cáo hay đăng ký thay nhóm trưởng) |
 | `student03` | **Sinh viên** (`ROLE_STUDENT`) | Sinh viên tự do (chưa có nhóm), kiểm thử quy trình tạo nhóm mới từ đầu, mời thành viên |
@@ -238,12 +238,12 @@ Hệ thống được kiểm thử tự động toàn diện qua bộ kiểm th�
 ### Kết quả kiểm thử:
 ```text
 [INFO] Results:
-[INFO] Tests run: 87, Failures: 0, Errors: 0, Skipped: 1
+[INFO] Tests run: 108, Failures: 0, Errors: 0, Skipped: 3
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 ```
-Kiểm tra MySQL được bỏ qua khi máy cục bộ chưa cấu hình MySQL; job CI riêng chạy trên MySQL 8.4, kiểm chứng Flyway V5 → V8 và `ddl-auto=validate` cho toàn bộ entity. GitHub Actions còn chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp JavaScript. Kiểm thử hồi quy bao phủ phân quyền thông báo theo bộ môn, trạng thái đã đọc, nhận xét báo cáo và kiểm tra tên đề tài trùng. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
+Bốn kiểm tra MySQL/cloud được bỏ qua khi máy cục bộ chưa cấu hình biến môi trường kiểm thử MySQL. Job CI riêng chạy trên MySQL 8.4, kiểm chứng Flyway V5 → V12 và V1 → V12 cùng `ddl-auto=validate`; job chính chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp JavaScript. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
 
 ---
 
@@ -257,7 +257,7 @@ Tài liệu kỹ thuật chuyên sâu được duy trì đầy đủ tại thư 
 - 🔄 **[Quy trình nghiệp vụ (BUSINESS_WORKFLOW.md)](docs/BUSINESS_WORKFLOW.md)**: Máy trạng thái, chu trình 4 mốc thời gian của đợt, nộp báo cáo 3 giai đoạn và chấm điểm hội đồng.
 - 🔌 **[Tài liệu REST API (API_DOCUMENTATION.md)](docs/API_DOCUMENTATION.md)**: Danh mục toàn bộ các endpoint REST, cấu trúc payload mẫu và bảng mã lỗi HTTP.
 - 🧪 **[Kịch bản kiểm thử thủ công (MANUAL_TESTING_SCENARIO.md)](docs/MANUAL_TESTING_SCENARIO.md)**: Cẩm nang hướng dẫn kiểm thử thủ công chi tiết từng bước từ đăng nhập đến công bố kết quả.
-- 📋 **[Báo cáo nghiệm thu & Xác minh (FINAL_VERIFICATION_REPORT.md)](docs/FINAL_VERIFICATION_REPORT.md)**: Báo cáo khắc phục các lỗi audit, kiểm thử hồi quy 54/54 test và cải tiến giao diện.
+- 📋 **[Báo cáo nghiệm thu & Xác minh (FINAL_VERIFICATION_REPORT.md)](docs/FINAL_VERIFICATION_REPORT.md)**: Báo cáo nghiệm thu lịch sử của đợt sửa trước; số liệu kiểm thử hiện hành nằm ở README này.
 - 📝 **[Thay đổi so với bản gốc ngày 09/10/2026](docs/CHANGE_REPORT_2026-10-09.md)**: Lỗi đã sửa, tính năng mới, commit, kiểm chứng và hướng dẫn test.
 - ✉️ **[Cấu hình SMTP](docs/SMTP_SETUP.md)**: Mailjet, email kiểm tra SMTP, thông báo điểm thật và xác thực người gửi.
 - 🚀 **[Hướng dẫn triển khai Production (DEPLOYMENT_GUIDE.md)](docs/DEPLOYMENT_GUIDE.md)**: Hướng dẫn cài đặt máy chủ Linux, dịch vụ systemd, reverse proxy Nginx SSL và sao lưu dữ liệu MySQL.
@@ -267,5 +267,5 @@ Tài liệu kỹ thuật chuyên sâu được duy trì đầy đủ tại thư 
 ## Lưu ý
 
 1. **Bảo tồn tài khoản Demo**: Nhằm phục vụ mục đích đánh giá và chấm điểm học phần Lập trình Web, tài khoản demo cùng mật khẩu mặc định `Demo@12345` được lưu giữ trong cơ sở dữ liệu để kiểm thử các vai trò khác nhau qua form đăng nhập tiêu chuẩn (đã gỡ bỏ toàn bộ các nút bấm điền nhanh trên giao diện để sẵn sàng phát hành).
-2. **Khởi tạo cơ sở dữ liệu**: Khi triển khai trên môi trường MySQL thực tế, bắt buộc thực thi tập lệnh [database/schema.sql](database/schema.sql) trước khi khởi động ứng dụng vì profile `mysql` sử dụng chế độ `ddl-auto=validate`.
-3. **Migration dữ liệu**: Profile MySQL dùng Flyway tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline và chạy V6–V8; V2–V5 trong `database/migration/` được giữ làm lịch sử, không tự chạy lại trên schema đầy đủ. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).
+2. **Khởi tạo cơ sở dữ liệu**: Với profile `mysql`, nạp [database/schema.sql](database/schema.sql) để tạo nền V5/V6-compatible; Flyway sẽ hoàn tất đến V12 trước khi Hibernate `validate`. Với profile `cloud`, database phải trống và Flyway tự tạo từ V1.
+3. **Migration dữ liệu**: Profile MySQL dùng các migration V6–V12 tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline; V2–V5 trong `database/migration/` chỉ là lịch sử và không được tự chạy lại trên schema bootstrap. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).

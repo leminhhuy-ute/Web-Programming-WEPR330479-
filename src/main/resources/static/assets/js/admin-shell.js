@@ -16,29 +16,21 @@
 
     const roleLabels = {
         DEAN: "Trưởng khoa",
-        HEAD_OF_DEPT: "Trưởng bộ môn",
         LECTURER: "Giảng viên",
         STUDENT: "Sinh viên",
     };
 
     function sanitizeName(name, role) {
         if (!name) {
-            if (role === "DEAN") return "Nguyễn Văn Minh";
-            if (role === "HEAD_OF_DEPT") return "TS. Trần Hoàng Nam";
-            if (role === "LECTURER") return "TS. Trần Hoàng Nam";
-            if (role === "STUDENT") return "Lê Minh Tuấn";
-            return "Nguyễn Văn Minh";
+            return roleLabels[role] || "Trưởng khoa";
         }
         let cleaned = name.replace(/\s*\((demo|test|sample)\)/gi, "").replace(/\b(demo|test|sample)\b/gi, "").trim();
-        if (!cleaned || cleaned.toLowerCase() === "admin" || cleaned.toLowerCase() === "admin demo" || cleaned.includes("Tru?ng khoa")) {
-            return "Nguyễn Văn Minh";
-        }
-        return cleaned;
+        return cleaned || (roleLabels[role] || "Trưởng khoa");
     }
 
     function getInitials(user) {
-        if (!user) return "NM";
-        const displayName = (user.fullName || user.username || "Nguyễn Văn Minh").trim();
+        if (!user) return "TK";
+        const displayName = (user.fullName || user.username || "Trưởng khoa").trim();
         const words = displayName.split(/\s+/).filter(Boolean);
         if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
         return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
@@ -75,11 +67,11 @@
             const nameEl = document.querySelector("[data-user-name]");
             const roleEl = document.querySelector("[data-user-role]");
             const avatarEl = document.querySelector("[data-user-avatar]");
-            if (nameEl && nameEl.textContent === "Đang tải...") nameEl.textContent = "Nguyễn Văn Minh";
+            if (nameEl && nameEl.textContent === "Đang tải...") nameEl.textContent = "Trưởng khoa";
             if (roleEl && roleEl.textContent === "...") roleEl.textContent = "Trưởng khoa";
             if (avatarEl && (avatarEl.textContent === "--" || avatarEl.textContent === "…")) {
-                avatarEl.textContent = "NM";
-                avatarEl.setAttribute("aria-label", "Nguyễn Văn Minh");
+                avatarEl.textContent = "TK";
+                avatarEl.setAttribute("aria-label", "Trưởng khoa");
             }
         }
     }

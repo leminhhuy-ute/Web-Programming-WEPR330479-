@@ -6,6 +6,7 @@ import java.util.List;
 public record StudentStateResponse(
         StudentPerson student,
         StudentGroupView group,
+        List<GroupChoice> groups,
         StudentRegistrationView registration,
         List<TopicRegistrationResponse> registrationHistory,
         List<ReportSummaryResponse> reports,
@@ -29,6 +30,9 @@ public record StudentStateResponse(
 
     public record StudentGroupView(Long id, String name, String leaderId, int maxMembers,
             List<StudentPerson> members, List<StudentInvitation> invitations, Long periodId, String periodName) {}
+
+    public record GroupChoice(Long id, String name, Long periodId, String periodName,
+            String status, boolean leader) {}
 
     public record PeriodChoice(Long id, String name, String type, boolean open, boolean joined) {}
 

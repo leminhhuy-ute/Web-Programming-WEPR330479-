@@ -3,9 +3,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const form = document.querySelector('#department-announcement-form');
   try {
     const user = await App.getCurrentUser();
-    if (user.role !== 'HEAD_OF_DEPT') {
+    if (user.role !== 'DEAN') {
       form.hidden = true;
-      message.textContent = 'Chỉ Trưởng bộ môn được gửi thông báo tại trang này.';
+      message.textContent = 'Chỉ Trưởng khoa được gửi thông báo tại trang này.';
       message.hidden = false;
       return;
     }

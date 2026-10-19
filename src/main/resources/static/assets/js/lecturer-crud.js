@@ -3,8 +3,7 @@ const lecturerLabel = value => ({COURSE:'Môn học',NCKH:'Nghiên cứu khoa h�
 const cleanLecturerName = (name) => {
     if (!name) return '—';
     let c = String(name).replace(/\s*\((demo|test|sample)\)/gi, '').replace(/\b(demo|test|sample)\b/gi, '').trim();
-    if (!c || c.toLowerCase() === 'admin' || c.toLowerCase() === 'admin demo' || c.includes('Tru?ng khoa')) return 'Nguyễn Văn Minh';
-    return c;
+    return c || '—';
 };
 
 const LecturerCrud = {
@@ -19,12 +18,6 @@ const LecturerCrud = {
                 topicsUrl = `${App.getContextPath()}/api/lecturer/topics`;
                 myTopicsLabel = 'Tổng đề tài toàn khoa';
                 recentHeading = 'Đề tài toàn khoa gần đây';
-            } else if (user && user.role === 'HEAD_OF_DEPT') {
-                const deptId = user.department ? user.department.id : (user.departmentId || '');
-                topicsUrl = `${App.getContextPath()}/api/lecturer/topics?departmentId=${deptId}`;
-                const deptCode = (user.department && user.department.code) || user.departmentCode || '';
-                myTopicsLabel = `Đề tài thuộc bộ môn ${deptCode ? '(' + deptCode + ')' : ''}`.trim();
-                recentHeading = `Đề tài bộ môn gần đây ${deptCode ? '(' + deptCode + ')' : ''}`.trim();
             } else {
                 topicsUrl = `${App.getContextPath()}/api/lecturer/topics?myOnly=true`;
                 myTopicsLabel = 'Đề tài tôi đề xuất';
@@ -263,14 +256,14 @@ const LecturerCrud = {
 
     async loadApprovalPage() {
         const user = await App.getCurrentUser();
-        let deptId = '';
-        if (user && user.role === 'HEAD_OF_DEPT') {
-            deptId = user.department ? user.department.id : (user.departmentId || '');
+        if (!user || user.role !== 'DEAN') {
+            window.location.href = `${App.getContextPath()}/lecturer/dashboard.html`;
+            return;
         }
 
         const fetchAndRender = async () => {
             const status = document.getElementById('approval-status-filter')?.value || '';
-            let url = `${App.getContextPath()}/api/lecturer/department-topics?departmentId=${deptId}&status=${status}`;
+            let url = `${App.getContextPath()}/api/lecturer/department-topics?status=${status}`;
             try {
                 const res = await App.fetchApi(url);
                 this.renderApprovalTable(res.data);
@@ -380,11 +373,8 @@ const LecturerCrud = {
                     });
                     document.getElementById('assign-advisor-dialog').close();
                     await showAppMessage('Đã phân công Giảng viên hướng dẫn thành công!', 'success');
-                    // Refresh topics
                     const status = document.getElementById('approval-status-filter')?.value || '';
-                    const user = await App.getCurrentUser();
-                    const deptId = (user && user.role === 'HEAD_OF_DEPT') ? ((user.department && user.department.id) || user.departmentId || '') : '';
-                    const res = await App.fetchApi(`${App.getContextPath()}/api/lecturer/department-topics?departmentId=${deptId}&status=${status}`);
+                    const res = await App.fetchApi(`${App.getContextPath()}/api/lecturer/department-topics?status=${status}`);
                     LecturerCrud.renderApprovalTable(res.data);
                 } catch (err) {
                     if (errorEl) {

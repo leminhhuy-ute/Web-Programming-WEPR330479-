@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.*;
 import topicmanagement.dto.request.DepartmentRequest;
 import topicmanagement.dto.response.DepartmentResponse;
+import topicmanagement.dto.response.PageResponse;
 import topicmanagement.service.DepartmentServiceV2;
 
 @org.springframework.security.access.prepost.PreAuthorize("hasRole('DEAN')")
@@ -23,6 +24,14 @@ public class ApiDepartmentController {
   public ApiResponse<List<DepartmentResponse>> list(
       @RequestParam(defaultValue = "") String keyword) {
     return ApiResponse.ok("Danh sách bộ môn.", s.findAll(keyword));
+  }
+
+  @GetMapping("/page")
+  public ApiResponse<PageResponse<DepartmentResponse>> page(
+      @RequestParam(defaultValue = "") String keyword,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ApiResponse.ok("Trang bộ môn.", s.findPage(keyword, page, size));
   }
 
   @GetMapping("/{id}")

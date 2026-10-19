@@ -58,14 +58,32 @@ public class StudentService {
             .getResultStream().filter(u->u.getRole()==Role.STUDENT && u.getStatus()==UserStatus.ACTIVE).findFirst()
             .orElseThrow(()->bad("Không tìm thấy sinh viên đang hoạt động với MSSV này."));
     }
-    private StudentGroup group(User user) {
+    private StudentGroup group(User user) { return group(user, null); }
+    private StudentGroup group(User user, Long groupId) {
         var list = members.findByStudentId(user.getId());
         if (list.isEmpty()) return null;
+        if (groupId != null) return list.stream()
+            .map(GroupMember::getGroup)
+            .filter(g -> groupId.equals(g.getId()))
+            .findFirst().orElseThrow(this::denied);
+        LocalDateTime now = LocalDateTime.now();
         return list.stream()
-            .max(Comparator.comparing(GroupMember::getId))
+            .max(Comparator
+                .comparing((GroupMember m) -> active(period(m.getGroup()), now))
+                .thenComparing(m -> periodEnd(period(m.getGroup())), Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparing(m -> periodId(period(m.getGroup())), Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparing(m -> m.getGroup().getId(), Comparator.nullsFirst(Comparator.naturalOrder())))
             .map(GroupMember::getGroup)
             .orElse(null);
     }
+    private RegistrationPeriod period(StudentGroup g) {
+        return g.getPeriod() != null ? g.getPeriod() : g.getTopic() != null ? g.getTopic().getPeriod() : null;
+    }
+    private boolean active(RegistrationPeriod p, LocalDateTime now) {
+        return p != null && !now.isBefore(p.getStudentStartAt()) && !now.isAfter(p.getStudentEndAt());
+    }
+    private LocalDateTime periodEnd(RegistrationPeriod p) { return p == null ? null : p.getStudentEndAt(); }
+    private Long periodId(RegistrationPeriod p) { return p == null ? null : p.getId(); }
     private RegistrationPeriod currentOrLatestPeriod() {
         if (periods == null) return null;
         var active = periods.findActiveStudentPeriods(LocalDateTime.now());
@@ -76,8 +94,9 @@ public class StudentService {
         StudentGroup g=em.find(StudentGroup.class,id,LockModeType.PESSIMISTIC_WRITE);
         em.refresh(g);return g;
     }
-    private StudentGroup leader(String username) {
-        User me=student(username);StudentGroup found=group(me);
+    private StudentGroup leader(String username) { return leader(username, null); }
+    private StudentGroup leader(String username, Long groupId) {
+        User me=student(username);StudentGroup found=group(me, groupId);
         if(found==null) throw bad("Bạn cần tạo hoặc tham gia một nhóm.");
         StudentGroup g=lockGroup(found.getId());
         if(!members.existsByGroupIdAndStudentId(g.getId(),g.getLeader().getId()))
@@ -105,8 +124,9 @@ public class StudentService {
             t.getDepartment().getName(),type(t),t.getMaxStudents(),t.getPeriod().getStudentStartAt(),
             t.getPeriod().getStudentEndAt(),t.getPeriod().getReviewDeadline(),t.getPeriod().getId(),t.getPeriod().getName());
     }
-    public StudentStateResponse state(String username) {
-        User me=student(username);StudentGroup g=group(me);
+    public StudentStateResponse state(String username) { return state(username, null); }
+    public StudentStateResponse state(String username, Long groupId) {
+        User me=student(username);StudentGroup g=group(me, groupId);
         StudentGroupView groupView=null;StudentRegistrationView registration=null;
         List<topicmanagement.dto.response.TopicRegistrationResponse> registrationHistory=List.of();
         List<topicmanagement.dto.response.ReportSummaryResponse> reportList=List.of();
@@ -114,7 +134,7 @@ public class StudentService {
         DefenseScheduleView defense=null;
         var invitationList=invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(me.getId(),"PENDING").stream().map(this::invitation).toList();
         if(g!=null) {
-            groupView=new StudentGroupView(g.getId(),g.getGroupName(),g.getLeader().getUserCode(),3,
+            groupView=new StudentGroupView(g.getId(),g.getGroupName(),g.getLeader().getUserCode(),5,
                 members.findByGroupId(g.getId()).stream().map(m->person(m.getStudent())).toList(),
                 invitations.findByGroupIdOrderByCreatedAtDesc(g.getId()).stream().map(this::invitation).toList(),
                 g.getPeriod() != null ? g.getPeriod().getId() : g.getTopic() != null ? g.getTopic().getPeriod().getId() : null,
@@ -135,7 +155,14 @@ public class StudentService {
                         d.council.getDefenseDate(),d.council.getRoom())).orElse(null);
             }
         }
-        return new StudentStateResponse(person(me),groupView,registration,registrationHistory,reportList,invitationList,guidance,defense);
+        List<GroupChoice> groupChoices=members.findByStudentId(me.getId()).stream()
+            .map(GroupMember::getGroup).distinct()
+            .map(item->{var p=period(item);return new GroupChoice(item.getId(),item.getGroupName(),
+                periodId(p),p==null?"Chưa gắn đợt":p.getName(),item.getStatus().name(),
+                item.getLeader().getId().equals(me.getId()));})
+            .sorted(Comparator.comparing(GroupChoice::periodId,Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(GroupChoice::id,Comparator.reverseOrder())).toList();
+        return new StudentStateResponse(person(me),groupView,groupChoices,registration,registrationHistory,reportList,invitationList,guidance,defense);
     }
     public List<CatalogItem> catalog(String q,String department,String type) {
         return catalogPage(q,department,type,0,100).content();
@@ -174,7 +201,8 @@ public class StudentService {
         User me=student(username);em.lock(me,LockModeType.PESSIMISTIC_WRITE);
         RegistrationPeriod period = periodId == null ? currentOrLatestPeriod()
             : periods.findById(periodId).orElseThrow(() -> bad("Đợt đăng ký không tồn tại."));
-        if (periodId != null) TopicPolicy.registration(period, period.getType(), true);
+        if (period == null) throw bad("Hiện tại không có đợt đăng ký nào mở.");
+        TopicPolicy.registration(period, period.getType(), true);
         if (period != null) {
             if (members.existsByRegistrationPeriodIdAndStudentId(period.getId(), me.getId()))
                 throw bad("Bạn đã thuộc một nhóm trong đợt này.");
@@ -199,14 +227,15 @@ public class StudentService {
                 || (m.getGroup().getTopic() != null && p.getId().equals(m.getGroup().getTopic().getPeriod().getId())))))
             .toList();
     }
-    @Transactional public void invite(String username,String code) {
-        StudentGroup g=leader(username);editable(g);User u=target(code);
-        RegistrationPeriod period = g.getPeriod() != null ? g.getPeriod() : currentOrLatestPeriod();
+    @Transactional public void invite(String username,String code) { invite(username,code,null); }
+    @Transactional public void invite(String username,String code,Long groupId) {
+        StudentGroup g=leader(username,groupId);editable(g);User u=target(code);
+        RegistrationPeriod period = period(g) != null ? period(g) : currentOrLatestPeriod();
         if (period != null && members.existsByRegistrationPeriodIdAndStudentId(period.getId(), u.getId()))
             throw bad("Sinh viên này đã thuộc một nhóm trong đợt này.");
         else if (period == null && group(u) != null)
             throw bad("Sinh viên này đã thuộc một nhóm.");
-        if(members.findByGroupId(g.getId()).size()>=3)throw bad("Nhóm đã đủ 3 thành viên.");
+        if(members.findByGroupId(g.getId()).size()>=5)throw bad("Nhóm đã đủ 5 thành viên.");
         Invitation i=invitations.findByGroupIdAndStudentId(g.getId(),u.getId()).orElseGet(Invitation::new);
         if(i.id!=null&&i.status.equals("PENDING"))throw bad("Lời mời đang chờ xác nhận.");
         i.group=g;i.student=u;i.status="PENDING";i.createdAt=LocalDateTime.now();invitations.save(i);
@@ -218,28 +247,32 @@ public class StudentService {
         StudentGroup g=lockGroup(i.group.getId());em.refresh(i);
         if(!i.status.equals("PENDING"))throw bad("Lời mời đã được xử lý.");
         if(accept) {
-            RegistrationPeriod period = g.getPeriod() != null ? g.getPeriod() : currentOrLatestPeriod();
+            RegistrationPeriod period = period(g) != null ? period(g) : currentOrLatestPeriod();
             if (period != null && members.existsByRegistrationPeriodIdAndStudentId(period.getId(), me.getId()))
                 throw bad("Bạn đã thuộc một nhóm trong đợt này.");
             else if (period == null && group(me) != null)
                 throw bad("Bạn đã thuộc một nhóm.");
             editable(g);
             int count=members.findByGroupId(g.getId()).size();
-            if(count>=3)throw bad("Nhóm đã đủ 3 thành viên.");
+            if(count>=5)throw bad("Nhóm đã đủ 5 thành viên.");
             members.save(new GroupMember(g,me,"MEMBER", period));g.setMemberCount(count+1);i.status="ACCEPTED";
             invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(me.getId(),"PENDING").stream()
-                .filter(other->!other.id.equals(i.id)).forEach(other->other.status="DECLINED");
+                .filter(other->!other.id.equals(i.id))
+                .filter(other->Objects.equals(periodId(period(other.group)),periodId(period)))
+                .forEach(other->other.status="DECLINED");
         }else i.status="DECLINED";
     }
-    @Transactional public void transfer(String username,String code) {
-        StudentGroup g=leader(username);User u=target(code);
+    @Transactional public void transfer(String username,String code) { transfer(username,code,null); }
+    @Transactional public void transfer(String username,String code,Long groupId) {
+        StudentGroup g=leader(username,groupId);User u=target(code);
         var list=members.findByGroupId(g.getId());
         if(list.stream().noneMatch(m->m.getStudent().getId().equals(u.getId())))throw bad("Nhóm trưởng mới phải thuộc nhóm.");
         g.setLeader(u);list.forEach(m->m.setMemberRole(m.getStudent().getId().equals(u.getId())?"LEADER":"MEMBER"));
     }
-    @Transactional public void leaveGroup(String username) {
+    @Transactional public void leaveGroup(String username) { leaveGroup(username,null); }
+    @Transactional public void leaveGroup(String username,Long groupId) {
         User me = student(username);
-        StudentGroup g = group(me);
+        StudentGroup g = group(me,groupId);
         if (g == null) throw bad("Bạn không thuộc nhóm nào.");
         editable(g);
         if (g.getLeader().getId().equals(me.getId())) {
@@ -255,8 +288,9 @@ public class StudentService {
         g.setMemberCount(Math.max(1, mList.size() - 1));
         groups.save(g);
     }
-    @Transactional public void removeMember(String username, String studentCode) {
-        StudentGroup g = leader(username);
+    @Transactional public void removeMember(String username, String studentCode) { removeMember(username,studentCode,null); }
+    @Transactional public void removeMember(String username, String studentCode,Long groupId) {
+        StudentGroup g = leader(username,groupId);
         editable(g);
         User targetUser = target(studentCode);
         if (g.getLeader().getId().equals(targetUser.getId())) {
@@ -272,25 +306,31 @@ public class StudentService {
         g.setMemberCount(Math.max(1, mList.size() - 1));
         groups.save(g);
     }
-    @Transactional public void disbandGroup(String username) {
-        StudentGroup g = leader(username);
+    @Transactional public void disbandGroup(String username) { disbandGroup(username,null); }
+    @Transactional public void disbandGroup(String username,Long groupId) {
+        StudentGroup g = leader(username,groupId);
         editable(g);
         g.getMembers().clear();
         invitations.deleteByGroupId(g.getId());
         members.deleteByGroupId(g.getId());
         groups.delete(g);
     }
-    @Transactional public void register(String username,String code) {
-        StudentGroup g=leader(username);editable(g);
+    @Transactional public void register(String username,String code) { register(username,code,null); }
+    @Transactional public void register(String username,String code,Long groupId) {
+        StudentGroup g=leader(username,groupId);editable(g);
         Topic t=topics.findByTopicCode(code).orElseThrow(()->bad("Không tìm thấy đề tài."));
         em.lock(t,LockModeType.PESSIMISTIC_WRITE);em.refresh(t);
         if(t.getStatus()!=TopicStatus.APPROVED)throw bad("Đề tài chưa được công bố.");
         TopicPolicy.registration(t.getPeriod(),t.getTopicType(),true);
-        if(members.findByGroupId(g.getId()).size()>t.getMaxStudents())throw bad("Nhóm vượt số thành viên cho phép của đề tài.");
+        int count = members.findByGroupId(g.getId()).size();
+        if (count < 3) throw bad("Nhóm phải có từ 3 đến 5 sinh viên mới được đăng ký đề tài.");
+        if (count > 5) throw bad("Nhóm không được vượt quá 5 thành viên.");
+        if (count > t.getMaxStudents()) throw bad("Nhóm vượt số thành viên cho phép của đề tài.");
         registrationService.submit(g,t,student(username));
     }
-    @Transactional public void upload(String username,String stage,String note,MultipartFile file)throws IOException {
-        User actor=student(username);StudentGroup g=leader(username);
+    @Transactional public void upload(String username,String stage,String note,MultipartFile file)throws IOException { upload(username,stage,note,file,null); }
+    @Transactional public void upload(String username,String stage,String note,MultipartFile file,Long groupId)throws IOException {
+        User actor=student(username);StudentGroup g=leader(username,groupId);
         reportService.upload(actor,g,stage,note,file);
     }
 
@@ -302,8 +342,9 @@ public class StudentService {
         return reportService.downloadForStudent(student(username),id);
     }
 
-    @Transactional public void cancelRegistration(String username,String note) {
-        User actor=student(username);StudentGroup g=leader(username);
+    @Transactional public void cancelRegistration(String username,String note) { cancelRegistration(username,note,null); }
+    @Transactional public void cancelRegistration(String username,String note,Long groupId) {
+        User actor=student(username);StudentGroup g=leader(username,groupId);
         registrationService.cancelByStudent(g,actor,note);
     }
 }

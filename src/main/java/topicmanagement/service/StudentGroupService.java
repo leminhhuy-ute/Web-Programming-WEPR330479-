@@ -36,10 +36,7 @@ public class StudentGroupService {
         StudentGroup group = groupRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhóm sinh viên có ID: " + id));
         Topic topic = group.getTopic();
-        boolean manager = actor.getRole() == topicmanagement.enums.Role.DEAN
-            || (actor.getRole() == topicmanagement.enums.Role.HEAD_OF_DEPT && actor.getDepartment() != null
-                && topic != null && topic.getDepartment() != null
-                && Objects.equals(actor.getDepartment().getId(), topic.getDepartment().getId()));
+        boolean manager = actor.getRole() == topicmanagement.enums.Role.DEAN;
         if (!assignedAdvisor(actor, topic) && !manager)
             throw new AccessDeniedException("Bạn không được xem thông tin hướng dẫn của nhóm này.");
         return group;
@@ -96,12 +93,9 @@ public class StudentGroupService {
 
     @Transactional(readOnly = true)
     public List<StudentGroupResponse> getGroupsForLecturer(User lecturer) {
-        List<StudentGroup> groups = groupRepository.findGroupsForLecturer(lecturer.getId());
-        if (lecturer.getRole() == topicmanagement.enums.Role.DEAN) {
-            groups = groupRepository.findByTopicIsNotNull();
-        } else if (lecturer.getRole() == topicmanagement.enums.Role.HEAD_OF_DEPT && lecturer.getDepartment() != null) {
-            groups = groupRepository.findGroupsByDepartment(lecturer.getDepartment().getId());
-        }
+        List<StudentGroup> groups = lecturer.getRole() == topicmanagement.enums.Role.DEAN
+            ? groupRepository.findByTopicIsNotNull()
+            : groupRepository.findGroupsForLecturer(lecturer.getId());
         return groups.stream().map(StudentGroupResponse::new).collect(Collectors.toList());
     }
 
@@ -109,13 +103,9 @@ public class StudentGroupService {
     public PageResponse<StudentGroupResponse> getGroupsForLecturer(User lecturer, int page, int size) {
         var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100),
             Sort.by(Sort.Direction.DESC, "registeredAt"));
-        var result = switch (lecturer.getRole()) {
-            case DEAN -> groupRepository.findByTopicIsNotNull(pageable);
-            case HEAD_OF_DEPT -> lecturer.getDepartment() == null
-                ? groupRepository.findGroupsForLecturer(lecturer.getId(), pageable)
-                : groupRepository.findGroupsByDepartment(lecturer.getDepartment().getId(), pageable);
-            default -> groupRepository.findGroupsForLecturer(lecturer.getId(), pageable);
-        };
+        var result = lecturer.getRole() == topicmanagement.enums.Role.DEAN
+            ? groupRepository.findByTopicIsNotNull(pageable)
+            : groupRepository.findGroupsForLecturer(lecturer.getId(), pageable);
         return PageResponse.from(result.map(StudentGroupResponse::new));
     }
 

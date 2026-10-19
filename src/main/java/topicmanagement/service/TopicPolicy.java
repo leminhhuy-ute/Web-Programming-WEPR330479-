@@ -12,12 +12,17 @@ public final class TopicPolicy {
         if (u.getStatus() != UserStatus.ACTIVE || u.getRole() == Role.STUDENT)
             throw new AccessDeniedException("Yêu cầu tài khoản giảng viên đang hoạt động.");
     }
-    public static void departmentManager(User u, Long departmentId) {
+    public static void advisorForDepartment(User u, Department department, String label) {
         staff(u);
         if (u.getRole() == Role.DEAN) return;
-        if (u.getRole() != Role.HEAD_OF_DEPT || u.getDepartment() == null
-                || !Objects.equals(u.getDepartment().getId(), departmentId))
-            throw new AccessDeniedException("Chỉ trưởng bộ môn phụ trách hoặc trưởng khoa được duyệt.");
+        if (u.getDepartment() == null || department == null
+                || !Objects.equals(u.getDepartment().getId(), department.getId()))
+            throw new IllegalArgumentException(label + " không thuộc bộ môn của đề tài.");
+    }
+    public static void departmentManager(User u, Long departmentId) {
+        staff(u);
+        if (u.getRole() != Role.DEAN)
+            throw new AccessDeniedException("Chỉ trưởng khoa được duyệt đề tài và phân công giảng viên hướng dẫn.");
     }
     public static void advisor(User u, Topic t) {
         staff(u);

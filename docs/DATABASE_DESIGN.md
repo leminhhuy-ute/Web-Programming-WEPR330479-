@@ -81,8 +81,8 @@ Lưu trữ tài khoản của toàn bộ cán bộ, giảng viên và sinh viên
 - `full_name` (`VARCHAR(255)`, NOT NULL): Họ và tên đầy đủ của người dùng.
 - `email` (`VARCHAR(255)`, NOT NULL, UNIQUE): Địa chỉ email phục vụ thông báo và tài khoản.
 - `student_class` (`VARCHAR(50)`, NULL): Lớp của sinh viên, do Trưởng khoa cập nhật; các vai trò khác không dùng trường này.
-- `role` (`VARCHAR(30)`, NOT NULL): Vai trò hệ thống (`DEAN`, `HEAD_OF_DEPT`, `LECTURER`, `STUDENT`).
-- `department_id` (`BIGINT`, NULL, FK $\rightarrow$ `departments(id)`): Bắt buộc đối với giảng viên và trưởng bộ môn.
+- `role` (`VARCHAR(30)`, NOT NULL): Vai trò hệ thống (`DEAN`, `LECTURER`, `STUDENT`). Ràng buộc `ck_users_role` kiểm tra `role IN ('DEAN', 'LECTURER', 'STUDENT')`.
+- `department_id` (`BIGINT`, NULL, FK $\rightarrow$ `departments(id)`): Gán bộ môn chuyên môn đối với giảng viên (`ROLE_LECTURER`).
 - `status` (`VARCHAR(20)`, NOT NULL): Trạng thái tài khoản (`ACTIVE`, `INACTIVE`, `LOCKED`).
 - `password_changed_at` (`DATETIME(6)`, NULL): Mốc thời gian đổi mật khẩu gần nhất để hủy phiên đăng nhập cũ.
 - `created_at`, `updated_at` (`DATETIME(6)`): Thời điểm khởi tạo và cập nhật gần nhất.
@@ -108,16 +108,16 @@ Lưu trữ danh sách các đề tài do giảng viên hoặc trưởng khoa đ�
 - `title` (`VARCHAR(255)`, NOT NULL): Tên đề tài.
 - `description` (`TEXT`, NOT NULL): Mô tả chi tiết mục tiêu đề tài ($\ge 10$ ký tự).
 - `requirements` (`TEXT`, NULL): Yêu cầu kiến thức và kỹ năng đối với sinh viên.
-- `max_students` (`INT`, NOT NULL, DEFAULT 3): Số lượng sinh viên tối đa cho phép (1 đến 3).
+- `max_students` (`INT`, NOT NULL, DEFAULT 3): Số lượng sinh viên tối đa cho phép (3 đến 5).
 - `topic_type` (`VARCHAR(30)`, NOT NULL): Loại hình đề tài tương ứng với đợt đăng ký.
 - `status` (`VARCHAR(20)`, NOT NULL): Trạng thái phê duyệt (`PENDING`, `APPROVED`, `REJECTED`).
-- `rejection_reason` (`TEXT`, NULL): Lý do từ chối của trưởng bộ môn (nếu có).
+- `rejection_reason` (`TEXT`, NULL): Lý do từ chối của Trưởng khoa khi thẩm định đề tài (nếu có).
 - `department_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `departments(id)`)
 - `period_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `registration_periods(id)`)
 - `created_by` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`)
 - `advisor1_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Giảng viên hướng dẫn chính.
 - `advisor2_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Giảng viên hướng dẫn phụ.
-- **Ràng buộc**: `ck_topics_advisors`: `advisor1_id <> advisor2_id`.
+- **Ràng buộc**: `ck_topics_advisors`: `advisor1_id <> advisor2_id`, `ck_topics_size`: `max_students BETWEEN 3 AND 5`.
 
 ### 3.5 `student_groups` & `group_members` (Nhóm sinh viên & Thành viên)
 - **`student_groups`**:
@@ -127,7 +127,7 @@ Lưu trữ danh sách các đề tài do giảng viên hoặc trưởng khoa đ�
   - `topic_id` (`BIGINT`, NULL, FK $\rightarrow$ `topics(id)`): Đề tài đã được giao chính thức.
   - `period_id` (`BIGINT`, NULL, FK $\rightarrow$ `registration_periods(id)`): Đợt đăng ký của nhóm.
   - `leader_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`): Người tạo nhóm (Nhóm trưởng).
-  - `member_count` (`INT`, NOT NULL, DEFAULT 1): Số lượng thành viên (1 đến 3).
+  - `member_count` (`INT`, NOT NULL, DEFAULT 1): Số lượng thành viên (1 đến 5). Ràng buộc `ck_groups_size`: `member_count BETWEEN 1 AND 5`.
   - `status` (`VARCHAR(20)`, NOT NULL): Trạng thái (`DRAFT`, `PENDING`, `APPROVED`, `REJECTED`).
 - **`group_members`**:
   - `id` (`BIGINT`, PK, Auto-increment)
@@ -228,7 +228,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
   - `id` (`BIGINT`, PK, Auto-increment)
   - `title` (`VARCHAR(255)`, NOT NULL): Tiêu đề thông báo.
   - `content` (`TEXT`, NOT NULL): Nội dung thông báo.
-  - `audience` (`VARCHAR(30)`, NOT NULL): Đối tượng nhận (`ALL`, `HEAD_OF_DEPT`, `LECTURER`, `STUDENT`).
+  - `audience` (`VARCHAR(30)`, NOT NULL): Đối tượng nhận (`ALL`, `LECTURER`, `STUDENT`). Ràng buộc `ck_announcements_audience` kiểm tra `audience IN ('ALL', 'LECTURER', 'STUDENT')`.
   - `department_id` (`BIGINT`, NULL, FK $\rightarrow$ `departments(id)`): Giới hạn thông báo trong một bộ môn; NULL là thông báo toàn khoa (V8).
   - `created_by` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Người đăng thông báo.
   - `created_at` (`DATETIME(6)`)
@@ -267,7 +267,7 @@ Mỗi khi Trưởng khoa công bố kết quả, hệ thống tạo một thư c
 
 ## 4. Quản lý tiến hóa Schema qua Flyway Migrations
 
-Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V8 trong `src/main/resources/db/migration/mysql/`:
+Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V12 trong `src/main/resources/db/migration/mysql/`:
 
 | Phiên bản | Tệp script Migration | Mô tả thay đổi kiến trúc |
 | :--- | :--- | :--- |
@@ -278,3 +278,7 @@ Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực th
 | `V6` | `V6__add_result_email_outbox.sql` | Tạo hàng đợi email thông báo kết quả. |
 | `V7` | `V7__add_student_class.sql` | Thêm cột lớp sinh viên trong bảng `users`. |
 | `V8` | `V8__notifications_and_advisor_feedback.sql` | Thêm phạm vi bộ môn và lượt đọc thông báo; lưu nhận xét báo cáo của giảng viên hướng dẫn. |
+| `V9` | `V9__report_review_and_edit_history.sql` | Thêm trạng thái duyệt báo cáo, người cập nhật và lịch sử phiên bản tệp. |
+| `V10` | `V10__advisor_guidance_and_completion.sql` | Thêm nhiệm vụ, yêu cầu hướng dẫn và mốc GVHD xác nhận hoàn thành của nhóm. |
+| `V11` | `V11__remove_head_of_dept_role.sql` | Loại bỏ hoàn toàn role `HEAD_OF_DEPT`: chuyển đổi dữ liệu người dùng và thông báo sang `LECTURER`, cập nhật ràng buộc `ck_users_role` và `ck_announcements_audience` chỉ còn 3 vai trò (`DEAN`, `LECTURER`, `STUDENT`). |
+| `V12` | `V12__update_group_and_topic_size_constraints.sql` | Cập nhật quy mô nhóm và đề tài: ràng buộc `ck_topics_size` (`max_students BETWEEN 3 AND 5`, mặc định 3) và `ck_groups_size` (`member_count BETWEEN 1 AND 5`). |

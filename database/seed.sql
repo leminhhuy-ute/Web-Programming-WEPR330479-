@@ -13,7 +13,7 @@ SET @bcrypt = '$2a$10$4hfOH7aylkCZGYAL9qDEUOXmcW.WfBkNUjaHomsJD2mxlk.ETpRci';
 
 INSERT INTO users (user_code, username, password_hash, full_name, email, role, department_id, status) VALUES
 ('DEAN01', 'dean01', @bcrypt, 'PGS. TS. Nguyễn Văn Thành', 'dean01@dean.hcmute.edu.vn', 'DEAN', NULL, 'ACTIVE'),
-('HOD01', 'hod01', @bcrypt, 'TS. Nguyễn Hoàng Long', 'hod01@headdepartment.hcmute.edu.vn', 'HEAD_OF_DEPT',
+('GV006', 'lecturer06', @bcrypt, 'TS. Nguyễn Hoàng Long', 'lecturer06@lecturer.hcmute.edu.vn', 'LECTURER',
     (SELECT id FROM departments WHERE code='CNPM'), 'ACTIVE'),
 ('GV001', 'lecturer01', @bcrypt, 'TS. Trần Hoàng Nam', 'lecturer01@lecturer.hcmute.edu.vn', 'LECTURER',
     (SELECT id FROM departments WHERE code='CNPM'), 'ACTIVE'),
@@ -72,7 +72,7 @@ VALUES
  (SELECT id FROM users WHERE username='lecturer01')),
 (0, 'DT-CNPM-202603', 'Nghiên cứu ứng dụng Deep Learning trong nhận diện và phân loại bệnh lý mắt',
  'Sử dụng mạng nơ-ron tích chập (CNN) và Vision Transformer để hỗ trợ chẩn đoán hình ảnh nhãn khoa.',
- 'Python, PyTorch, FastAPI, JavaScript, kiến thức nền tảng về Deep Learning', 2, 'COURSE', 'PENDING',
+ 'Python, PyTorch, FastAPI, JavaScript, kiến thức nền tảng về Deep Learning', 3, 'COURSE', 'PENDING',
  (SELECT id FROM departments WHERE code='CNPM'),
  (SELECT id FROM registration_periods WHERE name='Đợt đề xuất đề tài môn học Học kỳ I năm học 2026-2027'),
  (SELECT id FROM users WHERE username='lecturer02'), NULL),
@@ -85,14 +85,14 @@ VALUES
  (SELECT id FROM users WHERE username='lecturer03')),
 (0, 'DT-KHDL-202601', 'Phân tích cảm xúc và dự báo xu hướng dư luận mạng xã hội bằng mô hình ngôn ngữ lớn (LLM)',
  'Thu thập dữ liệu tiếng Việt đa chiều, tinh chỉnh mô hình nền tảng (LLM fine-tuning) để phân loại cảm xúc tự động.',
- 'Python, Transformers, NLP tiếng Việt, LangChain, Web Dashboard', 2, 'COURSE', 'APPROVED',
+ 'Python, Transformers, NLP tiếng Việt, LangChain, Web Dashboard', 3, 'COURSE', 'APPROVED',
  (SELECT id FROM departments WHERE code='KHDL'),
  (SELECT id FROM registration_periods WHERE name='Đợt đề xuất đề tài môn học Học kỳ I năm học 2026-2027'),
  (SELECT id FROM users WHERE username='lecturer04'),
  (SELECT id FROM users WHERE username='lecturer04')),
 (0, 'DT-MMT-202601', 'Hệ thống phát hiện xâm nhập mạng (NIDS) thông minh ứng dụng Machine Learning',
  'Phân tích lưu lượng gói tin mạng trong thời gian thực nhằm phát hiện các cuộc tấn công DDoS, quét cổng và mã độc.',
- 'Python, C++, Network Security, Wireshark, Scikit-learn', 2, 'COURSE', 'APPROVED',
+ 'Python, C++, Network Security, Wireshark, Scikit-learn', 3, 'COURSE', 'APPROVED',
  (SELECT id FROM departments WHERE code='MMT'),
  (SELECT id FROM registration_periods WHERE name='Đợt đề xuất đề tài môn học Học kỳ I năm học 2026-2027'),
  (SELECT id FROM users WHERE username='lecturer05'),
@@ -103,18 +103,19 @@ INSERT INTO student_groups
 VALUES
 (0, 'GRP-202601', 'Nhóm Nghiên cứu Kỹ thuật Phần mềm UTE',
  (SELECT id FROM topics WHERE topic_code='DT-CNPM-202602'),
- (SELECT id FROM users WHERE username='student01'), 2, 'APPROVED', CURRENT_TIMESTAMP - INTERVAL 5 DAY);
+ (SELECT id FROM users WHERE username='student01'), 3, 'APPROVED', CURRENT_TIMESTAMP - INTERVAL 5 DAY);
 
 INSERT INTO group_members (group_id, student_id, member_role, joined_at) VALUES
 ((SELECT id FROM student_groups WHERE group_code='GRP-202601'), (SELECT id FROM users WHERE username='student01'), 'LEADER', CURRENT_TIMESTAMP - INTERVAL 5 DAY),
-((SELECT id FROM student_groups WHERE group_code='GRP-202601'), (SELECT id FROM users WHERE username='student02'), 'MEMBER', CURRENT_TIMESTAMP - INTERVAL 4 DAY);
+((SELECT id FROM student_groups WHERE group_code='GRP-202601'), (SELECT id FROM users WHERE username='student02'), 'MEMBER', CURRENT_TIMESTAMP - INTERVAL 4 DAY),
+((SELECT id FROM student_groups WHERE group_code='GRP-202601'), (SELECT id FROM users WHERE username='student03'), 'MEMBER', CURRENT_TIMESTAMP - INTERVAL 3 DAY);
 
 INSERT INTO councils (code, name, defense_date, room, status) VALUES
 ('HD-CNTT-01', 'Hội đồng Đánh giá Khóa luận Tốt nghiệp CNTT 01', CURRENT_TIMESTAMP + INTERVAL 15 DAY, 'A1-302', 'READY');
 
 INSERT INTO council_members (council_id, lecturer_id, role) VALUES
 ((SELECT id FROM councils WHERE code='HD-CNTT-01'), (SELECT id FROM users WHERE username='dean01'), 'CHAIRPERSON'),
-((SELECT id FROM councils WHERE code='HD-CNTT-01'), (SELECT id FROM users WHERE username='hod01'), 'SECRETARY'),
+((SELECT id FROM councils WHERE code='HD-CNTT-01'), (SELECT id FROM users WHERE username='lecturer06'), 'SECRETARY'),
 ((SELECT id FROM councils WHERE code='HD-CNTT-01'), (SELECT id FROM users WHERE username='lecturer05'), 'REVIEWER'),
 ((SELECT id FROM councils WHERE code='HD-CNTT-01'), (SELECT id FROM users WHERE username='lecturer04'), 'MEMBER'),
 ((SELECT id FROM councils WHERE code='HD-CNTT-01'), (SELECT id FROM users WHERE username='lecturer03'), 'MEMBER');

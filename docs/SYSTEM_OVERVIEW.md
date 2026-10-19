@@ -10,7 +10,7 @@ Hệ thống số hóa và tự động hóa toàn diện vòng đời quản l�
 - **Tiểu luận chuyên ngành (`TLCN`)**
 - **Khóa luận tốt nghiệp (`KLTN`)**
 
-Nền tảng cung cấp một môi trường tương tác thống nhất kết nối 4 đối tượng người dùng: **Ban Chủ nhiệm Khoa (Trưởng khoa)**, **Trưởng Bộ môn**, **Giảng viên (Hướng dẫn / Phản biện / Hội đồng)**, và **Nhóm sinh viên thực hiện**.
+Nền tảng cung cấp một môi trường tương tác thống nhất kết nối 3 đối tượng người dùng: **Trưởng khoa (`ROLE_DEAN`)**, **Giảng viên (`ROLE_LECTURER`) (Hướng dẫn / Phản biện / Hội đồng)**, và **Nhóm sinh viên thực hiện (`ROLE_STUDENT`)**.
 
 ---
 
@@ -25,14 +25,13 @@ Nền tảng cung cấp một môi trường tương tác thống nhất kết n
 
 ## 3. Các nhóm người dùng & Trách nhiệm
 
-Hệ thống phân định rõ 4 vai trò người dùng trong tổ chức:
+Hệ thống phân định rõ đúng 3 vai trò người dùng trong tổ chức:
 
 | Vai trò | Mã vai trò | Phạm vi & Trách nhiệm chính |
 | :--- | :--- | :--- |
-| **Trưởng khoa / Quản trị viên** | `ROLE_DEAN` | Quyền quản trị cao nhất cấp Khoa. Khởi tạo và thiết lập các đợt đăng ký, quản lý danh sách người dùng và bộ môn, đề xuất các đề tài liên bộ môn, thành lập hội đồng đánh giá, phân công hội đồng cho nhóm sinh viên và phê duyệt công bố điểm chính thức. |
-| **Trưởng bộ môn** | `ROLE_HEAD_OF_DEPT` | Quản lý chuyên môn cấp Bộ môn. Thẩm định, phê duyệt hoặc từ chối đề xuất đề tài thuộc bộ môn mình quản lý, phân công giảng viên hướng dẫn chính và phụ (`advisor1`, `advisor2`), phê duyệt nhóm sinh viên đăng ký và theo dõi tiến độ bộ môn. |
-| **Giảng viên** | `ROLE_LECTURER` | Giảng viên hướng dẫn và thành viên hội đồng. Đề xuất đề tài trong cửa sổ thời gian cho phép, duyệt nhóm đăng ký đề tài của mình, tham gia hội đồng chấm bảo vệ (với vai trò Chủ tịch, Thư ký, Phản biện hoặc Ủy viên), nhập điểm và nhận xét chuyên môn. |
-| **Sinh viên** | `ROLE_STUDENT` | Người thực hiện đề tài. Tạo nhóm sinh viên (1–3 thành viên), gửi lời mời tham gia, lựa chọn đề tài phù hợp, nộp báo cáo tiến độ theo từng giai đoạn (Đề cương, Giữa kỳ, Cuối kỳ), theo dõi lịch bảo vệ và xem bảng điểm kết quả. |
+| **Trưởng khoa / Quản trị viên** | `ROLE_DEAN` | Quyền quản trị và học thuật cao nhất cấp Khoa. Khởi tạo và thiết lập các đợt đăng ký, quản lý danh mục bộ môn và tài khoản người dùng, thẩm định và phê duyệt/từ chối đề tài của tất cả bộ môn, phân công hoặc thay đổi giảng viên hướng dẫn (`advisor1`, `advisor2`) và giảng viên phản biện, thành lập hội đồng đánh giá, phân công hội đồng cho nhóm sinh viên, quản lý thông báo toàn khoa và phê duyệt công bố kết quả chính thức. |
+| **Giảng viên** | `ROLE_LECTURER` | Giảng viên chuyên môn, giảng viên hướng dẫn, phản biện và thành viên hội đồng. Đề xuất đề tài trong cửa sổ thời gian cho phép, duyệt nhóm đăng ký đề tài của mình, theo dõi tiến độ và nhận xét báo cáo, chấm điểm phản biện khi làm GVPB, tham gia hội đồng chấm bảo vệ (với vai trò Chủ tịch, Thư ký, Phản biện hoặc Ủy viên), nhập điểm độc lập và nhận xét chuyên môn (với điều kiện không hướng dẫn đề tài đó). |
+| **Sinh viên** | `ROLE_STUDENT` | Người thực hiện đề tài. Tạo nhóm sinh viên (từ 3 đến 5 thành viên khi đăng ký đề tài; tối đa 5 thành viên), gửi lời mời tham gia, lựa chọn đề tài phù hợp, nộp báo cáo tiến độ theo từng giai đoạn (Đề cương, Giữa kỳ, Cuối kỳ), theo dõi lịch bảo vệ và xem bảng điểm kết quả. |
 
 ---
 
@@ -64,7 +63,7 @@ graph TD
 ### 4.3 Đề xuất & Thẩm định đề tài
 - Giảng viên đề xuất đề tài kèm số lượng sinh viên tối đa, yêu cầu đầu vào và bộ môn.
 - Trưởng khoa có quyền đề xuất đề tài liên ngành hoặc cấp khoa.
-- Trưởng bộ môn thẩm định đề tài trước khi cửa sổ sinh viên mở.
+- Trưởng khoa thẩm định, phê duyệt đề tài và phân công giảng viên hướng dẫn trước khi cửa sổ sinh viên mở.
 - Phân công giảng viên hướng dẫn và kiểm soát chỉ tiêu (quota).
 
 ### 4.4 Quản lý nhóm sinh viên & Đăng ký đề tài
@@ -95,7 +94,7 @@ graph TD
 | :--- | :--- |
 | **Backend Framework** | Java 21 LTS, Spring Boot 3.5.16, Spring MVC, Spring Security 6, Spring Data JPA |
 | **Cơ sở dữ liệu** | MySQL Server 8.0+ (Production) / H2 Database (Kiểm thử & Demo) |
-| **Quản lý Migration**| Flyway Database Migration (`database/migration/V2..V5`) |
+| **Quản lý Migration**| Flyway: lịch sử V2–V5, runtime MySQL/cloud đến V12 |
 | **Giao diện người dùng**| Thymeleaf, HTML5, CSS3 Responsive (Thiết kế HCM-UTE), JavaScript thuần ES6+ |
 | **Đóng gói & Build** | Apache Maven 3.9+, Maven Wrapper (`mvnw`, `mvnw.cmd`) |
 | **Kiểm thử tự động** | JUnit 5 Jupiter, Mockito, Spring Boot Test, H2 In-Memory Suite |

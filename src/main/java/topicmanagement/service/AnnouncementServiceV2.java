@@ -51,9 +51,8 @@ public class AnnouncementServiceV2 {
   }
 
   public AnnouncementResponse createForDepartment(AnnouncementRequest r, topicmanagement.entity.User author) {
-    if (author.getRole() != topicmanagement.enums.Role.HEAD_OF_DEPT || author.getDepartment() == null
-        || r.audience() != AnnouncementAudience.STUDENT)
-      throw new org.springframework.security.access.AccessDeniedException("Trưởng bộ môn chỉ được gửi thông báo cho sinh viên thuộc bộ môn.");
+    if (author.getRole() != topicmanagement.enums.Role.DEAN || r.audience() != AnnouncementAudience.STUDENT)
+      throw new org.springframework.security.access.AccessDeniedException("Chỉ Trưởng khoa được gửi thông báo cho sinh viên thuộc bộ môn.");
     Announcement a = new Announcement();
     a.setCreatedBy(author);
     a.setDepartment(author.getDepartment());

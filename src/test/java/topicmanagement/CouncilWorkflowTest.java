@@ -32,6 +32,7 @@ class CouncilWorkflowTest {
     @Autowired StudentGroupRepository groups;
     @Autowired StudentService students;
     @Autowired StudentGroupService lecturerGroups;
+    @Autowired topicmanagement.student.InvitationRepository invitations;
     User user(String name,Role role,Department d) {
         var u=new User();u.setUsername(name);u.setUserCode(name);u.setEmail(name+"@example.test");
         u.setPasswordHash("unused");u.setFullName(name);u.setRole(role);u.setStatus(UserStatus.ACTIVE);u.setDepartment(d);
@@ -47,6 +48,7 @@ class CouncilWorkflowTest {
             var dean=user("dean",Role.DEAN,department);var advisor=user("advisor",Role.LECTURER,department);
             var chair=user("chair",Role.LECTURER,department);var secretary=user("secretary",Role.LECTURER,department);
             var member=user("member",Role.LECTURER,department);var student=user("student",Role.STUDENT,department);
+            var student2=user("student2",Role.STUDENT,department);var student3=user("student3",Role.STUDENT,department);
             var outsider=user("outsider",Role.STUDENT,department);
             var now=LocalDateTime.now();var p=new RegistrationPeriod();p.setName("Test");p.setType(RegistrationPeriodType.COURSE);
             p.setLecturerStartAt(now.minusDays(4));p.setLecturerEndAt(now.minusDays(3));
@@ -54,7 +56,12 @@ class CouncilWorkflowTest {
             var t=new Topic();t.setTopicCode("QA");t.setTitle("QA");t.setDepartment(department);t.setPeriod(p);
             t.setCreatedBy(advisor);t.setAdvisor1(advisor);t.setMaxStudents(3);t.setTopicType(RegistrationPeriodType.COURSE);
             t.setStatus(TopicStatus.APPROVED);topics.save(t);
-            students.createGroup("student","Nhóm QA");students.register("student","QA");
+            students.createGroup("student","Nhóm QA");
+            students.invite("student","student2");
+            students.respond("student2", invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(student2.getId(),"PENDING").getFirst().id, true);
+            students.invite("student","student3");
+            students.respond("student3", invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(student3.getId(),"PENDING").getFirst().id, true);
+            students.register("student","QA");
             var g=groups.findAll().getFirst();var approval=new GroupApprovalRequest();approval.setStatus("APPROVED");
             lecturerGroups.approveOrRejectGroup(g.getId(),approval,advisor);
             var roster=List.of(new CouncilService.MemberInput(chair.getId(),CouncilRole.CHAIRPERSON),
@@ -67,6 +74,7 @@ class CouncilWorkflowTest {
             service.create(new CouncilService.CreateInput("C","Hội đồng",now.plusDays(1),"A1",roster));
             Long councilId=councils.findAll().getFirst().getId();
             assertThrows(IllegalArgumentException.class,()->service.assign(g.getId(),councilId,advisor.getId()));
+            lecturerGroups.confirmCompletion(g.getId(),advisor);
             service.assign(g.getId(),councilId,member.getId());
             Long defenseId=defenses.findAll().getFirst().id;
             assertThrows(IllegalArgumentException.class,()->service.publish(defenseId));

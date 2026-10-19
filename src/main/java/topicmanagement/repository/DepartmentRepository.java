@@ -4,6 +4,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import topicmanagement.entity.Department;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
@@ -18,4 +20,9 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
           + "or lower(d.code) like lower(concat('%',:keyword,'%')) "
           + "order by d.id desc")
   List<Department> search(@Param("keyword") String keyword);
+
+  @Query("select d from Department d where :keyword='' "
+      + "or lower(d.name) like lower(concat('%',:keyword,'%')) "
+      + "or lower(d.code) like lower(concat('%',:keyword,'%'))")
+  Page<Department> search(@Param("keyword") String keyword, Pageable pageable);
 }

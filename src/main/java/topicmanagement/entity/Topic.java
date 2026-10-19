@@ -27,7 +27,7 @@ public class Topic {
     private String requirements;
 
     @Column(name = "max_students", nullable = false)
-    private Integer maxStudents = 2;
+    private Integer maxStudents = 3;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "topic_type", nullable = false, length = 30)

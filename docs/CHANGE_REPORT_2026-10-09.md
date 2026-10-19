@@ -1,12 +1,17 @@
 # Những thay đổi so với dự án gốc – 09/10/2026
 
+> [!NOTE]
+> **Lưu ý lịch sử (Historical Disclaimer):**
+> Tài liệu này phản ánh trạng thái thay đổi vào ngày **09/10/2026**, khi đó quy tắc nhóm là tối đa 3 thành viên (1–3 người).
+> Kể từ phiên bản migration **V12**, quy tắc nghiệp vụ chính thức của hệ thống đã được cập nhật thành: **nhóm sinh viên từ 3 đến 5 thành viên (3–5 người)** khi đăng ký đề tài, và đề tài có `max_students` từ 3 đến 5. Các mô tả về "tối đa 3 người" trong tài liệu này được giữ lại nguyên văn với tư cách là bản ghi lịch sử của đợt cập nhật ngày 09/10/2026.
+
 ## Phạm vi và bản đối chiếu
 
 - Bản gốc đối chiếu: commit `1ff6ab140e3188c7335a2a56911f067cf9549373` trên GitHub; 194 tệp được theo dõi của bản tải ban đầu khớp bản này sau khi bỏ khác biệt xuống dòng Windows/Linux.
 - Thư mục dự án đã cập nhật: `D:\Web-Programming-WEPR330479--main\Web-Programming-WEPR330479--main`.
 - Bản checkout có Git dùng để commit/push: `D:\Web-Programming-WEPR330479--main\github-work`.
 - Repository: [Web-Programming-WEPR330479-](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-). [Xem toàn bộ diff từ bản gốc đến main](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/compare/1ff6ab140e3188c7335a2a56911f067cf9549373...main).
-- Thực hiện sửa hai lỗi đã xác nhận và cải tiến ba mục rubric: Kiến trúc; Chức năng cơ bản/nâng cao; Sáng tạo/mở rộng. Giữ quy tắc nhóm sinh viên **tối đa 3 người** theo đề bài bạn cung cấp.
+- Thực hiện sửa hai lỗi đã xác nhận và cải tiến ba mục rubric: Kiến trúc; Chức năng cơ bản/nâng cao; Sáng tạo/mở rộng. Giữ quy tắc nhóm sinh viên **tối đa 3 người** theo đề bài bạn cung cấp (đã được cập nhật thành 3–5 người ở V12).
 - Theo yêu cầu của bạn, không chỉnh báo cáo Word và không kiểm tra/triển khai lại hosting. Tập trung mã nguồn, GitHub và bản chạy cục bộ.
 
 ## 1. Hai lỗi đã sửa

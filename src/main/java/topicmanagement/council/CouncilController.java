@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
 import topicmanagement.dto.response.*;
-@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','LECTURER')")
 @RestController
 public class CouncilController {
     private final CouncilService service;

@@ -36,7 +36,7 @@ public class NotificationController {
     return ApiResponse.ok("Đã đánh dấu đã đọc.", null);
   }
 
-  @PreAuthorize("hasRole('HEAD_OF_DEPT')")
+  @PreAuthorize("hasRole('DEAN')")
   @PostMapping("/department")
   public ResponseEntity<ApiResponse<AnnouncementResponse>> createForStudents(
       @Valid @RequestBody AnnouncementRequest request) {

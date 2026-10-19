@@ -76,6 +76,7 @@ public class ReportService {
             reg = topicRegistrations.findFirstByGroupIdAndStatusInOrderByCreatedAtDesc(
                 group.getId(), List.of(RegistrationStatus.APPROVED)).orElse(null);
         }
+        assertSubmissionWindow(group, reg);
 
         // Validate stage ordering: Đề cương -> Giữa kỳ -> Cuối kỳ
         if ("Giữa kỳ".equals(stage)) {
@@ -93,24 +94,6 @@ public class ReportService {
         }
 
         Topic topic = (reg != null) ? reg.getTopic() : group.getTopic();
-        RegistrationPeriod period = (topic != null) ? topic.getPeriod() : group.getPeriod();
-        if (period != null) {
-            LocalDateTime now = LocalDateTime.now();
-            if (now.isBefore(period.getStudentStartAt())) {
-                throw bad("Chưa đến thời gian nộp báo cáo.");
-            }
-            if (period.getType() == RegistrationPeriodType.KLTN && period.getDefenseDate() != null) {
-                if (now.toLocalDate().isAfter(period.getDefenseDate())) {
-                    throw bad("Đã quá ngày báo cáo hội đồng.");
-                }
-            } else if (period.getReviewDeadline() != null) {
-                if (now.isAfter(period.getReviewDeadline())) {
-                    throw bad("Đã quá hạn nộp báo cáo.");
-                }
-            } else if (now.isAfter(period.getStudentEndAt())) {
-                throw bad("Đã quá hạn nộp báo cáo của đợt này.");
-            }
-        }
 
         String filename = sanitizeFilename(file.getOriginalFilename());
         byte[] bytes = file.getBytes();
@@ -146,6 +129,9 @@ public class ReportService {
         Report report = reports.findById(reportId).orElseThrow(this::denied);
         assertGroupMember(actor, report.group);
         if (!report.group.getLeader().getId().equals(actor.getId())) throw denied();
+        if (report.group.getStatus() != GroupStatus.APPROVED)
+            throw bad("Chỉ chỉnh sửa báo cáo của nhóm đã được duyệt.");
+        assertSubmissionWindow(report.group, report.registration);
         if (report.status == ReportStatus.APPROVED)
             throw bad("Báo cáo đã được duyệt nên không thể chỉnh sửa.");
         if (note == null || note.length() > 1000) throw bad("Nội dung báo cáo tối đa 1.000 ký tự.");
@@ -318,6 +304,12 @@ public class ReportService {
     private void assertGroupMember(User actor, StudentGroup group) {
         if (members.findByStudentId(actor.getId()).stream()
                 .noneMatch(m -> m.getGroup().getId().equals(group.getId()))) throw denied();
+    }
+
+    private void assertSubmissionWindow(StudentGroup group, TopicRegistration registration) {
+        Topic topic = registration != null ? registration.getTopic() : group.getTopic();
+        RegistrationPeriod period = topic != null ? topic.getPeriod() : group.getPeriod();
+        ReportSubmissionPolicy.assertOpen(period, LocalDateTime.now());
     }
 
     private void assertAdvisor(User actor, StudentGroup group) {

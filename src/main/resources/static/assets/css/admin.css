@@ -1018,6 +1018,16 @@ tbody tr:last-child td {
     }
 }
 
+.table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 14px 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
 @media (max-width: 480px) {
     .dashboard-links {
         grid-template-columns: 1fr;

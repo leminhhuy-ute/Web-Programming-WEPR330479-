@@ -64,6 +64,8 @@ class SystemImprovementTest {
     @Autowired NotificationService notificationService;
     @Autowired AnnouncementServiceV2 announcementService;
     @Autowired TopicService topicService;
+    @Autowired DepartmentServiceV2 departmentService;
+    @Autowired RegistrationPeriodServiceV2 registrationPeriodService;
 
     @Test
     void duplicateTopicTitleGetsSpecificMessageIgnoringCaseAndSurroundingSpaces() {
@@ -84,7 +86,7 @@ class SystemImprovementTest {
     @Test
     void departmentAnnouncementReachesOnlyItsStudentsAndReadStateIsPerUser() {
         Fixture fixture = fixture(false);
-        User head = user("head", Role.HEAD_OF_DEPT, fixture.department);
+        User dean = user("deanNotice", Role.DEAN, fixture.department);
         User studentTwo = user("studentTwo", Role.STUDENT, fixture.department);
         Department otherDepartment = new Department();
         otherDepartment.setCode("OTHER" + suffix().substring(0, 6));
@@ -92,7 +94,7 @@ class SystemImprovementTest {
         departments.save(otherDepartment);
         User outsider = user("outside", Role.STUDENT, otherDepartment);
         var notice = announcementService.createForDepartment(
-            new AnnouncementRequest("Lịch họp", "Sinh viên xem lịch họp.", AnnouncementAudience.STUDENT), head);
+            new AnnouncementRequest("Lịch họp", "Sinh viên xem lịch họp.", AnnouncementAudience.STUDENT), dean);
 
         assertTrue(notificationService.feed(fixture.student).items().stream().anyMatch(item -> item.id().equals(notice.id())));
         assertTrue(notificationService.feed(studentTwo).items().stream().anyMatch(item -> item.id().equals(notice.id())));
@@ -105,7 +107,7 @@ class SystemImprovementTest {
         assertFalse(notificationService.feed(studentTwo).items().stream()
             .filter(item -> item.id().equals(notice.id())).findFirst().orElseThrow().read());
         assertThrows(AccessDeniedException.class, () -> announcementService.createForDepartment(
-            new AnnouncementRequest("Sai quyền", "Không hợp lệ", AnnouncementAudience.LECTURER), head));
+            new AnnouncementRequest("Sai quyền", "Không hợp lệ", AnnouncementAudience.LECTURER), dean));
         announcementService.delete(notice.id());
         assertFalse(notificationService.feed(fixture.student).items().stream()
             .anyMatch(item -> item.id().equals(notice.id())));
@@ -167,6 +169,18 @@ class SystemImprovementTest {
             () -> reportService.reviewReport(fixture.otherLecturer, report.id, ReportStatus.APPROVED, "Duyệt trái phép"));
         assertThrows(AccessDeniedException.class,
             () -> reportService.editHistoryForAdvisor(fixture.otherLecturer, report.id));
+    }
+
+    @Test
+    void studentCannotEditReportAfterSubmissionDeadline() throws Exception {
+        Fixture fixture = fixture(true);
+        Report report = upload(fixture);
+        fixture.period.setStudentEndAt(LocalDateTime.now().minusSeconds(1));
+        periods.saveAndFlush(fixture.period);
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+            () -> reportService.updateStudentReport(fixture.student, report.id, "Sửa quá hạn", null));
+        assertTrue(error.getMessage().contains("quá hạn"));
     }
 
     @Test
@@ -280,6 +294,9 @@ class SystemImprovementTest {
         var catalogPage = studentService.catalogPage("Đề tài", "", "", 0, 1);
         assertEquals(1, catalogPage.content().size());
         assertTrue(catalogPage.totalElements() >= 1);
+        assertEquals(1, departmentService.findPage(fixture.department.getCode(), 0, 1).content().size());
+        assertEquals(1, registrationPeriodService.findPage(fixture.period.getName(), null, 0, 1).content().size());
+        assertTrue(announcementService.findPage("", null, 0, 1).content().size() <= 1);
         mvc.perform(get("/api/councils/page?page=0&size=2").with(authentication(auth(fixture.advisor))))
             .andExpect(status().isOk());
     }

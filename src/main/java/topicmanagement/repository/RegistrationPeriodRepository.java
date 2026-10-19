@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import topicmanagement.entity.RegistrationPeriod;
 import topicmanagement.enums.RegistrationPeriodType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RegistrationPeriodRepository extends JpaRepository<RegistrationPeriod, Long> {
   @Query(
@@ -16,6 +18,12 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
           + "order by p.id desc")
   List<RegistrationPeriod> search(
       @Param("keyword") String keyword, @Param("type") RegistrationPeriodType type);
+
+  @Query("select p from RegistrationPeriod p "
+      + "where (:keyword='' or lower(p.name) like lower(concat('%',:keyword,'%'))) "
+      + "and (:type is null or p.type=:type)")
+  Page<RegistrationPeriod> search(@Param("keyword") String keyword,
+      @Param("type") RegistrationPeriodType type, Pageable pageable);
 
   @Query("select count(p) from RegistrationPeriod p where "
       + "(:now between p.lecturerStartAt and p.lecturerEndAt) or (:now between p.studentStartAt and p.studentEndAt)")

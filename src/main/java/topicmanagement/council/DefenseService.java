@@ -46,6 +46,8 @@ public class DefenseService {
         StudentGroup group = entityManager.find(StudentGroup.class, groupId, LockModeType.PESSIMISTIC_WRITE);
         if (group == null || group.getStatus() != GroupStatus.APPROVED)
             throw new IllegalArgumentException("Nhóm phải được giảng viên chấp thuận.");
+        if (group.getAdvisorCompletedAt() == null)
+            throw new IllegalArgumentException("Giảng viên hướng dẫn phải xác nhận hoàn thành trước khi phân công hội đồng.");
         entityManager.lock(group.getTopic(), LockModeType.PESSIMISTIC_WRITE);
         entityManager.refresh(group.getTopic());
         if (defenses.findByGroupId(groupId).isPresent()) throw new IllegalArgumentException("Nhóm đã được phân công.");

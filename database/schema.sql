@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at DATETIME(6) NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at DATETIME(6) NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     CONSTRAINT fk_users_department FOREIGN KEY (department_id) REFERENCES departments(id),
-    CONSTRAINT ck_users_role CHECK (role IN ('DEAN', 'HEAD_OF_DEPT', 'LECTURER', 'STUDENT')),
+    CONSTRAINT ck_users_role CHECK (role IN ('DEAN', 'LECTURER', 'STUDENT')),
     CONSTRAINT ck_users_status CHECK (status IN ('ACTIVE', 'INACTIVE', 'LOCKED'))
 );
 
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS topics (
     CONSTRAINT fk_topics_advisor2 FOREIGN KEY (advisor2_id) REFERENCES users(id),
     CONSTRAINT ck_topics_type CHECK (topic_type IN ('COURSE', 'NCKH', 'TLCN', 'KLTN')),
     CONSTRAINT ck_topics_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
-    CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 1 AND 3),
+    CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 3 AND 5),
     CONSTRAINT ck_topics_advisors CHECK (advisor2_id IS NULL OR advisor1_id <> advisor2_id),
     INDEX idx_topics_department_status (department_id, status),
     INDEX idx_topics_period (period_id)
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS student_groups (
     CONSTRAINT fk_groups_topic FOREIGN KEY (topic_id) REFERENCES topics(id),
     CONSTRAINT fk_groups_period FOREIGN KEY (period_id) REFERENCES registration_periods(id),
     CONSTRAINT fk_groups_leader FOREIGN KEY (leader_id) REFERENCES users(id),
-    CONSTRAINT ck_groups_size CHECK (member_count BETWEEN 1 AND 3),
+    CONSTRAINT ck_groups_size CHECK (member_count BETWEEN 1 AND 5),
     CONSTRAINT ck_groups_status CHECK (status IN ('DRAFT', 'PENDING', 'APPROVED', 'REJECTED')),
     INDEX idx_groups_topic_status (topic_id, status)
 );

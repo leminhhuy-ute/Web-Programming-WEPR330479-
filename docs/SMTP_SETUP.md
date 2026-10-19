@@ -40,6 +40,6 @@ SMTP không bảo đảm gửi đúng một lần: nếu máy dừng sau khi SMT
 
 ## Cơ sở dữ liệu MySQL
 
-Schema đầy đủ hiện có bảng `email_notifications`. Với DB hiện hành đã tương ứng V5, profile `mysql` tự baseline ở V5 và chạy migration V6 bằng Flyway. Bản migration chạy trong ứng dụng nằm tại `src/main/resources/db/migration/mysql/`; bản SQL tiện tra cứu nằm ở `database/migration/`. Các V2–V5 cũ vẫn được giữ làm lịch sử và không được chạy lại tự động trên schema đầy đủ. DB cũ chưa đạt V5 cần áp dụng đúng các nâng cấp còn thiếu trước khi chạy bản mới. Profile demo/test H2 dùng Hibernate và tắt Flyway.
+Schema bootstrap có bảng `email_notifications`. Với DB hiện hành đã tương ứng V5, profile `mysql` baseline ở V5 và chạy V6–V12 bằng Flyway trong `src/main/resources/db/migration/mysql/`. Bản V6 tiện tra cứu nằm ở `database/migration/`; V2–V5 là lịch sử và không được chạy lại tự động trên schema bootstrap. DB cũ chưa đạt V5 cần áp dụng đúng các nâng cấp còn thiếu trước khi chạy bản mới. Profile demo/test H2 dùng Hibernate và tắt Flyway.
 
 Kiểm thử tự động sử dụng MailSender giả lập, không gửi email ra ngoài. Việc gửi thực tế cần cấu hình tài khoản SMTP và biến môi trường trên máy chạy.

@@ -64,7 +64,7 @@ public class CouncilService {
         var reportMap=reports.listForCouncil(u,defenseEntities);
         var ds=defenseEntities.stream().map(d->defenseView(d,u,gradeMap.getOrDefault(d.id,List.of()),
             reportMap.getOrDefault(d.group.getId(),List.of()))).toList();
-        var lecturerOptions=u.getRole()==Role.DEAN?users.findByRoleIn(List.of(Role.DEAN,Role.HEAD_OF_DEPT,Role.LECTURER)).stream()
+        var lecturerOptions=u.getRole()==Role.DEAN?users.findByRoleIn(List.of(Role.DEAN,Role.LECTURER)).stream()
             .filter(x->x.getStatus()==UserStatus.ACTIVE).map(x->new SelectOption(x.getId(),x.getFullName())).toList():List.<SelectOption>of();
         var assignedGroupIds=new HashSet<>(defenses.findAssignedGroupIds());
         var groupOptions=u.getRole()==Role.DEAN?groups.findByStatus(GroupStatus.APPROVED).stream().filter(g->!assignedGroupIds.contains(g.getId()))

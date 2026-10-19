@@ -15,9 +15,9 @@ class TopicPolicyTest {
     @Test void lecturerCannotApproveDepartmentTopics() {
         assertThrows(AccessDeniedException.class, () -> TopicPolicy.departmentManager(user(Role.LECTURER),10L));
     }
-    @Test void headCannotApproveAnotherDepartment() {
-        assertThrows(AccessDeniedException.class, () -> TopicPolicy.departmentManager(user(Role.HEAD_OF_DEPT),11L));
-        assertDoesNotThrow(() -> TopicPolicy.departmentManager(user(Role.HEAD_OF_DEPT),10L));
+    @Test void deanCanApproveDepartmentTopics() {
+        assertDoesNotThrow(() -> TopicPolicy.departmentManager(user(Role.DEAN),11L));
+        assertDoesNotThrow(() -> TopicPolicy.departmentManager(user(Role.DEAN),10L));
     }
     @Test void creatorWithoutAdvisorshipCannotReadGroup() {
         var t = new Topic(); var u = user(Role.LECTURER); t.setCreatedBy(u);

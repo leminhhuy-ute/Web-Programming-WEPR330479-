@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import topicmanagement.dto.request.RegistrationPeriodRequest;
 import topicmanagement.dto.response.RegistrationPeriodResponse;
+import topicmanagement.dto.response.PageResponse;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import topicmanagement.entity.RegistrationPeriod;
 import topicmanagement.enums.RegistrationPeriodType;
 import topicmanagement.exception.*;
@@ -35,6 +38,12 @@ public class RegistrationPeriodServiceV2 {
 
   public List<RegistrationPeriodResponse> findAll(String q, RegistrationPeriodType t) {
     return periods.search(q == null ? "" : q.trim(), t).stream().map(this::map).toList();
+  }
+
+  public PageResponse<RegistrationPeriodResponse> findPage(String q, RegistrationPeriodType t, int page, int size) {
+    var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100),
+        Sort.by(Sort.Direction.DESC, "id"));
+    return PageResponse.from(periods.search(q == null ? "" : q.trim(), t, pageable).map(this::map));
   }
 
   public RegistrationPeriodResponse findById(Long id) {

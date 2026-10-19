@@ -76,10 +76,15 @@
               <input id="current-password" type="password" required autocomplete="current-password">
             </label>
             <label>Mật khẩu mới
-              <input id="new-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password">
+              <input id="new-password" type="password" required minlength="8" maxlength="72"
+                     pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9\s])\S{8,72}"
+                     title="8–72 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt và không có khoảng trắng"
+                     autocomplete="new-password">
             </label>
             <label>Xác nhận mật khẩu mới
-              <input id="confirm-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password">
+              <input id="confirm-password" type="password" required minlength="8" maxlength="72"
+                     pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9\s])\S{8,72}"
+                     autocomplete="new-password">
             </label>
             <button class="button primary profile-submit" type="submit">Đổi mật khẩu</button>
           </form>

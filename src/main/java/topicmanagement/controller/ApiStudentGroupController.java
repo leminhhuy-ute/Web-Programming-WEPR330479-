@@ -13,7 +13,7 @@ import topicmanagement.dto.response.PageResponse;
 import topicmanagement.security.CurrentUser;
 import topicmanagement.service.StudentGroupService;
 
-@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','HEAD_OF_DEPT','LECTURER')")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DEAN','LECTURER')")
 @RestController
 @RequestMapping("/api/lecturer/student-groups")
 public class ApiStudentGroupController {

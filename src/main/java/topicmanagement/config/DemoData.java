@@ -41,9 +41,33 @@ public class DemoData implements CommandLineRunner {
         this.passwords = passwords;
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DemoData.class);
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private H2DemoDatabaseUpgradeService h2UpgradeService;
+
     @Override
     @Transactional
     public void run(String... args) {
+        try {
+            if (jdbcTemplate != null) {
+                int uCount = jdbcTemplate.update("UPDATE users SET role = 'LECTURER' WHERE role = 'HEAD_OF_DEPT'");
+                int aCount = jdbcTemplate.update("UPDATE announcements SET audience = 'LECTURER' WHERE audience = 'HEAD_OF_DEPT'");
+                if (uCount > 0 || aCount > 0) {
+                    log.info("[DemoData] Đồng bộ dữ liệu demo cũ: đã cập nhật {} người dùng và {} thông báo từ HEAD_OF_DEPT sang LECTURER.", uCount, aCount);
+                }
+            }
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.warn("[DemoData] Cảnh báo khi thực thi truy vấn làm sạch dữ liệu cũ lúc khởi động: {}", e.getMessage());
+        }
+
+        if (h2UpgradeService != null) {
+            h2UpgradeService.upgradeIfApplicable();
+        }
+
         if (users.count() > 0) return;
 
         // 1. Departments
@@ -54,7 +78,7 @@ public class DemoData implements CommandLineRunner {
 
         // 2. Users
         User dean = account("dean01", "DEAN01", "PGS. TS. Nguyễn Văn Thành", "dean01@dean.hcmute.edu.vn", Role.DEAN, null);
-        User hod = account("hod01", "HOD01", "TS. Nguyễn Hoàng Long", "hod01@headdepartment.hcmute.edu.vn", Role.HEAD_OF_DEPT, cnpm);
+        User lec6 = account("lecturer06", "GV006", "TS. Nguyễn Hoàng Long", "lecturer06@lecturer.hcmute.edu.vn", Role.LECTURER, cnpm);
         User lec1 = account("lecturer01", "GV001", "TS. Trần Hoàng Nam", "lecturer01@lecturer.hcmute.edu.vn", Role.LECTURER, cnpm);
         User lec2 = account("lecturer02", "GV002", "ThS. Đặng Thị Kim Ngân", "lecturer02@lecturer.hcmute.edu.vn", Role.LECTURER, cnpm);
         User lec3 = account("lecturer03", "GV003", "TS. Lê Văn Tuấn", "lecturer03@lecturer.hcmute.edu.vn", Role.LECTURER, httt);
@@ -116,7 +140,7 @@ public class DemoData implements CommandLineRunner {
                 "Nghiên cứu ứng dụng Deep Learning trong nhận diện và phân loại bệnh lý mắt",
                 "Sử dụng mạng nơ-ron tích chập (CNN) và Vision Transformer để hỗ trợ chẩn đoán hình ảnh nhãn khoa.",
                 "Python, PyTorch, FastAPI, JavaScript, kiến thức nền tảng về Deep Learning",
-                2, RegistrationPeriodType.COURSE, TopicStatus.PENDING, cnpm, p1, lec2, null);
+                3, RegistrationPeriodType.COURSE, TopicStatus.PENDING, cnpm, p1, lec2, null);
 
         Topic t4 = createTopic("DT-HTTT-202601",
                 "Xây dựng hệ thống hoạch định nguồn lực doanh nghiệp (ERP) cho chuỗi bán lẻ",
@@ -128,13 +152,13 @@ public class DemoData implements CommandLineRunner {
                 "Phân tích cảm xúc và dự báo xu hướng dư luận mạng xã hội bằng mô hình ngôn ngữ lớn (LLM)",
                 "Thu thập dữ liệu tiếng Việt đa chiều, tinh chỉnh mô hình nền tảng (LLM fine-tuning) để phân loại cảm xúc tự động.",
                 "Python, Transformers, NLP tiếng Việt, LangChain, Web Dashboard",
-                2, RegistrationPeriodType.COURSE, TopicStatus.APPROVED, khdl, p1, lec4, lec4);
+                3, RegistrationPeriodType.COURSE, TopicStatus.APPROVED, khdl, p1, lec4, lec4);
 
         Topic t6 = createTopic("DT-MMT-202601",
                 "Hệ thống phát hiện xâm nhập mạng (NIDS) thông minh ứng dụng Machine Learning",
                 "Phân tích lưu lượng gói tin mạng trong thời gian thực nhằm phát hiện các cuộc tấn công DDoS, quét cổng và mã độc.",
                 "Python, C++, Network Security, Wireshark, Scikit-learn",
-                2, RegistrationPeriodType.COURSE, TopicStatus.APPROVED, mmt, p1, lec5, lec5);
+                3, RegistrationPeriodType.COURSE, TopicStatus.APPROVED, mmt, p1, lec5, lec5);
 
         // 5. Student Groups
         StudentGroup g1 = new StudentGroup();
@@ -143,15 +167,17 @@ public class DemoData implements CommandLineRunner {
         g1.setTopic(t2);
         g1.setPeriod(p2);
         g1.setLeader(stu1);
-        g1.setMemberCount(2);
+        g1.setMemberCount(3);
         g1.setStatus(GroupStatus.APPROVED);
         g1.setRegisteredAt(now.minusDays(5));
         groups.save(g1);
 
         GroupMember gm1 = new GroupMember(g1, stu1, "LEADER");
         GroupMember gm2 = new GroupMember(g1, stu2, "MEMBER");
+        GroupMember gm3 = new GroupMember(g1, stu3, "MEMBER");
         groupMembers.save(gm1);
         groupMembers.save(gm2);
+        groupMembers.save(gm3);
 
         // 6. Councils & Members
         Council council = new Council("HD-CNTT-01",
@@ -161,7 +187,7 @@ public class DemoData implements CommandLineRunner {
         councils.save(council);
 
         council.getMembers().add(new CouncilMember(council, dean, CouncilRole.CHAIRPERSON));
-        council.getMembers().add(new CouncilMember(council, hod, CouncilRole.SECRETARY));
+        council.getMembers().add(new CouncilMember(council, lec6, CouncilRole.SECRETARY));
         council.getMembers().add(new CouncilMember(council, lec5, CouncilRole.REVIEWER));
         council.getMembers().add(new CouncilMember(council, lec4, CouncilRole.MEMBER));
         council.getMembers().add(new CouncilMember(council, lec3, CouncilRole.MEMBER));
