@@ -5,6 +5,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import topicmanagement.entity.*;
 import topicmanagement.enums.*;
@@ -26,13 +27,27 @@ public class NotificationService {
       java.time.LocalDateTime createdAt, boolean read) {}
   public record Feed(long unreadCount, List<Item> items) {}
 
-  public Feed feed(User recipient) {
-    AnnouncementAudience audience = switch (recipient.getRole()) {
+  private static AnnouncementAudience audienceOf(User recipient) {
+    return switch (recipient.getRole()) {
       case STUDENT -> AnnouncementAudience.STUDENT;
       case LECTURER -> AnnouncementAudience.LECTURER;
       default -> null;
     };
-    Long departmentId = recipient.getDepartment() == null ? null : recipient.getDepartment().getId();
+  }
+
+  private static Long departmentOf(User recipient) {
+    return recipient.getDepartment() == null ? null : recipient.getDepartment().getId();
+  }
+
+  /** Every announcement the recipient may read, newest first; audience and department are filtered in the query. */
+  public List<Announcement> visibleAnnouncements(User recipient) {
+    return announcements.findVisible(AnnouncementAudience.ALL, audienceOf(recipient), departmentOf(recipient),
+        Pageable.unpaged(Sort.by(Sort.Direction.DESC, "id"))).getContent();
+  }
+
+  public Feed feed(User recipient) {
+    AnnouncementAudience audience = audienceOf(recipient);
+    Long departmentId = departmentOf(recipient);
     List<Announcement> recent = announcements.findVisible(AnnouncementAudience.ALL, audience, departmentId,
         PageRequest.of(0, 30, Sort.by(Sort.Direction.DESC, "id"))).getContent();
     long unreadCount = reads.countVisibleUnread(recipient.getId(), AnnouncementAudience.ALL, audience, departmentId);
