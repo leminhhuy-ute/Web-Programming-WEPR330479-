@@ -17,9 +17,12 @@ public interface DefenseRepository extends JpaRepository<Defense,Long> {
     boolean existsByCouncilId(Long councilId);
     boolean existsByGroupTopicId(Long topicId);
     long countByPublishedTrue();
-    @Query("select d.group.id from Defense d")
-    List<Long> findAssignedGroupIds();
     @EntityGraph(attributePaths = {"group", "group.topic", "group.topic.advisor1", "group.topic.advisor2",
         "council", "council.members", "council.members.lecturer", "reviewer"})
     List<Defense> findAllByOrderByIdDesc();
+    @EntityGraph(attributePaths = {"group", "group.topic", "group.topic.advisor1", "group.topic.advisor2",
+        "council", "council.members", "council.members.lecturer", "reviewer"})
+    @Query("select d from Defense d where exists (select m.id from CouncilMember m "
+        + "where m.council = d.council and m.lecturer.id = :userId) order by d.id desc")
+    List<Defense> findForCouncilMemberOrderByIdDesc(@org.springframework.data.repository.query.Param("userId") Long userId);
 }

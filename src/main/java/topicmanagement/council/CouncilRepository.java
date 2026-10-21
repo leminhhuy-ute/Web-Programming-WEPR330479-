@@ -13,6 +13,11 @@ public interface CouncilRepository extends JpaRepository<Council,Long> {
     java.util.Optional<Council> lockById(@Param("id") Long id);
     @EntityGraph(attributePaths = {"members", "members.lecturer"})
     List<Council> findAllByOrderByDefenseDateDesc();
+    // Membership is checked in the database (index on council_members.lecturer_id), not in memory.
+    @EntityGraph(attributePaths = {"members", "members.lecturer"})
+    @Query("select c from Council c where exists (select m.id from CouncilMember m "
+        + "where m.council = c and m.lecturer.id = :userId) order by c.defenseDate desc")
+    List<Council> findForMemberOrderByDefenseDateDesc(@Param("userId") Long userId);
 
     @Query(value = "select new topicmanagement.dto.response.CouncilSummaryResponse(c.id,c.code,c.name,c.defenseDate,c.room,c.status,size(c.members)) "
         + "from Council c where :dean=true or exists (select m.id from CouncilMember m where m.council=c and m.lecturer.id=:userId)",

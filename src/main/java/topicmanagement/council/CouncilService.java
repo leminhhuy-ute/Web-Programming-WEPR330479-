@@ -57,17 +57,18 @@ public class CouncilService {
     }
     public CouncilStateResponse state() {
         User u=staff();
-        var visible=councils.findAllByOrderByDefenseDateDesc().stream().filter(c->u.getRole()==Role.DEAN||member(c,u)).toList();
-        var defenseEntities=defenses.findAllByOrderByIdDesc().stream().filter(d->u.getRole()==Role.DEAN||member(d.council,u)).toList();
+        boolean dean=u.getRole()==Role.DEAN;
+        // The dean sees every council; other lecturers only load the councils they sit on (filtered by the database).
+        var visible=dean?councils.findAllByOrderByDefenseDateDesc():councils.findForMemberOrderByDefenseDateDesc(u.getId());
+        var defenseEntities=dean?defenses.findAllByOrderByIdDesc():defenses.findForCouncilMemberOrderByIdDesc(u.getId());
         var gradeMap=grades.findByDefenseIdIn(defenseEntities.stream().map(d->d.id).toList()).stream()
             .collect(java.util.stream.Collectors.groupingBy(g->g.defense.id));
         var reportMap=reports.listForCouncil(u,defenseEntities);
         var ds=defenseEntities.stream().map(d->defenseView(d,u,gradeMap.getOrDefault(d.id,List.of()),
             reportMap.getOrDefault(d.group.getId(),List.of()))).toList();
-        var lecturerOptions=u.getRole()==Role.DEAN?users.findByRoleIn(List.of(Role.DEAN,Role.LECTURER)).stream()
-            .filter(x->x.getStatus()==UserStatus.ACTIVE).map(x->new SelectOption(x.getId(),x.getFullName())).toList():List.<SelectOption>of();
-        var assignedGroupIds=new HashSet<>(defenses.findAssignedGroupIds());
-        var groupOptions=u.getRole()==Role.DEAN?groups.findByStatus(GroupStatus.APPROVED).stream().filter(g->!assignedGroupIds.contains(g.getId()))
+        var lecturerOptions=dean?users.findByRoleInAndStatus(List.of(Role.DEAN,Role.LECTURER),UserStatus.ACTIVE).stream()
+            .map(x->new SelectOption(x.getId(),x.getFullName())).toList():List.<SelectOption>of();
+        var groupOptions=dean?groups.findByStatusWithoutDefense(GroupStatus.APPROVED).stream()
             .map(g->new SelectOption(g.getId(),g.getGroupName()+" — "+g.getTopic().getTitle())).toList():List.<SelectOption>of();
         return new CouncilStateResponse(u.getRole().name(),visible.stream().map(this::councilView).toList(),ds,lecturerOptions,groupOptions);
     }

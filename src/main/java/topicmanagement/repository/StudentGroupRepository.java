@@ -20,6 +20,10 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
 
     List<StudentGroup> findByTopicId(Long topicId);
     List<StudentGroup> findByStatus(GroupStatus status);
+    @EntityGraph(attributePaths = "topic")
+    @Query("select g from StudentGroup g where g.status = :status "
+        + "and not exists (select d.id from Defense d where d.group = g) order by g.id")
+    List<StudentGroup> findByStatusWithoutDefense(@Param("status") GroupStatus status);
     List<StudentGroup> findByTopicIsNotNull();
     
     @Query("SELECT g FROM StudentGroup g JOIN g.topic t LEFT JOIN t.advisor1 a1 LEFT JOIN t.advisor2 a2 WHERE a1.id = :lecturerId OR a2.id = :lecturerId")
