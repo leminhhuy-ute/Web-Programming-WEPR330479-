@@ -35,7 +35,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 - **Tham gia đánh giá**: Chấm điểm phản biện khi được phân công làm GVPB; tham gia hội đồng chấm bảo vệ, nhập điểm số độc lập ($0.00 - 10.00$) và nhận xét chuyên môn (với điều kiện không hướng dẫn đề tài đó).
 
 ### Sinh viên (`ROLE_STUDENT`)
-- **Quản lý nhóm (3–5 thành viên khi đăng ký đề tài)**: Khởi tạo nhóm sinh viên mới (trạng thái chờ từ 1–2 thành viên, nhóm trưởng gửi lời mời). Khi đăng ký đề tài, nhóm bắt buộc phải có từ 3 đến 5 thành viên (tối đa 5 thành viên, từ chối thành viên thứ 6). Mỗi sinh viên chỉ được thuộc đúng 1 nhóm trong một đợt đăng ký.
+- **Quản lý nhóm (1–3 thành viên)**: Khởi tạo nhóm sinh viên mới, người tạo là nhóm trưởng và gửi lời mời qua MSSV. Nhóm có từ 1 đến 3 thành viên (từ chối thành viên thứ 4) và không vượt số sinh viên tối đa của đề tài. Mỗi sinh viên chỉ được thuộc đúng 1 nhóm trong một đợt đăng ký.
 - **Mời thành viên**: Nhóm trưởng gửi lời mời tham gia qua Mã số sinh viên (MSSV); thành viên nhận lời mời có quyền Đồng ý hoặc Từ chối.
 - **Chọn nhóm trưởng**: Nhóm trưởng có quyền chuyển giao vai trò trưởng nhóm cho thành viên khác trong nhóm.
 - **Rời nhóm & Giải tán nhóm**: Thành viên có thể rời nhóm hoặc nhóm trưởng giải tán nhóm khi nhóm chưa đăng ký đề tài.
@@ -86,7 +86,7 @@ $$\longrightarrow \text{Đăng ký đề tài} \longrightarrow \text{Hướng d�
 | **Bảo mật & Phân quyền (Security)** | Spring Security 6 | Xác thực người dùng, băm mật khẩu BCrypt, phòng chống tấn công CSRF, kiểm soát phiên, chống brute-force và phân quyền truy cập theo vai trò (RBAC) |
 | **Cơ sở dữ liệu Production** | MySQL Server 8.0+ | Hệ quản trị cơ sở dữ liệu quan hệ chính thức, lưu trữ bền vững với Storage Engine InnoDB và bảng mã `utf8mb4_unicode_ci` |
 | **Cơ sở dữ liệu Demo & Test** | H2 Database | Cơ sở dữ liệu nhúng (file-based và in-memory), phục vụ khởi chạy demo tức thì và chạy bộ kiểm thử tự động |
-| **Quản lý Migration Schema** | Flyway | Profile MySQL baseline schema hiện hành ở V5 rồi tự động áp dụng V6–V12; profile cloud tạo mới từ V1 và tiếp tục V6–V12 |
+| **Quản lý Migration Schema** | Flyway | Profile MySQL baseline schema hiện hành ở V5 rồi tự động áp dụng V6–V13; profile cloud tạo mới từ V1 và tiếp tục V6–V13 |
 | **Giao diện người dùng (Frontend)** | Thymeleaf, HTML5, CSS3, JS | Giao diện web responsive, kết nối Fetch API, chuẩn nhận diện màu sắc và kiểu chữ của Trường ĐH Sư phạm Kỹ thuật TP.HCM |
 | **Công cụ đóng gói (Build Tool)** | Apache Maven 3.9+ | Quản lý thư viện phụ thuộc và đóng gói toàn bộ dự án thành tệp thực thi duy nhất (Executable Fat JAR) |
 
@@ -100,7 +100,7 @@ Web-Programming-WEPR330479--main/
 ├── .mvn/                            # Cấu hình bộ nạp Maven Wrapper
 ├── database/                        # Cơ sở dữ liệu và kịch bản nâng cấp
 │   ├── migration/                   # SQL lịch sử V2..V7 để tra cứu
-│   ├── schema.sql                   # Schema bootstrap V5/V6-compatible cho MySQL; Flyway hoàn tất V6–V12
+│   ├── schema.sql                   # Schema bootstrap V5/V6-compatible cho MySQL; Flyway hoàn tất V6–V13
 │   └── seed.sql                     # Dữ liệu mẫu (tài khoản demo, bộ môn, đề tài mẫu)
 ├── docs/                            # Toàn bộ tài liệu kỹ thuật hệ thống (Tiếng Việt)
 │   ├── API_DOCUMENTATION.md         # Danh mục chi tiết các endpoint REST API và mã lỗi
@@ -243,7 +243,7 @@ Hệ thống được kiểm thử tự động toàn diện qua bộ kiểm th�
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 ```
-Bốn kiểm tra MySQL/cloud được bỏ qua khi máy cục bộ chưa cấu hình biến môi trường kiểm thử MySQL. Job CI riêng chạy trên MySQL 8.4, kiểm chứng Flyway V5 → V12 và V1 → V12 cùng `ddl-auto=validate`; job chính chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp JavaScript. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
+Bốn kiểm tra MySQL/cloud được bỏ qua khi máy cục bộ chưa cấu hình biến môi trường kiểm thử MySQL. Job CI riêng chạy trên MySQL 8.4, kiểm chứng Flyway V5 → V13 và V1 → V13 cùng `ddl-auto=validate`; job chính chạy `verify` trên Java 21, đóng gói JAR và kiểm tra cú pháp JavaScript. [Xem CI](https://github.com/leminhhuy-ute/Web-Programming-WEPR330479-/actions).
 
 ---
 
@@ -267,5 +267,5 @@ Tài liệu kỹ thuật chuyên sâu được duy trì đầy đủ tại thư 
 ## Lưu ý
 
 1. **Bảo tồn tài khoản Demo**: Nhằm phục vụ mục đích đánh giá và chấm điểm học phần Lập trình Web, tài khoản demo cùng mật khẩu mặc định `Demo@12345` được lưu giữ trong cơ sở dữ liệu để kiểm thử các vai trò khác nhau qua form đăng nhập tiêu chuẩn (đã gỡ bỏ toàn bộ các nút bấm điền nhanh trên giao diện để sẵn sàng phát hành).
-2. **Khởi tạo cơ sở dữ liệu**: Với profile `mysql`, nạp [database/schema.sql](database/schema.sql) để tạo nền V5/V6-compatible; Flyway sẽ hoàn tất đến V12 trước khi Hibernate `validate`. Với profile `cloud`, database phải trống và Flyway tự tạo từ V1.
-3. **Migration dữ liệu**: Profile MySQL dùng các migration V6–V12 tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline; V2–V5 trong `database/migration/` chỉ là lịch sử và không được tự chạy lại trên schema bootstrap. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).
+2. **Khởi tạo cơ sở dữ liệu**: Với profile `mysql`, nạp [database/schema.sql](database/schema.sql) để tạo nền V5/V6-compatible; Flyway sẽ hoàn tất đến V13 trước khi Hibernate `validate`. Với profile `cloud`, database phải trống và Flyway tự tạo từ V1.
+3. **Migration dữ liệu**: Profile MySQL dùng các migration V6–V13 tại `src/main/resources/db/migration/mysql/`. DB hiện hành phải tương ứng V5 trước khi baseline; V2–V5 trong `database/migration/` chỉ là lịch sử và không được tự chạy lại trên schema bootstrap. Xem [hướng dẫn migration và SMTP](docs/SMTP_SETUP.md).

@@ -100,8 +100,9 @@ public class TopicService {
     @Transactional
     public TopicResponse createTopic(TopicRequest request, User currentUser) {
         TopicPolicy.staff(currentUser);
-        if (request.getMaxStudents() == null || request.getMaxStudents() < 3 || request.getMaxStudents() > 5)
-            throw new IllegalArgumentException("Số lượng sinh viên tối đa của đề tài phải từ 3 đến 5 sinh viên.");
+        if (request.getMaxStudents() == null || request.getMaxStudents() < TopicPolicy.MIN_TOPIC_STUDENTS
+                || request.getMaxStudents() > TopicPolicy.MAX_TOPIC_STUDENTS)
+            throw new IllegalArgumentException("Số lượng sinh viên tối đa của đề tài phải từ 1 đến 3 sinh viên.");
         if (request.getDescription() == null || request.getDescription().trim().length() < 10)
             throw new IllegalArgumentException("Mô tả đề tài phải có ít nhất 10 ký tự.");
         String title = request.getTitle() == null ? "" : request.getTitle().trim();
@@ -150,8 +151,9 @@ public class TopicService {
     @Transactional
     public TopicResponse updateTopic(Long id, TopicRequest request, User currentUser) {
         TopicPolicy.staff(currentUser);
-        if (request.getMaxStudents() == null || request.getMaxStudents() < 3 || request.getMaxStudents() > 5)
-            throw new IllegalArgumentException("Số lượng sinh viên tối đa của đề tài phải từ 3 đến 5 sinh viên.");
+        if (request.getMaxStudents() == null || request.getMaxStudents() < TopicPolicy.MIN_TOPIC_STUDENTS
+                || request.getMaxStudents() > TopicPolicy.MAX_TOPIC_STUDENTS)
+            throw new IllegalArgumentException("Số lượng sinh viên tối đa của đề tài phải từ 1 đến 3 sinh viên.");
         if (request.getDescription() == null || request.getDescription().trim().length() < 10)
             throw new IllegalArgumentException("Mô tả đề tài phải có ít nhất 10 ký tự.");
         Topic topic = topicRepository.findById(id)

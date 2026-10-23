@@ -31,7 +31,7 @@ Hệ thống phân định rõ đúng 3 vai trò người dùng trong tổ chứ
 | :--- | :--- | :--- |
 | **Trưởng khoa / Quản trị viên** | `ROLE_DEAN` | Quyền quản trị và học thuật cao nhất cấp Khoa. Khởi tạo và thiết lập các đợt đăng ký, quản lý danh mục bộ môn và tài khoản người dùng, thẩm định và phê duyệt/từ chối đề tài của tất cả bộ môn, phân công hoặc thay đổi giảng viên hướng dẫn (`advisor1`, `advisor2`) và giảng viên phản biện, thành lập hội đồng đánh giá, phân công hội đồng cho nhóm sinh viên, quản lý thông báo toàn khoa và phê duyệt công bố kết quả chính thức. |
 | **Giảng viên** | `ROLE_LECTURER` | Giảng viên chuyên môn, giảng viên hướng dẫn, phản biện và thành viên hội đồng. Đề xuất đề tài trong cửa sổ thời gian cho phép, duyệt nhóm đăng ký đề tài của mình, theo dõi tiến độ và nhận xét báo cáo, chấm điểm phản biện khi làm GVPB, tham gia hội đồng chấm bảo vệ (với vai trò Chủ tịch, Thư ký, Phản biện hoặc Ủy viên), nhập điểm độc lập và nhận xét chuyên môn (với điều kiện không hướng dẫn đề tài đó). |
-| **Sinh viên** | `ROLE_STUDENT` | Người thực hiện đề tài. Tạo nhóm sinh viên (từ 3 đến 5 thành viên khi đăng ký đề tài; tối đa 5 thành viên), gửi lời mời tham gia, lựa chọn đề tài phù hợp, nộp báo cáo tiến độ theo từng giai đoạn (Đề cương, Giữa kỳ, Cuối kỳ), theo dõi lịch bảo vệ và xem bảng điểm kết quả. |
+| **Sinh viên** | `ROLE_STUDENT` | Người thực hiện đề tài. Tạo nhóm sinh viên (từ 1 đến 3 thành viên), gửi lời mời tham gia, lựa chọn đề tài phù hợp, nộp báo cáo tiến độ theo từng giai đoạn (Đề cương, Giữa kỳ, Cuối kỳ), theo dõi lịch bảo vệ và xem bảng điểm kết quả. |
 
 ---
 
@@ -94,7 +94,7 @@ graph TD
 | :--- | :--- |
 | **Backend Framework** | Java 21 LTS, Spring Boot 3.5.16, Spring MVC, Spring Security 6, Spring Data JPA |
 | **Cơ sở dữ liệu** | MySQL Server 8.0+ (Production) / H2 Database (Kiểm thử & Demo) |
-| **Quản lý Migration**| Flyway: lịch sử V2–V5, runtime MySQL/cloud đến V12 |
+| **Quản lý Migration**| Flyway: lịch sử V2–V5, runtime MySQL/cloud đến V13 |
 | **Giao diện người dùng**| Thymeleaf, HTML5, CSS3 Responsive (Thiết kế HCM-UTE), JavaScript thuần ES6+ |
 | **Đóng gói & Build** | Apache Maven 3.9+, Maven Wrapper (`mvnw`, `mvnw.cmd`) |
 | **Kiểm thử tự động** | JUnit 5 Jupiter, Mockito, Spring Boot Test, H2 In-Memory Suite |

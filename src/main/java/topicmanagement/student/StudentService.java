@@ -134,7 +134,7 @@ public class StudentService {
         DefenseScheduleView defense=null;
         var invitationList=invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(me.getId(),"PENDING").stream().map(this::invitation).toList();
         if(g!=null) {
-            groupView=new StudentGroupView(g.getId(),g.getGroupName(),g.getLeader().getUserCode(),5,
+            groupView=new StudentGroupView(g.getId(),g.getGroupName(),g.getLeader().getUserCode(),TopicPolicy.MAX_GROUP_SIZE,
                 members.findByGroupId(g.getId()).stream().map(m->person(m.getStudent())).toList(),
                 invitations.findByGroupIdOrderByCreatedAtDesc(g.getId()).stream().map(this::invitation).toList(),
                 g.getPeriod() != null ? g.getPeriod().getId() : g.getTopic() != null ? g.getTopic().getPeriod().getId() : null,
@@ -235,7 +235,7 @@ public class StudentService {
             throw bad("Sinh viên này đã thuộc một nhóm trong đợt này.");
         else if (period == null && group(u) != null)
             throw bad("Sinh viên này đã thuộc một nhóm.");
-        if(members.findByGroupId(g.getId()).size()>=5)throw bad("Nhóm đã đủ 5 thành viên.");
+        if(members.findByGroupId(g.getId()).size()>=TopicPolicy.MAX_GROUP_SIZE)throw bad("Nhóm đã đủ 3 thành viên.");
         Invitation i=invitations.findByGroupIdAndStudentId(g.getId(),u.getId()).orElseGet(Invitation::new);
         if(i.id!=null&&i.status.equals("PENDING"))throw bad("Lời mời đang chờ xác nhận.");
         i.group=g;i.student=u;i.status="PENDING";i.createdAt=LocalDateTime.now();invitations.save(i);
@@ -254,7 +254,7 @@ public class StudentService {
                 throw bad("Bạn đã thuộc một nhóm.");
             editable(g);
             int count=members.findByGroupId(g.getId()).size();
-            if(count>=5)throw bad("Nhóm đã đủ 5 thành viên.");
+            if(count>=TopicPolicy.MAX_GROUP_SIZE)throw bad("Nhóm đã đủ 3 thành viên.");
             members.save(new GroupMember(g,me,"MEMBER", period));g.setMemberCount(count+1);i.status="ACCEPTED";
             invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(me.getId(),"PENDING").stream()
                 .filter(other->!other.id.equals(i.id))
@@ -323,8 +323,8 @@ public class StudentService {
         if(t.getStatus()!=TopicStatus.APPROVED)throw bad("Đề tài chưa được công bố.");
         TopicPolicy.registration(t.getPeriod(),t.getTopicType(),true);
         int count = members.findByGroupId(g.getId()).size();
-        if (count < 3) throw bad("Nhóm phải có từ 3 đến 5 sinh viên mới được đăng ký đề tài.");
-        if (count > 5) throw bad("Nhóm không được vượt quá 5 thành viên.");
+        if (count < TopicPolicy.MIN_GROUP_SIZE || count > TopicPolicy.MAX_GROUP_SIZE)
+            throw bad("Nhóm phải có từ 1 đến 3 sinh viên mới được đăng ký đề tài.");
         if (count > t.getMaxStudents()) throw bad("Nhóm vượt số thành viên cho phép của đề tài.");
         registrationService.submit(g,t,student(username));
     }

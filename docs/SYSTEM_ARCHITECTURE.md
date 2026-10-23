@@ -28,7 +28,7 @@ graph TD
 
     subgraph DatabaseTier ["Tầng Cơ sở dữ liệu"]
         DB[("MySQL Server 8.0+ / H2 Database")]
-        Migrations["Bộ quản lý phiên bản Flyway (V1..V12 theo profile)"]
+        Migrations["Bộ quản lý phiên bản Flyway (V1..V13 theo profile)"]
     end
 
     Client -->|HTTP / HTTPS + JSON / HTML| Filter
@@ -62,8 +62,8 @@ graph TD
 ### 2.3 Tầng Dịch vụ Nghiệp vụ (Business Service Layer)
 - Đóng gói toàn bộ các chính sách, quy tắc đào tạo và máy trạng thái nghiệp vụ:
   - **`RegistrationPeriodServiceV2`**: Thực thi quy tắc 4 mốc thời gian, kiểm soát vòng đời đợt đăng ký; ngăn chặn việc thay đổi loại đợt hoặc xóa đợt khi đã có đề tài hoặc nhóm sinh viên phát sinh.
-  - **`TopicService` & `DepartmentTopicService`**: Quản lý đề xuất đề tài, phân bổ chỉ tiêu giảng viên hướng dẫn, kiểm tra tính hợp lệ của người tạo và bộ môn của đề tài (quy mô `maxStudents` từ 3 đến 5).
-  - **`StudentService`**: Xử lý tạo nhóm, gửi lời mời, chuyển quyền nhóm trưởng, rời nhóm, xóa thành viên và giải tán nhóm với phạm vi giới hạn theo từng đợt đăng ký (nhóm cần từ 3 đến 5 thành viên để đăng ký đề tài; tối đa 5 thành viên).
+  - **`TopicService` & `DepartmentTopicService`**: Quản lý đề xuất đề tài, phân bổ chỉ tiêu giảng viên hướng dẫn, kiểm tra tính hợp lệ của người tạo và bộ môn của đề tài (quy mô `maxStudents` từ 1 đến 3).
+  - **`StudentService`**: Xử lý tạo nhóm, gửi lời mời, chuyển quyền nhóm trưởng, rời nhóm, xóa thành viên và giải tán nhóm với phạm vi giới hạn theo từng đợt đăng ký (nhóm từ 1 đến 3 thành viên).
   - **`TopicRegistrationService`**: Điều phối luồng đăng ký đề tài, duyệt đăng ký và kích hoạt cơ chế khóa hủy đăng ký khi nhóm đã bắt đầu nộp báo cáo.
   - **`ReportService`**: Ràng buộc nộp báo cáo tuần tự theo 3 giai đoạn (`Đề cương` $\rightarrow$ `Giữa kỳ` $\rightarrow$ `Cuối kỳ`), kiểm tra cấu trúc byte của tệp PDF và DOCX.
   - **`CouncilManagementService`, `CouncilService`, `DefenseService`**: Thực thi cơ cấu thành viên hội đồng (3-5 người), ngăn ngừa xung đột lợi ích (giảng viên hướng dẫn không được chấm đề tài mình), thu thập điểm số và tổng hợp điểm trung bình cộng.
@@ -72,7 +72,7 @@ graph TD
 ### 2.4 Tầng Truy xuất & Lưu trữ Dữ liệu (Persistence Layer)
 - **Spring Data JPA**: Cung cấp các giao diện repository trừu tượng hóa truy vấn, hỗ trợ phân trang và các phương thức truy vấn suy diễn (derived queries).
 - **Hibernate ORM**: Quản lý vòng đời thực thể, cơ chế dirty-checking, khóa lạc quan (`@Version`) và ánh xạ quan hệ bảng.
-- **Flyway Migrations**: Profile MySQL baseline V5 và chạy V6–V12; profile cloud tạo database trống từ V1 rồi chạy V6–V12. Các V2–V5 được giữ làm lịch sử nâng cấp, không tự chạy lại trên schema đã baseline.
+- **Flyway Migrations**: Profile MySQL baseline V5 và chạy V6–V13; profile cloud tạo database trống từ V1 rồi chạy V6–V13. Các V2–V5 được giữ làm lịch sử nâng cấp, không tự chạy lại trên schema đã baseline.
 
 ---
 
