@@ -17,8 +17,8 @@ class MySqlMigrationSmokeTest {
     @Autowired topicmanagement.repository.AuditLogRepository audit;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
-    @Test void existingDatabaseUpgradesToV12AndMatchesHibernateEntities() {
-        assertEquals("12", flyway.info().current().getVersion().toString());
+    @Test void existingDatabaseUpgradesToV13AndMatchesHibernateEntities() {
+        assertEquals("13", flyway.info().current().getVersion().toString());
         assertEquals(0, flyway.migrate().migrationsExecuted);
         assertEquals(0, notifications.count());
         var entry = new topicmanagement.entity.AuditLog();

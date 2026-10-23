@@ -53,9 +53,9 @@ class StudentWorkflowTest {
         var u=users.findByUsername(id).orElseThrow();
         students.respond(id,invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(u.getId(),"PENDING").getFirst().id,true);
     }
-    @Test void groupHasAtMostFiveMembersAndOneGroupPerStudent() {
-        students.createGroup("sv1","Nhóm A");join("sv2");join("sv3");join("sv4");join("sv5");
-        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv6"));
+    @Test void groupHasAtMostThreeMembersAndOneGroupPerStudent() {
+        students.createGroup("sv1","Nhóm A");join("sv2");join("sv3");
+        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv4"));
         assertThrows(IllegalArgumentException.class,()->students.createGroup("sv2","Nhóm B"));
     }
     @Test void nonLeaderCannotRegisterOrTransfer() {
@@ -70,13 +70,10 @@ class StudentWorkflowTest {
     }
     @Test void registrationLocksMembershipAndAllowsMultipleGroupsPerTopic() {
         students.createGroup("sv1","Nhóm A");
-        // Minimum 3 members required to register
-        assertThrows(IllegalArgumentException.class, () -> students.register("sv1","TEST-TOPIC"));
         join("sv2");
-        assertThrows(IllegalArgumentException.class, () -> students.register("sv1","TEST-TOPIC"));
-        join("sv3");
         students.register("sv1","TEST-TOPIC");
-        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv4"));
+        // Membership is locked once the group has registered.
+        assertThrows(IllegalArgumentException.class,()->students.invite("sv1","sv3"));
 
         students.createGroup("sv4","Nhóm B");
         students.invite("sv4","sv5");

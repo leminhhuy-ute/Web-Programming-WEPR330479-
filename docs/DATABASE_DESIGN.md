@@ -108,7 +108,7 @@ Lưu trữ danh sách các đề tài do giảng viên hoặc trưởng khoa đ�
 - `title` (`VARCHAR(255)`, NOT NULL): Tên đề tài.
 - `description` (`TEXT`, NOT NULL): Mô tả chi tiết mục tiêu đề tài ($\ge 10$ ký tự).
 - `requirements` (`TEXT`, NULL): Yêu cầu kiến thức và kỹ năng đối với sinh viên.
-- `max_students` (`INT`, NOT NULL, DEFAULT 3): Số lượng sinh viên tối đa cho phép (3 đến 5).
+- `max_students` (`INT`, NOT NULL, DEFAULT 3): Số lượng sinh viên tối đa cho phép (1 đến 3).
 - `topic_type` (`VARCHAR(30)`, NOT NULL): Loại hình đề tài tương ứng với đợt đăng ký.
 - `status` (`VARCHAR(20)`, NOT NULL): Trạng thái phê duyệt (`PENDING`, `APPROVED`, `REJECTED`).
 - `rejection_reason` (`TEXT`, NULL): Lý do từ chối của Trưởng khoa khi thẩm định đề tài (nếu có).
@@ -117,7 +117,7 @@ Lưu trữ danh sách các đề tài do giảng viên hoặc trưởng khoa đ�
 - `created_by` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`)
 - `advisor1_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Giảng viên hướng dẫn chính.
 - `advisor2_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Giảng viên hướng dẫn phụ.
-- **Ràng buộc**: `ck_topics_advisors`: `advisor1_id <> advisor2_id`, `ck_topics_size`: `max_students BETWEEN 3 AND 5`.
+- **Ràng buộc**: `ck_topics_advisors`: `advisor1_id <> advisor2_id`, `ck_topics_size`: `max_students BETWEEN 1 AND 3`.
 
 ### 3.5 `student_groups` & `group_members` (Nhóm sinh viên & Thành viên)
 - **`student_groups`**:
@@ -127,7 +127,7 @@ Lưu trữ danh sách các đề tài do giảng viên hoặc trưởng khoa đ�
   - `topic_id` (`BIGINT`, NULL, FK $\rightarrow$ `topics(id)`): Đề tài đã được giao chính thức.
   - `period_id` (`BIGINT`, NULL, FK $\rightarrow$ `registration_periods(id)`): Đợt đăng ký của nhóm.
   - `leader_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`): Người tạo nhóm (Nhóm trưởng).
-  - `member_count` (`INT`, NOT NULL, DEFAULT 1): Số lượng thành viên (1 đến 5). Ràng buộc `ck_groups_size`: `member_count BETWEEN 1 AND 5`.
+  - `member_count` (`INT`, NOT NULL, DEFAULT 1): Số lượng thành viên (1 đến 3). Ràng buộc `ck_groups_size`: `member_count BETWEEN 1 AND 3`.
   - `status` (`VARCHAR(20)`, NOT NULL): Trạng thái (`DRAFT`, `PENDING`, `APPROVED`, `REJECTED`).
 - **`group_members`**:
   - `id` (`BIGINT`, PK, Auto-increment)
@@ -267,7 +267,7 @@ Mỗi khi Trưởng khoa công bố kết quả, hệ thống tạo một thư c
 
 ## 4. Quản lý tiến hóa Schema qua Flyway Migrations
 
-Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V12 trong `src/main/resources/db/migration/mysql/`:
+Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực thi các bản V6–V13 trong `src/main/resources/db/migration/mysql/`:
 
 | Phiên bản | Tệp script Migration | Mô tả thay đổi kiến trúc |
 | :--- | :--- | :--- |
@@ -281,4 +281,5 @@ Các bản V2–V5 là lịch sử tại `database/migration/`; Flyway thực th
 | `V9` | `V9__report_review_and_edit_history.sql` | Thêm trạng thái duyệt báo cáo, người cập nhật và lịch sử phiên bản tệp. |
 | `V10` | `V10__advisor_guidance_and_completion.sql` | Thêm nhiệm vụ, yêu cầu hướng dẫn và mốc GVHD xác nhận hoàn thành của nhóm. |
 | `V11` | `V11__remove_head_of_dept_role.sql` | Loại bỏ hoàn toàn role `HEAD_OF_DEPT`: chuyển đổi dữ liệu người dùng và thông báo sang `LECTURER`, cập nhật ràng buộc `ck_users_role` và `ck_announcements_audience` chỉ còn 3 vai trò (`DEAN`, `LECTURER`, `STUDENT`). |
-| `V12` | `V12__update_group_and_topic_size_constraints.sql` | Cập nhật quy mô nhóm và đề tài: ràng buộc `ck_topics_size` (`max_students BETWEEN 3 AND 5`, mặc định 3) và `ck_groups_size` (`member_count BETWEEN 1 AND 5`). |
+| `V12` | `V12__update_group_and_topic_size_constraints.sql` | Tạm đổi quy mô: `ck_topics_size` 3–5 và `ck_groups_size` 1–5 (được thay bằng V13). |
+| `V13` | `V13__limit_group_and_topic_to_three_students.sql` | Quy mô chính thức: `ck_topics_size` (`max_students BETWEEN 1 AND 3`, mặc định 3) và `ck_groups_size` (`member_count BETWEEN 1 AND 3`). |

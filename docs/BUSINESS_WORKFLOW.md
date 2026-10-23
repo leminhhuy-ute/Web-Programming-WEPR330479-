@@ -17,7 +17,7 @@ flowchart TD
     end
 
     subgraph P3["Giai đoạn 3: Thành lập nhóm & Đăng ký đề tài (Sinh viên & GVHD)"]
-        C1[Sinh viên tạo nhóm: Nhóm trưởng] --> C2[Mời bạn qua MSSV: nhóm từ 3 đến 5 thành viên]
+        C1[Sinh viên tạo nhóm: Nhóm trưởng] --> C2[Mời bạn qua MSSV: nhóm từ 1 đến 3 thành viên]
         C2 --> C3[Nhóm trưởng chọn đề tài đã công bố]
         C3 --> C4{GVHD duyệt đơn đăng ký}
         C4 -->|Chấp thuận| C5[Đề tài chính thức giao cho nhóm<br/>Trạng thái: APPROVED]
@@ -77,7 +77,7 @@ $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_
 ### 3.1 Quy tắc đề xuất đề tài
 - **Giảng viên (`ROLE_LECTURER`)**: Chỉ được đề xuất đề tài thuộc đúng bộ môn chuyên môn mà tài khoản được phân công (`department_id`).
 - **Trưởng khoa (`ROLE_DEAN`)**: Có thẩm quyền đề xuất đề tài liên ngành hoặc cấp khoa cho bất kỳ bộ môn nào.
-- **Thông tin đề tài**: Tên đề tài, mô tả chi tiết ($\ge 10$ ký tự), yêu cầu đầu vào, số lượng sinh viên tối đa (3–5 sinh viên) và hình thức đề tài.
+- **Thông tin đề tài**: Tên đề tài, mô tả chi tiết ($\ge 10$ ký tự), yêu cầu đầu vào, số lượng sinh viên tối đa (1–3 sinh viên) và hình thức đề tài.
 
 ### 3.2 Quy trình thẩm định của Trưởng khoa (`ROLE_DEAN`)
 - Trưởng khoa theo dõi danh sách các đề tài có trạng thái `PENDING` của tất cả bộ môn.
@@ -96,7 +96,7 @@ $$\text{lecturer\_start\_at} < \text{lecturer\_end\_at} < \text{student\_start\_
 2. **Cô lập theo đợt (`Period Scoping`)**: Một sinh viên chỉ được tham gia tối đa **một nhóm trong một đợt đăng ký cụ thể** (ràng buộc bằng khóa duy nhất `uk_group_member_period_student`).
 3. **Quy trình mời thành viên**:
    - Nhóm trưởng gửi lời mời qua Mã số sinh viên (MSSV).
-   - Nhóm mới tạo có thể có từ 1-2 thành viên tạm thời để gửi lời mời; khi đăng ký đề tài bắt buộc phải có từ 3 đến 5 sinh viên (tối đa 5 thành viên, từ chối thành viên thứ 6).
+   - Nhóm có từ 1 đến 3 thành viên (từ chối thành viên thứ 4); nhóm 1 người vẫn được đăng ký đề tài nếu không vượt số sinh viên tối đa của đề tài.
    - Sinh viên được mời có thể bấm **Đồng ý** (gia nhập nhóm) hoặc **Từ chối**.
 
 ### 4.2 Thao tác quản lý nhóm & Cơ chế an toàn

@@ -7,6 +7,12 @@ import topicmanagement.entity.*;
 import topicmanagement.enums.*;
 
 public final class TopicPolicy {
+    /** Group and topic capacity rules (1–3 students), shared by services, DTO validation and the H2 demo upgrade. */
+    public static final int MIN_GROUP_SIZE = 1;
+    public static final int MAX_GROUP_SIZE = 3;
+    public static final int MIN_TOPIC_STUDENTS = 1;
+    public static final int MAX_TOPIC_STUDENTS = 3;
+
     private TopicPolicy() {}
     public static void staff(User u) {
         if (u.getStatus() != UserStatus.ACTIVE || u.getRole() == Role.STUDENT)

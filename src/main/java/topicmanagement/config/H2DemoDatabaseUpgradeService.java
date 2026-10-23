@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import topicmanagement.service.TopicPolicy;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -14,7 +15,7 @@ import java.util.*;
 /**
  * Dịch vụ nâng cấp an toàn cấu trúc và dữ liệu cho cơ sở dữ liệu demo H2.
  * Chỉ áp dụng cho profile "demo" khi kết nối tới H2 database.
- * Tuyệt đối không chạy trên MySQL / Cloud (được quản lý bởi Flyway V12).
+ * Tuyệt đối không chạy trên MySQL / Cloud (được quản lý bởi Flyway V13).
  *
  * Lưu ý kỹ thuật quan trọng về H2 DDL:
  * Trong H2, các câu lệnh DDL như ALTER TABLE ... DROP/ADD CONSTRAINT tự động commit và
@@ -28,6 +29,13 @@ import java.util.*;
 @Service
 @Profile("demo")
 public class H2DemoDatabaseUpgradeService {
+
+    private static final int TOPIC_MIN = TopicPolicy.MIN_TOPIC_STUDENTS;
+    private static final int TOPIC_MAX = TopicPolicy.MAX_TOPIC_STUDENTS;
+    private static final int GROUP_MIN = TopicPolicy.MIN_GROUP_SIZE;
+    private static final int GROUP_MAX = TopicPolicy.MAX_GROUP_SIZE;
+    private static final String TOPIC_CHECK = "BETWEEN " + TOPIC_MIN + " AND " + TOPIC_MAX;
+    private static final String GROUP_CHECK = "BETWEEN " + GROUP_MIN + " AND " + GROUP_MAX;
 
     private static final Logger log = LoggerFactory.getLogger(H2DemoDatabaseUpgradeService.class);
 
@@ -73,7 +81,7 @@ public class H2DemoDatabaseUpgradeService {
 
         // Kiểm tra xem có cần thực hiện nâng cấp DDL/DML hay không
         if (!assessment.isUpgradeNeeded()) {
-            log.info("[H2DemoUpgrade] Cơ sở dữ liệu demo H2 đã đạt chuẩn quy mô V12 (constraints và dữ liệu đều hợp lệ). Không cần chạy nâng cấp.");
+            log.info("[H2DemoUpgrade] Cơ sở dữ liệu demo H2 đã đạt chuẩn quy mô V13 (constraints và dữ liệu đều hợp lệ). Không cần chạy nâng cấp.");
             return;
         }
 
@@ -108,16 +116,16 @@ public class H2DemoDatabaseUpgradeService {
                 postDropHookForTesting.run();
             }
 
-            // 3.2. Chuẩn hóa dữ liệu topics.max_students về khoảng [3, 5]
+            // 3.2. Chuẩn hóa dữ liệu topics.max_students về khoảng [TOPIC_MIN, TOPIC_MAX]
             if (assessment.topicDataNeedsNormalization) {
                 try (Statement st = conn.createStatement()) {
-                    int lowCount = st.executeUpdate("UPDATE topics SET max_students = 3 WHERE max_students < 3");
-                    int highCount = st.executeUpdate("UPDATE topics SET max_students = 5 WHERE max_students > 5");
-                    log.info("[H2DemoUpgrade] Đã chuẩn hóa đề tài: {} đề tài < 3 nâng lên 3, {} đề tài > 5 hạ xuống 5.", lowCount, highCount);
+                    int lowCount = st.executeUpdate("UPDATE topics SET max_students = " + TOPIC_MIN + " WHERE max_students < " + TOPIC_MIN);
+                    int highCount = st.executeUpdate("UPDATE topics SET max_students = " + TOPIC_MAX + " WHERE max_students > " + TOPIC_MAX);
+                    log.info("[H2DemoUpgrade] Đã chuẩn hóa đề tài: {} đề tài nâng lên {}, {} đề tài hạ xuống {}.", lowCount, TOPIC_MIN, highCount, TOPIC_MAX);
                 }
             }
 
-            // 3.3. Đồng bộ student_groups.member_count bằng đúng actual_count thực tế (từ 1 đến 5)
+            // 3.3. Đồng bộ student_groups.member_count bằng đúng actual_count thực tế (từ GROUP_MIN đến GROUP_MAX)
             if (!assessment.validGroupsToSync.isEmpty()) {
                 try (PreparedStatement ps = conn.prepareStatement("UPDATE student_groups SET member_count = ? WHERE id = ?")) {
                     for (Map.Entry<Long, Integer> entry : assessment.validGroupsToSync.entrySet()) {
@@ -132,28 +140,28 @@ public class H2DemoDatabaseUpgradeService {
                 log.info("[H2DemoUpgrade] Đã đồng bộ sĩ số member_count cho {} nhóm sinh viên.", assessment.validGroupsToSync.size());
             }
 
-            // 3.4. Đảm bảo ràng buộc ck_topics_size (BETWEEN 3 AND 5) được tạo
+            // 3.4. Đảm bảo ràng buộc ck_topics_size (TOPIC_CHECK) được tạo
             if (!hasValidTopicConstraint(conn)) {
                 try (Statement st = conn.createStatement()) {
-                    st.execute("ALTER TABLE topics ADD CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 3 AND 5)");
-                    log.info("[H2DemoUpgrade] Đã tạo mới thành công ràng buộc ck_topics_size (max_students BETWEEN 3 AND 5).");
+                    st.execute("ALTER TABLE topics ADD CONSTRAINT ck_topics_size CHECK (max_students " + TOPIC_CHECK + ")");
+                    log.info("[H2DemoUpgrade] Đã tạo mới thành công ràng buộc ck_topics_size (max_students {}).", TOPIC_CHECK);
                 }
             }
 
-            // 3.5. Đảm bảo ràng buộc ck_groups_size (BETWEEN 1 AND 5) được tạo
+            // 3.5. Đảm bảo ràng buộc ck_groups_size (GROUP_CHECK) được tạo
             if (!hasValidGroupConstraint(conn)) {
                 try (Statement st = conn.createStatement()) {
-                    st.execute("ALTER TABLE student_groups ADD CONSTRAINT ck_groups_size CHECK (member_count BETWEEN 1 AND 5)");
-                    log.info("[H2DemoUpgrade] Đã tạo mới thành công ràng buộc ck_groups_size (member_count BETWEEN 1 AND 5).");
+                    st.execute("ALTER TABLE student_groups ADD CONSTRAINT ck_groups_size CHECK (member_count " + GROUP_CHECK + ")");
+                    log.info("[H2DemoUpgrade] Đã tạo mới thành công ràng buộc ck_groups_size (member_count {}).", GROUP_CHECK);
                 }
             }
 
             // 3.6. Kiểm tra hậu điều kiện (Post-verification)
             if (!hasValidTopicConstraint(conn)) {
-                throw new IllegalStateException("Hậu kiểm thất bại: không tìm thấy ràng buộc ck_topics_size (3..5) trên bảng topics sau khi nâng cấp.");
+                throw new IllegalStateException("Hậu kiểm thất bại: không tìm thấy ràng buộc ck_topics_size (" + TOPIC_MIN + ".." + TOPIC_MAX + ") trên bảng topics sau khi nâng cấp.");
             }
             if (!hasValidGroupConstraint(conn)) {
-                throw new IllegalStateException("Hậu kiểm thất bại: không tìm thấy ràng buộc ck_groups_size (1..5) trên bảng student_groups sau khi nâng cấp.");
+                throw new IllegalStateException("Hậu kiểm thất bại: không tìm thấy ràng buộc ck_groups_size (" + GROUP_MIN + ".." + GROUP_MAX + ") trên bảng student_groups sau khi nâng cấp.");
             }
 
             log.info("[H2DemoUpgrade] Nâng cấp schema và đồng bộ dữ liệu database demo H2 hoàn tất thành công.");
@@ -239,12 +247,12 @@ public class H2DemoDatabaseUpgradeService {
                 int currentMemberCount = rs.getInt("member_count");
                 int actualCount = rs.getInt("actual_count");
 
-                if (actualCount > 5) {
+                if (actualCount > GROUP_MAX) {
                     overflowGroupIds.add(groupId);
                 } else if (actualCount == 0) {
                     zeroMemberGroupIds.add(groupId);
                 } else {
-                    // actualCount từ 1 đến 5: hợp lệ
+                    // actualCount từ GROUP_MIN đến GROUP_MAX: hợp lệ
                     if (currentMemberCount != actualCount) {
                         assessment.validGroupsToSync.put(groupId, actualCount);
                     }
@@ -252,11 +260,12 @@ public class H2DemoDatabaseUpgradeService {
             }
         }
 
-        // Báo lỗi nếu có nhóm vượt quá 5 thành viên (không tự ý cắt giảm thành viên)
+        // Báo lỗi nếu có nhóm vượt quá GROUP_MAX thành viên (không tự ý cắt giảm thành viên)
         if (!overflowGroupIds.isEmpty()) {
             throw new IllegalStateException("Preflight thất bại: Phát hiện các nhóm ID " + overflowGroupIds
-                    + " có số thành viên thực tế trong group_members vượt quá quy định tối đa 5 người. "
-                    + "Không tự ý cắt giảm dữ liệu thành viên; dừng nâng cấp để xử lý thủ công.");
+                    + " có số thành viên thực tế trong group_members vượt quá quy định tối đa " + GROUP_MAX + " người. "
+                    + "Không tự ý cắt giảm dữ liệu thành viên; dừng nâng cấp để xử lý thủ công "
+                    + "(hoặc xóa thư mục data/ để tạo lại dữ liệu demo).");
         }
 
         // Báo lỗi nếu có nhóm không có thành viên nào (actual_count = 0)
@@ -269,7 +278,7 @@ public class H2DemoDatabaseUpgradeService {
     }
 
     private void validateTopicData(Connection conn, PreflightAssessment assessment) throws SQLException {
-        String sql = "SELECT count(*) FROM topics WHERE max_students < 3 OR max_students > 5";
+        String sql = "SELECT count(*) FROM topics WHERE max_students < " + TOPIC_MIN + " OR max_students > " + TOPIC_MAX;
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             if (rs.next() && rs.getInt(1) > 0) {
@@ -283,7 +292,7 @@ public class H2DemoDatabaseUpgradeService {
         for (ConstraintInfo ci : getCheckConstraints(conn, "TOPICS")) {
             String exprUpper = ci.clause != null ? ci.clause.toUpperCase(Locale.ROOT) : "";
             if (exprUpper.contains("MAX_STUDENTS") || ci.name.equalsIgnoreCase("CK_TOPICS_SIZE")) {
-                if (exprUpper.contains("BETWEEN 3 AND 5") || (exprUpper.contains(">= 3") && exprUpper.contains("<= 5"))) {
+                if (matchesRange(exprUpper, TOPIC_MIN, TOPIC_MAX)) {
                     assessment.hasValidTopicConstraint = true;
                 } else {
                     assessment.invalidConstraintsToDrop.add(new ConstraintTarget("TOPICS", ci.name));
@@ -295,7 +304,7 @@ public class H2DemoDatabaseUpgradeService {
         for (ConstraintInfo ci : getCheckConstraints(conn, "STUDENT_GROUPS")) {
             String exprUpper = ci.clause != null ? ci.clause.toUpperCase(Locale.ROOT) : "";
             if (exprUpper.contains("MEMBER_COUNT") || ci.name.equalsIgnoreCase("CK_GROUPS_SIZE")) {
-                if (exprUpper.contains("BETWEEN 1 AND 5") || (exprUpper.contains(">= 1") && exprUpper.contains("<= 5"))) {
+                if (matchesRange(exprUpper, GROUP_MIN, GROUP_MAX)) {
                     assessment.hasValidGroupConstraint = true;
                 } else {
                     assessment.invalidConstraintsToDrop.add(new ConstraintTarget("STUDENT_GROUPS", ci.name));
@@ -381,10 +390,16 @@ public class H2DemoDatabaseUpgradeService {
         return result;
     }
 
+    /** True when a CHECK clause expresses exactly the [min, max] range (BETWEEN or >= / <= form). */
+    private static boolean matchesRange(String exprUpper, int min, int max) {
+        return exprUpper.contains("BETWEEN " + min + " AND " + max)
+            || (exprUpper.contains(">= " + min) && exprUpper.contains("<= " + max));
+    }
+
     private boolean hasValidTopicConstraint(Connection conn) throws SQLException {
         for (ConstraintInfo ci : getCheckConstraints(conn, "TOPICS")) {
             String exprUpper = ci.clause != null ? ci.clause.toUpperCase(Locale.ROOT) : "";
-            if (exprUpper.contains("MAX_STUDENTS") && (exprUpper.contains("BETWEEN 3 AND 5") || (exprUpper.contains(">= 3") && exprUpper.contains("<= 5")))) {
+            if (exprUpper.contains("MAX_STUDENTS") && matchesRange(exprUpper, TOPIC_MIN, TOPIC_MAX)) {
                 return true;
             }
         }
@@ -394,7 +409,7 @@ public class H2DemoDatabaseUpgradeService {
     private boolean hasValidGroupConstraint(Connection conn) throws SQLException {
         for (ConstraintInfo ci : getCheckConstraints(conn, "STUDENT_GROUPS")) {
             String exprUpper = ci.clause != null ? ci.clause.toUpperCase(Locale.ROOT) : "";
-            if (exprUpper.contains("MEMBER_COUNT") && (exprUpper.contains("BETWEEN 1 AND 5") || (exprUpper.contains(">= 1") && exprUpper.contains("<= 5")))) {
+            if (exprUpper.contains("MEMBER_COUNT") && matchesRange(exprUpper, GROUP_MIN, GROUP_MAX)) {
                 return true;
             }
         }

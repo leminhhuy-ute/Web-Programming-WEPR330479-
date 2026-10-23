@@ -85,24 +85,9 @@ class PeriodAndCouncilRegressionTest {
         assertNull(group.getTopic());
     }
 
-    @Test void registrationRequiresAtLeastThreeStudentsAndSamePeriodRegistrationWorks() {
+    @Test void singleStudentGroupCanRegisterAndSamePeriodRegistrationWorks() {
         students.createGroup("student", "Valid group");
-        // Registration with 1 student must be rejected
-        assertThrows(IllegalArgumentException.class, () -> students.register("student", topic.getTopicCode()));
-
-        // Add second student
-        var s2 = user("student2", Role.STUDENT);
-        students.invite("student", s2.getUserCode());
-        students.respond(s2.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s2.getId(), "PENDING").getFirst().id, true);
-        // Registration with 2 students must still be rejected
-        assertThrows(IllegalArgumentException.class, () -> students.register("student", topic.getTopicCode()));
-
-        // Add third student
-        var s3 = user("student3", Role.STUDENT);
-        students.invite("student", s3.getUserCode());
-        students.respond(s3.getUsername(), invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s3.getId(), "PENDING").getFirst().id, true);
-
-        // Registration with 3 students succeeds
+        // A group of one (only the leader) may register: groups have 1-3 members.
         students.register("student", topic.getTopicCode());
         var group = groups.findAll().getFirst();
         assertEquals(topic.getId(), group.getTopic().getId());

@@ -17,8 +17,8 @@ class EmailMigrationTest {
         }
         var flyway=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/migration/mysql")
             .baselineOnMigrate(true).baselineVersion("5").load();
-        assertEquals(7,flyway.migrate().migrationsExecuted);
-        assertEquals("12",flyway.info().current().getVersion().toString());
+        assertEquals(8,flyway.migrate().migrationsExecuted);
+        assertEquals("13",flyway.info().current().getVersion().toString());
         assertEquals(0,flyway.migrate().migrationsExecuted);
         try(var connection=DriverManager.getConnection(url,"sa","")) {
             assertTrue(connection.getMetaData().getTables(null,null,"EMAIL_NOTIFICATIONS",null).next());

@@ -38,7 +38,7 @@ Hệ thống Quản lý Đề tài Sinh viên (Student Topic Management System) 
 | :--- | :--- | :--- |
 | **`DEAN`** | Trưởng khoa | Quản trị cao nhất và học thuật cấp khoa: Thiết lập đợt đăng ký, quản lý người dùng, bộ môn, thẩm định và phê duyệt đề tài toàn khoa, phân công GVHD 1 và GVHD 2, thành lập hội đồng bảo vệ, phân công hội đồng, tổng hợp và công bố kết quả chính thức. |
 | **`LECTURER`** | Giảng viên | Đề xuất đề tài nghiên cứu, theo dõi và phê duyệt/từ chối nhóm sinh viên đăng ký đề tài của mình, giám sát tiến độ và nhập nhận xét báo cáo định kỳ của nhóm, chấm điểm phản biện khi làm GVPB, tham gia hội đồng chấm điểm với vai trò Chủ tịch, Thư ký, Phản biện hoặc Ủy viên. |
-| **`STUDENT`** | Sinh viên | Tạo nhóm nghiên cứu (từ 3 đến 5 thành viên khi đăng ký đề tài; tối đa 5 thành viên), mời thành viên cùng lớp, đăng ký đề tài công bố trong đợt, nộp báo cáo tiến độ theo 3 giai đoạn bắt buộc, theo dõi phản hồi và tra cứu kết quả điểm đánh giá. |
+| **`STUDENT`** | Sinh viên | Tạo nhóm nghiên cứu (từ 1 đến 3 thành viên), mời thành viên cùng lớp, đăng ký đề tài công bố trong đợt, nộp báo cáo tiến độ theo 3 giai đoạn bắt buộc, theo dõi phản hồi và tra cứu kết quả điểm đánh giá. |
 
 ### 1.3. Sơ đồ luồng nghiệp vụ khép kín (End-to-End Workflow Flow)
 
@@ -48,7 +48,7 @@ Hệ thống Quản lý Đề tài Sinh viên (Student Topic Management System) 
          │
          ▼
 [ BƯỚC 2: GIẢNG VIÊN (LECTURER) ]
-  └── Đề xuất Đề tài mới (Topic: PENDING, maxStudents từ 3 đến 5) trong thời hạn của Giảng viên
+  └── Đề xuất Đề tài mới (Topic: PENDING, maxStudents từ 1 đến 3) trong thời hạn của Giảng viên
          │
          ▼
 [ BƯỚC 3: TRƯỞNG KHOA (DEAN) ]
@@ -57,8 +57,8 @@ Hệ thống Quản lý Đề tài Sinh viên (Student Topic Management System) 
          ▼
 [ BƯỚC 4: SINH VIÊN (STUDENT) ]
   ├── 4.1. Nhóm trưởng tạo Nhóm sinh viên (1 thành viên ban đầu)
-  ├── 4.2. Mời thành viên bằng MSSV -> Thành viên chấp nhận (Tối đa 5 thành viên, cần từ 3 đến 5 thành viên để đăng ký)
-  └── 4.3. Tìm kiếm trong Kho đề tài -> Đăng ký đề tài khi nhóm đạt từ 3 đến 5 thành viên (Topic Registration: PENDING)
+  ├── 4.2. Mời thành viên bằng MSSV -> Thành viên chấp nhận (Tối đa 3 thành viên)
+  └── 4.3. Tìm kiếm trong Kho đề tài -> Đăng ký đề tài khi nhóm có từ 1 đến 3 thành viên (Topic Registration: PENDING)
          │
          ▼
 [ BƯỚC 5: GIẢNG VIÊN HƯỚNG DẪN (ADVISOR) ]
@@ -214,7 +214,7 @@ Xác minh giảng viên (`LECTURER`) có thể đề xuất đề tài mới tro
    * **Tên đề tài:** `Nghiên cứu ứng dụng Kiến trúc Clean Architecture trong phát triển Spring Boot`
    * **Mô tả chi tiết:** `Nghiên cứu và triển khai hệ thống mẫu áp dụng Clean Architecture, Domain-Driven Design (DDD) trên nền Java 21 và Spring Boot 3.3.` (Độ dài > 10 ký tự)
    * **Yêu cầu kỹ thuật:** `Thành thạo Java Core, Spring Boot, thiết kế CSDL quan hệ MySQL.`
-   * **Số sinh viên tối đa:** `3` (Nhập số từ 3 đến 5)
+   * **Số sinh viên tối đa:** `3` (Nhập số từ 1 đến 3)
    * **Loại đề tài:** Chọn `Môn học` (`COURSE`)
    * **Bộ môn:** Chọn `Công nghệ phần mềm` (`CNPM`)
    * **Đợt đăng ký:** Chọn `Đợt đề xuất đề tài môn học Học kỳ I năm học 2026-2027` (Đợt đang mở cho GV)
@@ -233,7 +233,7 @@ Xác minh giảng viên (`LECTURER`) có thể đề xuất đề tài mới tro
 | :--- | :--- | :--- | :--- |
 | **TC-TOP-NEG-01** | Trùng mã đề tài đã có trong hệ thống | Nhập mã `DT-CNPM-202601` (đã có trong seed data) | Báo lỗi: Mã đề tài đã tồn tại. Không cho phép lưu. |
 | **TC-TOP-NEG-02** | Mô tả đề tài quá ngắn (< 10 ký tự) | Nhập Mô tả: `App web` | Báo lỗi validation: `Mô tả đề tài phải có ít nhất 10 ký tự`. |
-| **TC-TOP-NEG-03** | Số lượng sinh viên không hợp lệ | Nhập `maxStudents = 2` hoặc `maxStudents = 6` (Lưu ý: `maxStudents = 4` là hoàn toàn hợp lệ) | Form chặn nhập hoặc API trả lỗi: Số lượng sinh viên tối đa cho một đề tài phải từ 3 đến 5. |
+| **TC-TOP-NEG-03** | Số lượng sinh viên không hợp lệ | Nhập `maxStudents = 0` hoặc `maxStudents = 4` | Form chặn nhập hoặc API trả lỗi: Số lượng sinh viên tối đa của đề tài phải từ 1 đến 3 sinh viên. |
 | **TC-TOP-NEG-04** | Đề xuất vào đợt đã đóng nhận đề tài | Chọn đợt `Đợt bảo vệ Khóa luận...` (đã qua `lecturerEndAt`) | API từ chối với thông báo: Đợt đăng ký hiện không mở cho giảng viên đề xuất. |
 | **TC-TOP-NEG-05** | Giảng viên sửa đề tài đã được duyệt | Đăng nhập `lecturer01`, mở form sửa đề tài `DT-CNPM-202601` (đã `APPROVED`) | Nút "Sửa" bị ẩn; nếu gửi API `PUT /api/lecturer/topics/{id}`, hệ thống báo lỗi không cho phép sửa đề tài đã duyệt. |
 | **TC-TOP-NEG-06** | IDOR: Giảng viên A cố xóa đề tài của Giảng viên B | Đăng nhập `lecturer01`, gửi `DELETE /api/lecturer/topics/3` (đề tài của `lecturer02`) | Hệ thống trả về lỗi **403 Forbidden** hoặc thông báo bạn không có quyền sửa đổi đề tài này. |
@@ -299,9 +299,9 @@ Xác minh Trưởng khoa (`DEAN`) có thể thẩm định đề tài chờ duy�
 ## 7. KỊCH BẢN KIỂM THỬ LUỒNG QUẢN LÝ NHÓM SINH VIÊN (STUDENT GROUP WORKFLOW)
 
 ### 7.1. Mục tiêu kiểm thử
-Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cùng lớp qua MSSV, xử lý lời mời (đồng ý / từ chối), chuyển quyền nhóm trưởng, rời nhóm, giải tán nhóm và bảo đảm các quy chế đào tạo: nhóm mới tạo có từ 1-2 thành viên ở trạng thái chờ ghép nhóm, khi đăng ký đề tài bắt buộc phải đạt từ 3 đến 5 thành viên (tối đa 5 thành viên), mỗi sinh viên chỉ thuộc tối đa 1 nhóm trong một đợt đăng ký.
+Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cùng lớp qua MSSV, xử lý lời mời (đồng ý / từ chối), chuyển quyền nhóm trưởng, rời nhóm, giải tán nhóm và bảo đảm các quy chế đào tạo: nhóm có từ 1 đến 3 thành viên, mỗi sinh viên chỉ thuộc tối đa 1 nhóm trong một đợt đăng ký.
 
-### 7.2. Kịch bản Thành công: Tạo nhóm và Mời đủ từ 3 đến 5 thành viên (TC-GRP-01)
+### 7.2. Kịch bản Thành công: Tạo nhóm và Mời đủ 3 thành viên (TC-GRP-01)
 * **Tài khoản thực hiện:** `student03` (MSSV: 22110003 - Trưởng nhóm), `student04` (MSSV: 22110004) và `student05` (MSSV: 22110005)
 * **Đường dẫn UI:** `/` (Trang không gian sinh viên) ➔ Tab **"Nhóm của tôi"** (`#group`)
 
@@ -311,7 +311,7 @@ Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cù
 3. Khung màn hình hiển thị trạng thái chưa có nhóm. Bấm nút **"+ Tạo nhóm mới"**.
 4. Nhập tên nhóm: `Nhóm Phát triển Hệ thống Web Thông minh` ➔ Bấm **"Tạo nhóm"**.
    * Hệ thống thông báo: *"Đã tạo nhóm. Bạn là nhóm trưởng."*.
-   * Giao diện cập nhật danh sách thành viên: `Lê Hoàng Nam (Bạn) - MSSV: 22110003 - Badge: Nhóm trưởng` (Số lượng: 1 / 5 thành viên).
+   * Giao diện cập nhật danh sách thành viên: `Lê Hoàng Nam (Bạn) - MSSV: 22110003 - Badge: Nhóm trưởng` (Số lượng: 1 / 3 thành viên).
 5. Bấm nút **"+ Mời thành viên"**:
    * Nhập MSSV: `22110004` (Tài khoản của `student04`).
    * Bấm **"Gửi lời mời"**.
@@ -323,7 +323,7 @@ Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cù
    * Truy cập tab **"Nhóm của tôi"** (`#group`), bấm nút **"Tham gia nhóm"** từ nhóm của `student03`.
 8. Tải lại trang với tài khoản `student03` (hoặc bất kỳ thành viên nào trong nhóm):
    * Danh sách thành viên nhóm hiển thị đủ 3 sinh viên (`student03` - Nhóm trưởng, `student04` - Thành viên, `student05` - Thành viên).
-   * Huy hiệu thành viên cập nhật `3 / 5 thành viên` (đã đủ điều kiện từ 3 đến 5 sinh viên để thực hiện đăng ký đề tài).
+   * Huy hiệu thành viên cập nhật `3 / 3 thành viên` (nhóm đã đủ, không nhận thêm thành viên).
 
 ---
 
@@ -358,7 +358,7 @@ Xác minh sinh viên có thể tự do tạo nhóm trong đợt, mời bạn cù
 | Mã test case | Tình huống kiểm thử | Thao tác / Dữ liệu kiểm thử | Kết quả mong đợi |
 | :--- | :--- | :--- | :--- |
 | **TC-GRP-NEG-01** | Mời thành viên đã có nhóm trong cùng đợt | Mời MSSV `22110001` (`student01` vốn đã ở nhóm `GRP-202601`) | Báo lỗi: Sinh viên này đã tham gia một nhóm khác trong đợt đăng ký này. Không thể gửi lời mời. |
-| **TC-GRP-NEG-02** | Mời vượt quá số lượng tối đa 5 thành viên | Nhóm đã có đủ 5 thành viên, tiếp tục gửi lời mời cho sinh viên thứ 6 | Báo lỗi nghiệp vụ: Nhóm đã đủ 5 thành viên. |
+| **TC-GRP-NEG-02** | Mời vượt quá số lượng tối đa 3 thành viên | Nhóm đã có đủ 3 thành viên, tiếp tục gửi lời mời cho sinh viên thứ 4 | Báo lỗi nghiệp vụ: Nhóm đã đủ 3 thành viên. |
 | **TC-GRP-NEG-03** | Thành viên (không phải nhóm trưởng) cố mời bạn | Đăng nhập tài khoản thành viên thường, gọi API `POST /api/student/groups/invitations` | Hệ thống báo lỗi: Chỉ nhóm trưởng mới có quyền gửi lời mời tham gia nhóm. |
 | **TC-GRP-NEG-04** | Thay đổi thành viên khi nhóm đã đăng ký đề tài | Nhóm đã nộp đăng ký đề tài (trạng thái `PENDING` hoặc `APPROVED`), cố gửi lời mời / xóa thành viên | Giao diện hiển thị cảnh báo: *"Danh sách thành viên đã khóa vì nhóm đã đăng ký đề tài"*. API từ chối sửa đổi. |
 | **TC-GRP-NEG-05** | Nhóm trưởng tự rời nhóm khi chưa chuyển quyền | Nhóm còn 2 thành viên, nhóm trưởng cố gọi API `leaveGroup` mà chưa chọn nhóm trưởng mới | Hệ thống yêu cầu nhóm trưởng phải chuyển quyền cho thành viên khác trước khi rời nhóm. |
@@ -421,7 +421,7 @@ Xác minh Nhóm trưởng đại diện đăng ký đề tài mở trong Kho đ�
 | **TC-REG-NEG-03** | Đăng ký đề tài đã hết hạn đợt | Cố đăng ký vào đề tài thuộc đợt có `studentEndAt` < thời điểm hiện tại | Hệ thống báo lỗi: Đã ngoài thời gian đăng ký đề tài của đợt. |
 | **TC-REG-NEG-04** | Nhóm cố đăng ký 2 đề tài cùng lúc | Nhóm đã có đề tài ở trạng thái `PENDING`/`APPROVED`, cố gọi API đăng ký thêm đề tài thứ hai | Báo lỗi nghiệp vụ: Nhóm hiện đã có một đăng ký đề tài đang được xử lý hoặc đã duyệt. |
 | **TC-REG-NEG-05** | Giảng viên hướng dẫn từ chối nhóm không nhập lý do | Giảng viên bấm "Từ chối" nhóm nhưng để trống lý do | Hệ thống yêu cầu bắt buộc nhập lý do từ chối để sinh viên nắm được thông tin. |
-| **TC-REG-NEG-06** | Nhóm chưa đủ 3 sinh viên cố đăng ký đề tài | Nhóm mới có 1 hoặc 2 thành viên, nhóm trưởng cố đăng ký đề tài | Báo lỗi nghiệp vụ: Nhóm phải có từ 3 đến 5 sinh viên mới được đăng ký đề tài. |
+| **TC-REG-NEG-06** | Nhóm vượt số sinh viên tối đa của đề tài | Nhóm 3 thành viên đăng ký đề tài có `maxStudents = 2` | Báo lỗi nghiệp vụ: Nhóm vượt số thành viên cho phép của đề tài. |
 
 ---
 
@@ -703,7 +703,7 @@ FROM student_groups g
 JOIN group_members gm ON g.id = gm.group_id
 JOIN users u ON gm.student_id = u.id
 ORDER BY g.id, gm.member_role DESC;
--- Kiểm tra: Mỗi nhóm có từ 1 đến 5 thành viên (ck_groups_size); khi đăng ký đề tài phải đạt từ 3 đến 5 thành viên; ràng buộc uk_group_member_period_student không bị vi phạm.
+-- Kiểm tra: Mỗi nhóm có từ 1 đến 3 thành viên (ck_groups_size); ràng buộc uk_group_member_period_student không bị vi phạm.
 ```
 
 ### 14.4. Kiểm tra Lịch sử thay đổi trạng thái Đăng ký đề tài
@@ -754,7 +754,7 @@ Tester hoặc Nhóm phát triển có thể dùng bảng kiểm này để đán
 
 - [ ] **Bước 1 (DEAN):** Đăng nhập `dean01`, tạo đợt đăng ký mới với cấu hình thời gian chuẩn.
 - [ ] **Bước 2 (DEAN):** Kiểm tra bộ lọc người dùng, bộ môn và đăng thông báo chung toàn khoa.
-- [ ] **Bước 3 (LECTURER):** Đăng nhập `lecturer01`, đề xuất đề tài mới `DT-CNPM-202699` (Mô tả >= 10 ký tự, maxStudents từ 3 đến 5 sinh viên).
+- [ ] **Bước 3 (LECTURER):** Đăng nhập `lecturer01`, đề xuất đề tài mới `DT-CNPM-202699` (Mô tả >= 10 ký tự, maxStudents từ 1 đến 3 sinh viên).
 - [ ] **Bước 4 (DEAN):** Đăng nhập `dean01`, mở trang Duyệt đề tài bộ môn, phân công GVHD1 và GVHD2, bấm Duyệt đề tài.
 - [ ] **Bước 5 (STUDENT):** Đăng nhập `student03`, vào tab Kho đề tài, xác nhận đề tài vừa duyệt đã xuất hiện công khai.
 - [ ] **Bước 6 (STUDENT):** `student03` vào tab Nhóm của tôi, tạo nhóm mới `Nhóm Nghiên cứu Kỹ thuật Phần mềm`.

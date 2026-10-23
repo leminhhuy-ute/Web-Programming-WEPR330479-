@@ -26,10 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Luôn kiểm tra số dòng thực sự được cập nhật khi thực thi câu lệnh SQL.
  * - Kiểm thử toàn diện:
  *   1. Preflight từ chối nhóm 0 thành viên, không tự ghi giả member_count = 1, database không bị đổi.
- *   2. Preflight từ chối nhóm > 5 thành viên, database không bị đổi.
+ *   2. Preflight từ chối nhóm > 3 thành viên, database không bị đổi.
  *   3. Preflight báo lỗi rõ ràng khi thiếu bảng hoặc cột bắt buộc.
  *   4. Nâng cấp thành công từ database chưa có constraint, tự động tạo backup zip đọc được bằng ZipFile.
- *   5. Nâng cấp thành công từ database cũ có constraint 1–3, gỡ bỏ ràng buộc cũ trước khi đồng bộ.
+ *   5. Nâng cấp thành công từ database cũ có constraint 3–5 (V12), gỡ bỏ ràng buộc cũ và đưa về 1–3.
  *   6. Tính bất biến (idempotent) khi chạy nâng cấp nhiều lần liên tiếp.
  *   7. Mô phỏng lỗi sau khi DDL đã bắt đầu: service dừng khởi động, báo lỗi trạng thái nâng cấp một phần,
  *      cung cấp đường dẫn backup và hướng dẫn phục hồi; backup file tồn tại và đọc được.
@@ -107,7 +107,7 @@ public class DemoDatabaseCheckTest {
     }
 
     @Test
-    @DisplayName("Kịch bản 2: Preflight từ chối nhóm có > 5 thành viên, dừng nâng cấp và không chạy DDL")
+    @DisplayName("Kịch bản 2: Preflight từ chối nhóm có > 3 thành viên, dừng nâng cấp và không chạy DDL")
     void testPreflightRejectsOverflowMemberGroupWithoutModifyingDatabase(@TempDir Path tempDir) throws Exception {
         try (Connection conn = createTempH2Connection(tempDir, "db_overflow")) {
             createBaseTables(conn);
@@ -116,7 +116,7 @@ public class DemoDatabaseCheckTest {
             try (Statement st = conn.createStatement()) {
                 st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (1, 'DT-1', 'Đề tài 1', 3)");
                 st.executeUpdate("INSERT INTO student_groups(id, group_name, member_count) VALUES (" + gid + ", 'Nhóm Quá Tải', 3)");
-                for (int i = 1; i <= 6; i++) {
+                for (int i = 1; i <= 4; i++) {
                     st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (" + gid + ", " + i + ", 'MEMBER')");
                 }
             }
@@ -125,7 +125,7 @@ public class DemoDatabaseCheckTest {
 
             IllegalStateException ex = assertThrows(IllegalStateException.class, () -> service.upgradeDemoDatabase(conn));
             assertTrue(ex.getMessage().contains("Preflight thất bại"));
-            assertTrue(ex.getMessage().contains("vượt quá quy định tối đa 5 người"));
+            assertTrue(ex.getMessage().contains("vượt quá quy định tối đa 3 người"));
             assertTrue(ex.getMessage().contains(String.valueOf(gid)));
             assertTrue(ex.getMessage().contains("Không tự ý cắt giảm dữ liệu thành viên"));
 
@@ -163,25 +163,23 @@ public class DemoDatabaseCheckTest {
             long t101, t102, t103;
             long g101, g102;
             try (Statement st = conn.createStatement()) {
-                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (101, 'DT-101', 'Đề tài nhỏ', 2)");
+                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (101, 'DT-101', 'Đề tài nhỏ', 0)");
                 st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (102, 'DT-102', 'Đề tài lớn', 6)");
-                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (103, 'DT-103', 'Đề tài chuẩn', 4)");
+                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (103, 'DT-103', 'Đề tài chuẩn', 2)");
                 t101 = 101L; t102 = 102L; t103 = 103L;
 
                 st.executeUpdate("INSERT INTO student_groups(id, group_name, member_count) VALUES (101, 'Nhóm A', 2)");
                 st.executeUpdate("INSERT INTO student_groups(id, group_name, member_count) VALUES (102, 'Nhóm B', 1)");
                 g101 = 101L; g102 = 102L;
 
-                // Nhóm 101 có 4 thành viên thực tế
+                // Nhóm 101 có 3 thành viên thực tế
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (101, 1, 'LEADER')");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (101, 2, 'MEMBER')");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (101, 3, 'MEMBER')");
-                st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (101, 4, 'MEMBER')");
 
-                // Nhóm 102 có 3 thành viên thực tế
+                // Nhóm 102 có 2 thành viên thực tế
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (102, 5, 'LEADER')");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (102, 6, 'MEMBER')");
-                st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (102, 7, 'MEMBER')");
             }
 
             H2DemoDatabaseUpgradeService service = new H2DemoDatabaseUpgradeService(null);
@@ -191,26 +189,30 @@ public class DemoDatabaseCheckTest {
             try (Statement st = conn.createStatement()) {
                 try (ResultSet rs = st.executeQuery("SELECT max_students FROM topics WHERE id = " + t101)) {
                     assertTrue(rs.next());
-                    assertEquals(3, rs.getInt(1));
+                    assertEquals(1, rs.getInt(1));
                 }
                 try (ResultSet rs = st.executeQuery("SELECT max_students FROM topics WHERE id = " + t102)) {
                     assertTrue(rs.next());
-                    assertEquals(5, rs.getInt(1));
+                    assertEquals(3, rs.getInt(1));
+                }
+                try (ResultSet rs = st.executeQuery("SELECT max_students FROM topics WHERE id = " + t103)) {
+                    assertTrue(rs.next());
+                    assertEquals(2, rs.getInt(1));
                 }
                 try (ResultSet rs = st.executeQuery("SELECT member_count FROM student_groups WHERE id = " + g101)) {
                     assertTrue(rs.next());
-                    assertEquals(4, rs.getInt(1));
+                    assertEquals(3, rs.getInt(1));
                 }
                 try (ResultSet rs = st.executeQuery("SELECT member_count FROM student_groups WHERE id = " + g102)) {
                     assertTrue(rs.next());
-                    assertEquals(3, rs.getInt(1));
+                    assertEquals(2, rs.getInt(1));
                 }
 
                 // Kiểm tra ràng buộc hoạt động
-                assertEquals(1, st.executeUpdate("UPDATE topics SET max_students = 4 WHERE id = " + t101));
-                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE topics SET max_students = 2 WHERE id = " + t101));
-                assertEquals(1, st.executeUpdate("UPDATE student_groups SET member_count = 5 WHERE id = " + g101));
-                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE student_groups SET member_count = 6 WHERE id = " + g101));
+                assertEquals(1, st.executeUpdate("UPDATE topics SET max_students = 2 WHERE id = " + t101));
+                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE topics SET max_students = 4 WHERE id = " + t101));
+                assertEquals(1, st.executeUpdate("UPDATE student_groups SET member_count = 1 WHERE id = " + g101));
+                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE student_groups SET member_count = 4 WHERE id = " + g101));
             }
 
             // Xác minh bản sao lưu H2 backup zip được tạo trước DDL trong thư mục backups
@@ -227,31 +229,30 @@ public class DemoDatabaseCheckTest {
     }
 
     @Test
-    @DisplayName("Kịch bản 5: Nâng cấp thành công từ CSDL cũ CÓ RÀNG BUỘC CŨ 1–3")
-    void testUpgradeFromDatabaseWithOld1To3Constraints(@TempDir Path tempDir) throws Exception {
+    @DisplayName("Kịch bản 5: Nâng cấp thành công từ CSDL cũ CÓ RÀNG BUỘC CŨ 3–5")
+    void testUpgradeFromDatabaseWithOld3To5Constraints(@TempDir Path tempDir) throws Exception {
         try (Connection conn = createTempH2Connection(tempDir, "db_old_constraints")) {
             createBaseTables(conn);
 
-            // Gắn ràng buộc cũ (1-3)
+            // Gắn ràng buộc cũ của V12 (đề tài 3-5, nhóm 1-5)
             try (Statement st = conn.createStatement()) {
-                st.execute("ALTER TABLE topics ADD CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 1 AND 3)");
-                st.execute("ALTER TABLE student_groups ADD CONSTRAINT ck_groups_size CHECK (member_count BETWEEN 1 AND 3)");
+                st.execute("ALTER TABLE topics ADD CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 3 AND 5)");
+                st.execute("ALTER TABLE student_groups ADD CONSTRAINT ck_groups_size CHECK (member_count BETWEEN 1 AND 5)");
 
-                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (201, 'DT-201', 'Đề tài 1', 1)");
-                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (202, 'DT-202', 'Đề tài 2', 2)");
+                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (201, 'DT-201', 'Đề tài 1', 5)");
+                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (202, 'DT-202', 'Đề tài 2', 4)");
                 st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (203, 'DT-203', 'Đề tài 3', 3)");
 
-                st.executeUpdate("INSERT INTO student_groups(id, group_name, member_count) VALUES (201, 'Nhóm Cũ', 3)");
+                st.executeUpdate("INSERT INTO student_groups(id, group_name, member_count) VALUES (201, 'Nhóm Cũ', 2)");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (201, 11, 'LEADER')");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (201, 12, 'MEMBER')");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (201, 13, 'MEMBER')");
-                st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (201, 14, 'MEMBER')");
             }
 
-            // Trước nâng cấp: CSDL cũ từ chối max_students = 4
+            // Trước nâng cấp: CSDL cũ từ chối max_students = 2
             try (Statement st = conn.createStatement()) {
                 assertThrows(SQLException.class, () ->
-                        st.executeUpdate("INSERT INTO topics(topic_code, title, max_students) VALUES ('DT-ERR', 'Lỗi', 4)"));
+                        st.executeUpdate("INSERT INTO topics(topic_code, title, max_students) VALUES ('DT-ERR', 'Lỗi', 2)"));
             }
 
             H2DemoDatabaseUpgradeService service = new H2DemoDatabaseUpgradeService(null);
@@ -263,18 +264,22 @@ public class DemoDatabaseCheckTest {
                     assertTrue(rs.next());
                     assertEquals(3, rs.getInt(1));
                 }
+                try (ResultSet rs = st.executeQuery("SELECT max_students FROM topics WHERE id = 202")) {
+                    assertTrue(rs.next());
+                    assertEquals(3, rs.getInt(1));
+                }
                 try (ResultSet rs = st.executeQuery("SELECT member_count FROM student_groups WHERE id = 201")) {
                     assertTrue(rs.next());
-                    assertEquals(4, rs.getInt(1));
+                    assertEquals(3, rs.getInt(1));
                 }
 
-                // Cho phép giá trị 4 và 5
-                assertEquals(1, st.executeUpdate("UPDATE topics SET max_students = 4 WHERE id = 201"));
-                assertEquals(1, st.executeUpdate("UPDATE student_groups SET member_count = 5 WHERE id = 201"));
+                // Cho phép giá trị 1 và 2
+                assertEquals(1, st.executeUpdate("UPDATE topics SET max_students = 1 WHERE id = 201"));
+                assertEquals(1, st.executeUpdate("UPDATE student_groups SET member_count = 2 WHERE id = 201"));
 
                 // Từ chối giá trị ngoài khoảng
-                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE topics SET max_students = 2 WHERE id = 201"));
-                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE student_groups SET member_count = 6 WHERE id = 201"));
+                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE topics SET max_students = 4 WHERE id = 201"));
+                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE student_groups SET member_count = 4 WHERE id = 201"));
             }
         }
     }
@@ -303,10 +308,10 @@ public class DemoDatabaseCheckTest {
 
             // Xác minh dữ liệu và ràng buộc vẫn toàn vẹn
             try (Statement st = conn.createStatement()) {
-                assertEquals(1, st.executeUpdate("UPDATE topics SET max_students = 4 WHERE id = 301"));
-                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE topics SET max_students = 2 WHERE id = 301"));
-                assertEquals(1, st.executeUpdate("UPDATE student_groups SET member_count = 5 WHERE id = 301"));
-                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE student_groups SET member_count = 6 WHERE id = 301"));
+                assertEquals(1, st.executeUpdate("UPDATE topics SET max_students = 1 WHERE id = 301"));
+                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE topics SET max_students = 4 WHERE id = 301"));
+                assertEquals(1, st.executeUpdate("UPDATE student_groups SET member_count = 2 WHERE id = 301"));
+                assertThrows(SQLException.class, () -> st.executeUpdate("UPDATE student_groups SET member_count = 4 WHERE id = 301"));
             }
         }
     }
@@ -319,8 +324,8 @@ public class DemoDatabaseCheckTest {
 
             // Gắn constraint cũ để kích hoạt việc drop constraint
             try (Statement st = conn.createStatement()) {
-                st.execute("ALTER TABLE topics ADD CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 1 AND 3)");
-                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (501, 'DT-501', 'Đề tài', 2)");
+                st.execute("ALTER TABLE topics ADD CONSTRAINT ck_topics_size CHECK (max_students BETWEEN 3 AND 5)");
+                st.executeUpdate("INSERT INTO topics(id, topic_code, title, max_students) VALUES (501, 'DT-501', 'Đề tài', 3)");
                 st.executeUpdate("INSERT INTO student_groups(id, group_name, member_count) VALUES (501, 'Nhóm', 2)");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (501, 51, 'LEADER')");
                 st.executeUpdate("INSERT INTO group_members(group_id, student_id, member_role) VALUES (501, 52, 'MEMBER')");

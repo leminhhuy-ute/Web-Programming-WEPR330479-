@@ -121,7 +121,7 @@ function dashboard() {
     `<div class="grid metrics">
       <div class="panel metric">
         <span class="metric-icon">${icon('users')}</span>
-        <div><small>NHÓM SINH VIÊN</small><strong>${state.group?`${state.group.members.length} / 5 thành viên`:'Chưa tham gia'}</strong></div>
+        <div><small>NHÓM SINH VIÊN</small><strong>${state.group?`${state.group.members.length} / ${state.group.maxMembers} thành viên`:'Chưa tham gia'}</strong></div>
       </div>
       <div class="panel metric">
         <span class="metric-icon">${icon('book')}</span>
@@ -143,7 +143,7 @@ function dashboard() {
     <div class="grid cols">
       <section class="panel">
         <div class="panel-head"><h2>Nhóm của tôi</h2><a href="#group">Quản lý nhóm →</a></div>
-        ${state.group?`<div class="panel-head"><h3>${esc(state.group.name)}</h3>${badge('MEMBER',`${state.group.members.length}/5 thành viên`)}</div>${groupMembers(true)}`:empty('Bạn chưa có nhóm','Tạo một nhóm mới hoặc chấp nhận lời mời từ bạn cùng lớp.',linkButton('group','Đến quản lý nhóm'))}
+        ${state.group?`<div class="panel-head"><h3>${esc(state.group.name)}</h3>${badge('MEMBER',`${state.group.members.length}/${state.group.maxMembers} thành viên`)}</div>${groupMembers(true)}`:empty('Bạn chưa có nhóm','Tạo một nhóm mới hoặc chấp nhận lời mời từ bạn cùng lớp.',linkButton('group','Đến quản lý nhóm'))}
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Tiến trình thực hiện</h2></div>
@@ -153,7 +153,7 @@ function dashboard() {
     <section class="panel section-gap">
       <div class="panel-head"><h2>Thông tin cần lưu ý</h2>${badge('MEMBER','Quy chế đào tạo')}</div>
       <div class="grid cols">
-        <div><h3>Mỗi sinh viên tham gia một nhóm</h3><p class="muted">Nhóm có từ 3 đến 5 thành viên (tối đa 5 thành viên) và một nhóm trưởng. Nhóm trưởng thay mặt nhóm đăng ký đề tài và nộp báo cáo.</p></div>
+        <div><h3>Mỗi sinh viên tham gia một nhóm</h3><p class="muted">Nhóm có từ 1 đến 3 thành viên và một nhóm trưởng. Nhóm trưởng thay mặt nhóm đăng ký đề tài và nộp báo cáo.</p></div>
         <div><h3>Kiểm tra thời gian đăng ký</h3><p class="muted">Chỉ đăng ký trong thời gian mở của đề tài. Kết quả xét duyệt được hiển thị tại mục Đề tài đang thực hiện.</p></div>
       </div>
     </section>`;
@@ -172,8 +172,8 @@ function groupPage() {
     `<section class="panel section-gap"><p><b>Đợt của nhóm:</b> ${esc(state.group?.periodName || 'Chưa tham gia nhóm')}</p>${state.group && periodChoices.some(p => p.open && !p.joined) ? '<button type="button" class="button secondary" data-action="create">Tạo nhóm trong đợt khác</button>' : ''}</section>` +
     `<div class="grid cols">
       <section class="panel">
-        <div class="panel-head"><h2>${state.group?esc(state.group.name):'Tạo nhóm sinh viên'}</h2>${state.group?badge('MEMBER',`${state.group.members.length}/5 thành viên`):''}</div>
-        ${state.group?`${groupMembers()}${isLocked?`<div class="hint">${icon('info')}Danh sách thành viên đã khóa vì nhóm đã đăng ký đề tài.</div>`:`<div class="hint">${icon('info')}Còn ${5-state.group.members.length} chỗ trống (nhóm cần từ 3 đến 5 thành viên để đăng ký đề tài). Thành viên được thêm khi chấp nhận lời mời.</div>`}<div class="actions">${linkButton('topics','Tiếp tục chọn đề tài')}${!isLocked?(leader?'<button type="button" class="button danger" data-action="disband-group">Giải tán nhóm</button>':'<button type="button" class="button danger" data-action="leave-group">Rời nhóm</button>'):''}</div>`:empty('Cùng nhau bắt đầu','Người tạo nhóm sẽ là nhóm trưởng đầu tiên. Bạn có thể chuyển quyền cho một thành viên trong nhóm.','<button type="button" class="button primary" data-action="create">+ Tạo nhóm mới</button>')}
+        <div class="panel-head"><h2>${state.group?esc(state.group.name):'Tạo nhóm sinh viên'}</h2>${state.group?badge('MEMBER',`${state.group.members.length}/${state.group.maxMembers} thành viên`):''}</div>
+        ${state.group?`${groupMembers()}${isLocked?`<div class="hint">${icon('info')}Danh sách thành viên đã khóa vì nhóm đã đăng ký đề tài.</div>`:`<div class="hint">${icon('info')}Còn ${state.group.maxMembers-state.group.members.length} chỗ trống (nhóm tối đa ${state.group.maxMembers} thành viên). Thành viên được thêm khi chấp nhận lời mời.</div>`}<div class="actions">${linkButton('topics','Tiếp tục chọn đề tài')}${!isLocked?(leader?'<button type="button" class="button danger" data-action="disband-group">Giải tán nhóm</button>':'<button type="button" class="button danger" data-action="leave-group">Rời nhóm</button>'):''}</div>`:empty('Cùng nhau bắt đầu','Người tạo nhóm sẽ là nhóm trưởng đầu tiên. Bạn có thể chuyển quyền cho một thành viên trong nhóm.','<button type="button" class="button primary" data-action="create">+ Tạo nhóm mới</button>')}
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Lời mời dành cho bạn</h2>${badge('MEMBER',state.invitations.length+' lời mời')}</div>
@@ -417,7 +417,7 @@ document.addEventListener('click', e => {
   if (b.dataset.action === 'create') {
     const available = periodChoices.filter(p => p.open && !p.joined);
     if (!available.length) { toast('Không có đợt đang mở mà bạn chưa tham gia nhóm.', true); return; }
-    openDialog('Tạo nhóm mới', `<p class="muted">Nhóm từ 3 đến 5 sinh viên (tối đa 5 sinh viên). Chọn đợt trước khi tạo nhóm.</p><form id="create-form"><label>Đợt đăng ký<select name="periodId" required>${available.map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.type)}</option>`).join('')}</select></label><label>Tên nhóm<input name="name" required maxlength="80" placeholder="Ví dụ: Nhóm Phát triển phần mềm"></label><button class="button primary" type="submit">Tạo nhóm</button></form>`);
+    openDialog('Tạo nhóm mới', `<p class="muted">Nhóm từ 1 đến 3 sinh viên. Chọn đợt trước khi tạo nhóm.</p><form id="create-form"><label>Đợt đăng ký<select name="periodId" required>${available.map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.type)}</option>`).join('')}</select></label><label>Tên nhóm<input name="name" required maxlength="80" placeholder="Ví dụ: Nhóm Phát triển phần mềm"></label><button class="button primary" type="submit">Tạo nhóm</button></form>`);
   }
   if (b.dataset.action === 'invite') openDialog('Mời thành viên', '<p class="muted">Gửi lời mời bằng mã số sinh viên. Người nhận cần xác nhận trước khi được thêm vào nhóm.</p><form id="invite-form"><label>Mã số sinh viên<input name="studentId" required maxlength="30" placeholder="Ví dụ: 22110002"></label><button class="button primary" type="submit">Gửi lời mời</button></form>');
   if (b.dataset.action === 'cancel-registration') openDialog('Hủy đăng ký đề tài', '<p>Đăng ký sẽ chuyển sang trạng thái <b>Đã hủy</b> và lịch sử vẫn được giữ nguyên.</p><form id="cancel-form"><label>Lý do<textarea name="note" maxlength="2000" placeholder="Lý do hủy đăng ký"></textarea></label><button class="button danger" type="submit">Xác nhận hủy</button></form>');
@@ -444,9 +444,9 @@ document.addEventListener('click', e => {
   if (b.dataset.topic) {
     const item = catalog.find(x => x.topic.id === b.dataset.topic);
     const samePeriod = state.group?.periodId === item.topic.periodId;
-    const hasValidSize = state.group && state.group.members.length >= 3 && state.group.members.length <= item.topic.capacity;
+    const hasValidSize = state.group && state.group.members.length >= 1 && state.group.members.length <= item.topic.capacity;
     const can = isLeader() && !locked() && item.open && samePeriod && hasValidSize;
-    openDialog('Chi tiết đề tài', `${topicBody(item.topic)}<div class="notice">${!state.group ? 'Bạn cần tạo hoặc tham gia nhóm.' : !isLeader() ? 'Chỉ nhóm trưởng được đăng ký đề tài.' : locked() ? 'Nhóm đã có một đăng ký đề tài.' : !item.open ? 'Đã ngoài thời gian đăng ký.' : !samePeriod ? 'Đề tài thuộc đợt khác với nhóm. Hãy chọn đề tài cùng đợt.' : state.group.members.length < 3 ? 'Nhóm cần có từ 3 đến 5 thành viên để đăng ký đề tài (hiện có ' + state.group.members.length + ' thành viên).' : state.group.members.length > item.topic.capacity ? 'Số thành viên nhóm (' + state.group.members.length + ') vượt quá giới hạn của đề tài (' + item.topic.capacity + ' sinh viên).' : `Đăng ký cho nhóm <b>${esc(state.group.name)}</b>. Kết quả sẽ ở trạng thái chờ duyệt.`}</div>${can ? `<button type="button" class="button primary" data-register="${esc(item.topic.id)}">Xác nhận đăng ký đề tài</button>` : ''}`);
+    openDialog('Chi tiết đề tài', `${topicBody(item.topic)}<div class="notice">${!state.group ? 'Bạn cần tạo hoặc tham gia nhóm.' : !isLeader() ? 'Chỉ nhóm trưởng được đăng ký đề tài.' : locked() ? 'Nhóm đã có một đăng ký đề tài.' : !item.open ? 'Đã ngoài thời gian đăng ký.' : !samePeriod ? 'Đề tài thuộc đợt khác với nhóm. Hãy chọn đề tài cùng đợt.' : state.group.members.length > item.topic.capacity ? 'Số thành viên nhóm (' + state.group.members.length + ') vượt quá giới hạn của đề tài (' + item.topic.capacity + ' sinh viên).' : `Đăng ký cho nhóm <b>${esc(state.group.name)}</b>. Kết quả sẽ ở trạng thái chờ duyệt.`}</div>${can ? `<button type="button" class="button primary" data-register="${esc(item.topic.id)}">Xác nhận đăng ký đề tài</button>` : ''}`);
   }
   if (b.dataset.register) mutate('/registrations', {topicId: b.dataset.register, groupId: state.group?.id});
   if (b.dataset.action === 'reset-filter') {

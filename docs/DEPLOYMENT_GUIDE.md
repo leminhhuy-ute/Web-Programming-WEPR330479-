@@ -49,7 +49,7 @@ mysql -u topic_app -p student_topic_management < database/seed.sql
 ```
 
 > [!NOTE]
-> Khi khởi chạy với profile `mysql`, Flyway baseline ở V5 và áp dụng V6–V12 từ `src/main/resources/db/migration/mysql/`; sau đó Hibernate chạy `ddl-auto=validate`. Không sửa các migration đã áp dụng. Với profile `cloud`, dùng database trống để Flyway chạy V1 rồi V6–V12, không nạp `schema.sql` thủ công.
+> Khi khởi chạy với profile `mysql`, Flyway baseline ở V5 và áp dụng V6–V13 từ `src/main/resources/db/migration/mysql/`; sau đó Hibernate chạy `ddl-auto=validate`. Không sửa các migration đã áp dụng. Với profile `cloud`, dùng database trống để Flyway chạy V1 rồi V6–V13, không nạp `schema.sql` thủ công.
 
 ---
 
