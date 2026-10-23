@@ -38,8 +38,11 @@ public final class TopicPolicy {
             throw new AccessDeniedException("Bạn không hướng dẫn đề tài này.");
     }
     public static void registration(RegistrationPeriod p, RegistrationPeriodType type, boolean student) {
+        registration(p, type, student, LocalDateTime.now());
+    }
+    public static void registration(RegistrationPeriod p, RegistrationPeriodType type, boolean student,
+            LocalDateTime now) {
         if (p.getType() != type) throw new IllegalArgumentException("Loại đề tài phải trùng loại đợt đăng ký.");
-        var now = LocalDateTime.now();
         var start = student ? p.getStudentStartAt() : p.getLecturerStartAt();
         var end = student ? p.getStudentEndAt() : p.getLecturerEndAt();
         if (now.isBefore(start) || now.isAfter(end))

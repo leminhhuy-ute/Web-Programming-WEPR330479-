@@ -54,8 +54,21 @@ public class DemoData implements CommandLineRunner {
     public void run(String... args) {
         try {
             if (jdbcTemplate != null) {
-                int uCount = jdbcTemplate.update("UPDATE users SET role = 'LECTURER' WHERE role = 'HEAD_OF_DEPT'");
-                int aCount = jdbcTemplate.update("UPDATE announcements SET audience = 'LECTURER' WHERE audience = 'HEAD_OF_DEPT'");
+                boolean h2 = Boolean.TRUE.equals(jdbcTemplate.execute(
+                    (org.springframework.jdbc.core.ConnectionCallback<Boolean>) connection ->
+                        "H2".equalsIgnoreCase(connection.getMetaData().getDatabaseProductName())));
+                String legacyUserCountSql = h2
+                    ? "SELECT COUNT(*) FROM INFORMATION_SCHEMA.ENUM_VALUES WHERE OBJECT_NAME = 'USERS' AND VALUE_NAME = 'HEAD_OF_DEPT'"
+                    : "SELECT COUNT(*) FROM users WHERE role = 'HEAD_OF_DEPT'";
+                String legacyAnnouncementCountSql = h2
+                    ? "SELECT COUNT(*) FROM INFORMATION_SCHEMA.ENUM_VALUES WHERE OBJECT_NAME = 'ANNOUNCEMENTS' AND VALUE_NAME = 'HEAD_OF_DEPT'"
+                    : "SELECT COUNT(*) FROM announcements WHERE audience = 'HEAD_OF_DEPT'";
+                Integer legacyUsers = jdbcTemplate.queryForObject(legacyUserCountSql, Integer.class);
+                Integer legacyAnnouncements = jdbcTemplate.queryForObject(legacyAnnouncementCountSql, Integer.class);
+                int uCount = legacyUsers != null && legacyUsers > 0
+                    ? jdbcTemplate.update("UPDATE users SET role = 'LECTURER' WHERE role = 'HEAD_OF_DEPT'") : 0;
+                int aCount = legacyAnnouncements != null && legacyAnnouncements > 0
+                    ? jdbcTemplate.update("UPDATE announcements SET audience = 'LECTURER' WHERE audience = 'HEAD_OF_DEPT'") : 0;
                 if (uCount > 0 || aCount > 0) {
                     log.info("[DemoData] Đồng bộ dữ liệu demo cũ: đã cập nhật {} người dùng và {} thông báo từ HEAD_OF_DEPT sang LECTURER.", uCount, aCount);
                 }

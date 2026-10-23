@@ -1,6 +1,13 @@
 package topicmanagement;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -189,6 +196,112 @@ public class StudentGroupSizeEdgeCaseTest {
         for (int valid : new int[]{1, 2, 3}) {
             TopicRequest req = request("Đề tài hợp lệ quy mô " + valid, valid, open);
             assertDoesNotThrow(() -> topicService.createTopic(req, lecturer));
+        }
+    }
+
+    @Test
+    @DisplayName("Tạo nhóm và mọi thay đổi thành viên chỉ được phép trong cửa sổ sinh viên")
+    void membershipChangesRequireAnOpenStudentRegistrationWindow() {
+        LocalDateTime now = LocalDateTime.now();
+        period.setStudentStartAt(now.plusHours(1));
+        period.setStudentEndAt(now.plusHours(2));
+        periods.save(period);
+        assertThrows(IllegalArgumentException.class, () ->
+            studentService.createGroup(s1.getUsername(), "Nhóm trước hạn"));
+
+        period.setStudentStartAt(now.minusDays(1));
+        period.setStudentEndAt(now.plusDays(1));
+        periods.save(period);
+        studentService.createGroup(s1.getUsername(), "Nhóm đang mở");
+        addMember(s1.getUsername(), s2);
+        studentService.invite(s1.getUsername(), s3.getUserCode());
+        var pending = invitations.findByStudentIdAndStatusOrderByCreatedAtDesc(s3.getId(), "PENDING").getFirst();
+
+        period.setStudentEndAt(LocalDateTime.now().minusSeconds(1));
+        periods.save(period);
+        assertThrows(IllegalArgumentException.class, () ->
+            studentService.invite(s1.getUsername(), s4.getUserCode()));
+        assertThrows(IllegalArgumentException.class, () ->
+            studentService.respond(s3.getUsername(), pending.id, true));
+        assertDoesNotThrow(() -> studentService.respond(s3.getUsername(), pending.id, false));
+        assertThrows(IllegalArgumentException.class, () ->
+            studentService.transfer(s1.getUsername(), s2.getUserCode()));
+        assertThrows(IllegalArgumentException.class, () ->
+            studentService.removeMember(s1.getUsername(), s2.getUserCode()));
+        assertThrows(IllegalArgumentException.class, () -> studentService.leaveGroup(s2.getUsername()));
+        assertThrows(IllegalArgumentException.class, () -> studentService.disbandGroup(s1.getUsername()));
+
+        var group = groups.findAll().getFirst();
+        assertEquals(2, members.findByGroupId(group.getId()).size());
+        assertEquals("sv01", group.getLeader().getUsername());
+    }
+
+    @Test
+    @DisplayName("Hai lời mời được nhận đồng thời không làm nhóm vượt quá 3 thành viên")
+    void concurrentAcceptsCannotExceedThreeMembers() throws Exception {
+        studentService.createGroup(s1.getUsername(), "Nhóm tranh chỗ");
+        studentService.invite(s1.getUsername(), s2.getUserCode());
+        studentService.invite(s1.getUsername(), s3.getUserCode());
+        studentService.invite(s1.getUsername(), s4.getUserCode());
+        Long groupId = groups.findAll().getFirst().getId();
+        var pending = List.of(s2, s3, s4).stream()
+            .map(user -> invitations.findByGroupIdAndStudentId(groupId, user.getId()).orElseThrow())
+            .map(invitation -> new Acceptance(invitation.student.getUsername(), invitation.id))
+            .toList();
+
+        List<Boolean> outcomes = acceptConcurrently(pending);
+
+        assertEquals(2, outcomes.stream().filter(Boolean::booleanValue).count());
+        var group = groups.findById(groupId).orElseThrow();
+        assertEquals(3, members.findByGroupId(groupId).size());
+        assertEquals(3, group.getMemberCount());
+    }
+
+    @Test
+    @DisplayName("Nhận đồng thời lời mời từ hai nhóm cùng đợt chỉ cho phép một membership")
+    void concurrentAcceptsCannotPutOneStudentInTwoGroupsInTheSamePeriod() throws Exception {
+        studentService.createGroup(s1.getUsername(), "Nhóm A");
+        studentService.createGroup(s2.getUsername(), "Nhóm B");
+        studentService.invite(s1.getUsername(), s4.getUserCode());
+        studentService.invite(s2.getUsername(), s4.getUserCode());
+        List<Long> groupIds = groups.findAll().stream().map(StudentGroup::getId).sorted().toList();
+        var invitationA = invitations.findByGroupIdAndStudentId(groupIds.get(0), s4.getId()).orElseThrow();
+        var invitationB = invitations.findByGroupIdAndStudentId(groupIds.get(1), s4.getId()).orElseThrow();
+
+        List<Boolean> outcomes = acceptConcurrently(List.of(
+            new Acceptance(s4.getUsername(), invitationA.id),
+            new Acceptance(s4.getUsername(), invitationB.id)));
+
+        assertEquals(1, outcomes.stream().filter(Boolean::booleanValue).count());
+        assertTrue(members.findByRegistrationPeriodIdAndStudentId(period.getId(), s4.getId()).isPresent());
+    }
+
+    private record Acceptance(String username, Long invitationId) {}
+
+    private List<Boolean> acceptConcurrently(List<Acceptance> acceptances) throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(acceptances.size());
+        CountDownLatch ready = new CountDownLatch(acceptances.size());
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            List<Future<Boolean>> results = acceptances.stream().map(acceptance -> executor.submit(() -> {
+                ready.countDown();
+                if (!start.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("Concurrent start timed out.");
+                try {
+                    studentService.respond(acceptance.username(), acceptance.invitationId(), true);
+                    return true;
+                } catch (IllegalArgumentException expected) {
+                    return false;
+                }
+            })).toList();
+            assertTrue(ready.await(10, TimeUnit.SECONDS), "All workers should reach the start barrier.");
+            start.countDown();
+            List<Boolean> outcomes = new ArrayList<>();
+            for (Future<Boolean> result : results) outcomes.add(result.get(20, TimeUnit.SECONDS));
+            return outcomes;
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS), "Worker threads should terminate.");
         }
     }
 

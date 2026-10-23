@@ -64,6 +64,61 @@ const esc = (v) =>
             ],
     );
 
+function initDateTimeFields(form) {
+    const options = (maximum, placeholder) =>
+        `<option value="">${placeholder}</option>` +
+        Array.from({length: maximum + 1}, (_, value) => {
+            const padded = String(value).padStart(2, "0");
+            return `<option value="${padded}">${padded}</option>`;
+        }).join("");
+
+    form.querySelectorAll("[data-date-time-value]").forEach((hidden) => {
+        const field = hidden.closest("[data-date-time-field]");
+        const date = field.querySelector("[data-date-part]");
+        const hour = field.querySelector("[data-hour-part]");
+        const minute = field.querySelector("[data-minute-part]");
+        const title = field.querySelector(".date-time-field__title")?.textContent.trim()
+            || field.closest("[data-period-field]")?.querySelector(".date-time-field__title")?.textContent.trim()
+            || "Thời gian";
+        date.setAttribute("aria-label", `${title} — ngày`);
+        hour.setAttribute("aria-label", `${title} — giờ (00–23)`);
+        minute.setAttribute("aria-label", `${title} — phút (00–59)`);
+        hour.innerHTML = options(23, "Giờ");
+        minute.innerHTML = options(59, "Phút");
+
+        const initial = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(hidden.value || "");
+        if (initial) {
+            date.value = initial[1];
+            hour.value = initial[2];
+            minute.value = initial[3];
+        }
+
+        const required = hidden.dataset.required === "true";
+        setDateTimeRequired(hidden, required);
+        const sync = () => {
+            hidden.value = date.value && hour.value !== "" && minute.value !== ""
+                ? `${date.value}T${hour.value}:${minute.value}`
+                : "";
+        };
+        [date, hour, minute].forEach((input) => input.addEventListener("change", sync));
+        field.syncDateTimeValue = sync;
+    });
+}
+
+function setDateTimeRequired(hidden, required) {
+    const field = hidden.closest("[data-date-time-field]");
+    field.querySelectorAll("[data-date-part], [data-hour-part], [data-minute-part]")
+        .forEach((input) => { input.required = required; });
+    hidden.dataset.required = String(required);
+}
+
+function clearDateTimeField(hidden) {
+    const field = hidden.closest("[data-date-time-field]");
+    field.querySelectorAll("[data-date-part], [data-hour-part], [data-minute-part]")
+        .forEach((input) => { input.value = ""; });
+    hidden.value = "";
+}
+
 const local = (v) => formatDateTime(v);
 
 const labels = {
@@ -160,7 +215,10 @@ async function list() {
         const pager = document.createElement("div");
         pager.className = "table-pagination";
         pager.setAttribute("aria-label", "Phân trang");
-        table.closest("table").insertAdjacentElement("afterend", pager);
+        const paginationAnchor = page === "departments"
+            ? table.closest(".table-scroll")
+            : table.closest("table");
+        paginationAnchor.insertAdjacentElement("afterend", pager);
         const renderPager = (data) => {
             pager.innerHTML = `<button class="button secondary" type="button" data-page-prev ${data.first ? "disabled" : ""}>Trang trước</button>
                 <span>Trang ${data.totalPages ? data.page + 1 : 0}/${data.totalPages} · ${data.totalElements} bản ghi</span>
@@ -260,6 +318,7 @@ async function form() {
         }
 
         if (page === "registration-periods") {
+            initDateTimeFields(document.querySelector("#entity-form"));
             const type = document.querySelector('[name="type"]');
             const evalSection = document.getElementById("section-eval-milestones");
             const review = document.querySelector('[data-period-field="review"]');
@@ -270,9 +329,10 @@ async function form() {
                 if (evalSection) evalSection.hidden = !needsReview && !needsDefense;
                 review.hidden = !needsReview;
                 defense.hidden = !needsDefense;
-                review.querySelector("input").required = needsReview;
+                const reviewDateTime = review.querySelector("[data-date-time-value]");
+                setDateTimeRequired(reviewDateTime, needsReview);
                 defense.querySelector("input").required = needsDefense;
-                if (!needsReview) review.querySelector("input").value = "";
+                if (!needsReview) clearDateTimeField(reviewDateTime);
                 if (!needsDefense) defense.querySelector("input").value = "";
             };
             type.addEventListener("change", updatePeriodFields);
@@ -309,6 +369,7 @@ async function form() {
         document.querySelector("#entity-form").onsubmit = async (e) => {
             e.preventDefault();
             clearError();
+            document.querySelectorAll("[data-date-time-field]").forEach((field) => field.syncDateTimeValue?.());
             const obj = Object.fromEntries(new FormData(e.currentTarget));
             for (const [k, v] of Object.entries(obj)) if (v === "") obj[k] = null;
             if (obj.departmentId) obj.departmentId = Number(obj.departmentId);

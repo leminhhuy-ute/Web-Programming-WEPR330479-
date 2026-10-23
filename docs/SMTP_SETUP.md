@@ -11,16 +11,18 @@ Nguồn chính thức: [Mailjet SMTP configuration](https://dev.mailjet.com/docs
 ## Bật gửi thư bằng PowerShell
 
 ```powershell
-$env:SMTP_HOST = "in-v3.mailjet.com"
-$env:SMTP_PORT = "2525"
-$env:SMTP_USERNAME = "API key Mailjet"
-$env:SMTP_PASSWORD = "Secret Key Mailjet"
+$env:MAIL_HOST = "in-v3.mailjet.com"
+$env:MAIL_PORT = "2525"
+$env:MAIL_USERNAME = "API key Mailjet"
+$env:MAIL_PASSWORD = "Secret Key Mailjet"
+$env:MAIL_AUTH = "true"
+$env:MAIL_STARTTLS = "true"
 $env:MAIL_FROM = "notifications@ten-mien-cua-ban.vn"
 $env:MAIL_ENABLED = "true"
 .\mvnw.cmd spring-boot:run
 ```
 
-Thiết lập các biến này ở môi trường chạy ứng dụng. `.env.example` chỉ là mẫu; Spring Boot không tự đọc `.env`. Không commit thông tin đăng nhập. Mailjet hỗ trợ port 2525 với STARTTLS; timeout kết nối/đọc/ghi 3 giây.
+Thiết lập các biến này ở môi trường chạy ứng dụng. `.env.example` chỉ là mẫu; Spring Boot không tự đọc `.env`. Không commit thông tin đăng nhập. Mailjet hỗ trợ port 2525 với STARTTLS; timeout kết nối/đọc/ghi 3 giây. Các tên `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_AUTH` và `SMTP_STARTTLS` cũ vẫn là giá trị dự phòng nếu chưa đặt biến `MAIL_*` tương ứng.
 
 Trong cấu hình production, đặt `SPRING_PROFILES_ACTIVE=cloud` để tránh nạp tài khoản/đề tài mẫu. `.env.example` đang để `cloud` làm cấu hình khuyến nghị; chỉ thêm profile demo khi chủ động muốn dữ liệu minh họa trên một cơ sở dữ liệu trống.
 

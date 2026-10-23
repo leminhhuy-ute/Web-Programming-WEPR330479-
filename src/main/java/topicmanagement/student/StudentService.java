@@ -91,8 +91,10 @@ public class StudentService {
         return periods.findFirstByOrderByIdDesc().orElse(null);
     }
     private StudentGroup lockGroup(Long id) {
-        StudentGroup g=em.find(StudentGroup.class,id,LockModeType.PESSIMISTIC_WRITE);
-        em.refresh(g);return g;
+        StudentGroup g=em.find(StudentGroup.class,id);
+        if (g == null) throw bad("Nhóm không tồn tại.");
+        em.refresh(g,LockModeType.PESSIMISTIC_WRITE);
+        return g;
     }
     private StudentGroup leader(String username) { return leader(username, null); }
     private StudentGroup leader(String username, Long groupId) {
@@ -107,6 +109,17 @@ public class StudentService {
     private void editable(StudentGroup g) {
         if(g.getStatus()!=GroupStatus.DRAFT && g.getStatus()!=GroupStatus.REJECTED)
             throw bad("Nhóm đã đăng ký đề tài. Danh sách thành viên được khóa.");
+    }
+    private RegistrationPeriod requireStudentRegistrationWindow(StudentGroup g) {
+        RegistrationPeriod p = period(g);
+        if (p == null) p = currentOrLatestPeriod();
+        if (p == null) throw bad("Không xác định được đợt đăng ký của nhóm.");
+        TopicPolicy.registration(p, p.getType(), true);
+        return p;
+    }
+    private void editableDuringStudentRegistration(StudentGroup g) {
+        editable(g);
+        requireStudentRegistrationWindow(g);
     }
     private StudentPerson person(User u) {
         return new StudentPerson(u.getUserCode(),u.getFullName(),
@@ -229,8 +242,9 @@ public class StudentService {
     }
     @Transactional public void invite(String username,String code) { invite(username,code,null); }
     @Transactional public void invite(String username,String code,Long groupId) {
-        StudentGroup g=leader(username,groupId);editable(g);User u=target(code);
-        RegistrationPeriod period = period(g) != null ? period(g) : currentOrLatestPeriod();
+        StudentGroup g=leader(username,groupId);editable(g);
+        RegistrationPeriod period = requireStudentRegistrationWindow(g);
+        User u=target(code);
         if (period != null && members.existsByRegistrationPeriodIdAndStudentId(period.getId(), u.getId()))
             throw bad("Sinh viên này đã thuộc một nhóm trong đợt này.");
         else if (period == null && group(u) != null)
@@ -247,12 +261,12 @@ public class StudentService {
         StudentGroup g=lockGroup(i.group.getId());em.refresh(i);
         if(!i.status.equals("PENDING"))throw bad("Lời mời đã được xử lý.");
         if(accept) {
-            RegistrationPeriod period = period(g) != null ? period(g) : currentOrLatestPeriod();
+            editable(g);
+            RegistrationPeriod period = requireStudentRegistrationWindow(g);
             if (period != null && members.existsByRegistrationPeriodIdAndStudentId(period.getId(), me.getId()))
                 throw bad("Bạn đã thuộc một nhóm trong đợt này.");
             else if (period == null && group(me) != null)
                 throw bad("Bạn đã thuộc một nhóm.");
-            editable(g);
             int count=members.findByGroupId(g.getId()).size();
             if(count>=TopicPolicy.MAX_GROUP_SIZE)throw bad("Nhóm đã đủ 3 thành viên.");
             members.save(new GroupMember(g,me,"MEMBER", period));g.setMemberCount(count+1);i.status="ACCEPTED";
@@ -264,17 +278,20 @@ public class StudentService {
     }
     @Transactional public void transfer(String username,String code) { transfer(username,code,null); }
     @Transactional public void transfer(String username,String code,Long groupId) {
-        StudentGroup g=leader(username,groupId);User u=target(code);
+        StudentGroup g=leader(username,groupId);editableDuringStudentRegistration(g);User u=target(code);
         var list=members.findByGroupId(g.getId());
         if(list.stream().noneMatch(m->m.getStudent().getId().equals(u.getId())))throw bad("Nhóm trưởng mới phải thuộc nhóm.");
         g.setLeader(u);list.forEach(m->m.setMemberRole(m.getStudent().getId().equals(u.getId())?"LEADER":"MEMBER"));
     }
     @Transactional public void leaveGroup(String username) { leaveGroup(username,null); }
     @Transactional public void leaveGroup(String username,Long groupId) {
-        User me = student(username);
-        StudentGroup g = group(me,groupId);
-        if (g == null) throw bad("Bạn không thuộc nhóm nào.");
-        editable(g);
+        User me = student(username);em.lock(me,LockModeType.PESSIMISTIC_WRITE);
+        StudentGroup found = group(me,groupId);
+        if (found == null) throw bad("Bạn không thuộc nhóm nào.");
+        StudentGroup g = lockGroup(found.getId());
+        if (!members.existsByGroupIdAndStudentId(g.getId(),me.getId()))
+            throw bad("Bạn không còn là thành viên của nhóm.");
+        editableDuringStudentRegistration(g);
         if (g.getLeader().getId().equals(me.getId())) {
             throw bad("Nhóm trưởng không thể rời nhóm. Hãy chuyển quyền nhóm trưởng hoặc giải tán nhóm.");
         }
@@ -291,7 +308,7 @@ public class StudentService {
     @Transactional public void removeMember(String username, String studentCode) { removeMember(username,studentCode,null); }
     @Transactional public void removeMember(String username, String studentCode,Long groupId) {
         StudentGroup g = leader(username,groupId);
-        editable(g);
+        editableDuringStudentRegistration(g);
         User targetUser = target(studentCode);
         if (g.getLeader().getId().equals(targetUser.getId())) {
             throw bad("Nhóm trưởng không thể tự xóa khỏi nhóm. Hãy giải tán nhóm hoặc chuyển nhóm trưởng.");
@@ -309,7 +326,7 @@ public class StudentService {
     @Transactional public void disbandGroup(String username) { disbandGroup(username,null); }
     @Transactional public void disbandGroup(String username,Long groupId) {
         StudentGroup g = leader(username,groupId);
-        editable(g);
+        editableDuringStudentRegistration(g);
         g.getMembers().clear();
         invitations.deleteByGroupId(g.getId());
         members.deleteByGroupId(g.getId());

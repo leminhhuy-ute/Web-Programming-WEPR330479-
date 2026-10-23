@@ -46,7 +46,7 @@ Giữ mật khẩu trong dashboard. Không gửi vào chat, ảnh chụp, GitHub
 | `MAIL_ENABLED` | `false` ban đầu; chỉ bật `true` sau khi xác thực người gửi SMTP |
 | `TZ` | `Asia/Ho_Chi_Minh` |
 
-Với Mailjet, đặt `SMTP_HOST=in-v3.mailjet.com`, `SMTP_PORT=2525`, `SMTP_USERNAME` là API key và `SMTP_PASSWORD` là Secret Key. Đặt `MAIL_FROM` thành địa chỉ trên tên miền bạn quản lý sau khi cấu hình SPF/DKIM trong Mailjet. Chỉ lưu thông tin xác thực trong Render Environment. Gmail có thể coi thư gửi qua Mailjet với địa chỉ cá nhân `@gmail.com` là giả mạo và chuyển vào Spam.
+Với Mailjet, đặt `MAIL_HOST=in-v3.mailjet.com`, `MAIL_PORT=2525`, `MAIL_USERNAME` là API key và `MAIL_PASSWORD` là Secret Key. Đặt `MAIL_FROM` thành địa chỉ trên tên miền bạn quản lý sau khi cấu hình SPF/DKIM trong Mailjet. Chỉ lưu thông tin xác thực trong Render Environment. Gmail có thể coi thư gửi qua Mailjet với địa chỉ cá nhân `@gmail.com` là giả mạo và chuyển vào Spam.
 
 Thay HOST, PORT và database name đúng thông tin của Aiven. Port Aiven có thể khác 3306.
 MySQL Connector/J dùng `sslMode=REQUIRED`, không dùng `sslmode=require` như ví dụ trong PDF.

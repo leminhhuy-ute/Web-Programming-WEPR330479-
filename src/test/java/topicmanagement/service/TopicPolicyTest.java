@@ -39,4 +39,22 @@ class TopicPolicyTest {
         assertDoesNotThrow(() -> TopicPolicy.registration(p,RegistrationPeriodType.COURSE,true));
         assertThrows(IllegalArgumentException.class, () -> TopicPolicy.topicReviewWindow(p));
     }
+
+    @Test void studentRegistrationWindowIncludesBothExactBoundaries() {
+        var p = new RegistrationPeriod(); p.setType(RegistrationPeriodType.COURSE);
+        var start = LocalDateTime.of(2026, 10, 20, 8, 0);
+        var end = LocalDateTime.of(2026, 10, 25, 17, 0);
+        p.setStudentStartAt(start); p.setStudentEndAt(end);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            TopicPolicy.registration(p, RegistrationPeriodType.COURSE, true, start.minusNanos(1)));
+        assertDoesNotThrow(() ->
+            TopicPolicy.registration(p, RegistrationPeriodType.COURSE, true, start));
+        assertDoesNotThrow(() ->
+            TopicPolicy.registration(p, RegistrationPeriodType.COURSE, true, start.plusDays(1)));
+        assertDoesNotThrow(() ->
+            TopicPolicy.registration(p, RegistrationPeriodType.COURSE, true, end));
+        assertThrows(IllegalArgumentException.class, () ->
+            TopicPolicy.registration(p, RegistrationPeriodType.COURSE, true, end.plusNanos(1)));
+    }
 }

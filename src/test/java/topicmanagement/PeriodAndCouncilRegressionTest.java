@@ -186,8 +186,17 @@ class PeriodAndCouncilRegressionTest {
         assertEquals(student.getEmail(),recipient.recipient);
         assertEquals(topicmanagement.notification.EmailNotification.Status.PENDING,recipient.status);
         assertEquals(0,recipient.attempts);
-        assertTrue(recipient.body.contains("8.50"));
-        assertTrue(recipient.body.contains("\nĐợt: Original"));
+        var secondRecipient=emailNotifications.findAll().stream()
+            .filter(n->n.student.getId().equals(second.getId())).findFirst().orElseThrow();
+        assertEquals(second.getEmail(),secondRecipient.recipient);
+        assertNotEquals(recipient.recipient,secondRecipient.recipient);
+        assertTrue(recipient.body.startsWith("Chào "+student.getFullName()+","));
+        assertTrue(secondRecipient.body.startsWith("Chào "+second.getFullName()+","));
+        for (var notification : List.of(recipient,secondRecipient)) {
+            assertTrue(notification.body.contains("\nĐợt: Original"));
+            assertTrue(notification.body.contains("\nĐề tài: Regression topic"));
+            assertTrue(notification.body.contains("\nĐiểm cuối cùng: 8.50"));
+        }
     }
 
     @Test void unpublishedResultCannotQueueAnEmail() {

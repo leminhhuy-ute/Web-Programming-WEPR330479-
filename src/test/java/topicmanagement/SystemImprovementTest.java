@@ -48,6 +48,7 @@ class SystemImprovementTest {
     @Autowired UserRepository users;
     @Autowired TopicRepository topics;
     @Autowired StudentGroupRepository groups;
+    @Autowired StudentGroupService studentGroupService;
     @Autowired GroupMemberRepository members;
     @Autowired TopicRegistrationRepository registrations;
     @Autowired RegistrationStatusHistoryRepository history;
@@ -217,6 +218,155 @@ class SystemImprovementTest {
     }
 
     @Test
+    void reviewEndpointPersistsEachReportStageIndependentlyAcrossReloads() throws Exception {
+        Fixture fixture = fixture(true);
+        Report outline = uploadStage(fixture, "Đề cương");
+        Report midterm = uploadStage(fixture, "Giữa kỳ");
+        Report finalReport = uploadStage(fixture, "Cuối kỳ");
+        var reports = java.util.List.of(outline, midterm, finalReport);
+        assertEquals(3, reports.stream().map(report -> report.id).distinct().count());
+        assertEquals(3, reports.stream().map(report -> report.stage).distinct().count());
+
+        for (int selectedIndex = 0; selectedIndex < reports.size(); selectedIndex++) {
+            Report selected = reports.get(selectedIndex);
+            reviewReportViaApi(fixture, selected, "APPROVED", "Đã duyệt " + selected.stage);
+            entityManager.flush();
+            entityManager.clear();
+            Report persisted = reportRepository.findById(selected.id).orElseThrow();
+            assertEquals(selected.stage, persisted.stage);
+            assertEquals(ReportStatus.APPROVED, persisted.status);
+            assertEquals("Đã duyệt " + selected.stage, persisted.advisorFeedback);
+            for (int otherIndex = 0; otherIndex < reports.size(); otherIndex++) {
+                Report other = reports.get(otherIndex);
+                if (!other.id.equals(selected.id)) {
+                    ReportStatus expectedOtherStatus = otherIndex < selectedIndex
+                        ? ReportStatus.APPROVED : ReportStatus.PENDING;
+                    assertEquals(expectedOtherStatus,
+                        reportRepository.findById(other.id).orElseThrow().status,
+                        "Duyệt một báo cáo không được thay đổi giai đoạn khác.");
+                }
+            }
+        }
+
+        for (Report selected : reports) {
+            reviewReportViaApi(fixture, selected, "REJECTED", "Cần sửa " + selected.stage);
+        }
+
+        entityManager.flush();
+        entityManager.clear();
+        String advisorResponse = mvc.perform(get("/api/lecturer/groups/{groupId}/reports", fixture.group.getId())
+                .with(authentication(auth(fixture.advisor))))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        var advisorReports = new com.fasterxml.jackson.databind.ObjectMapper()
+            .readTree(advisorResponse).path("data");
+        assertEquals(3, advisorReports.size());
+        for (Report expected : reports) {
+            var returned = java.util.stream.StreamSupport.stream(advisorReports.spliterator(), false)
+                .filter(item -> item.path("id").asLong() == expected.id)
+                .findFirst().orElseThrow();
+            assertEquals(expected.stage, returned.path("stage").asText());
+            assertEquals("REJECTED", returned.path("status").asText());
+            assertEquals("Cần sửa " + expected.stage, returned.path("advisorFeedback").asText());
+        }
+
+        mvc.perform(put("/api/lecturer/reports/{id}/review", midterm.id)
+                .with(authentication(auth(fixture.advisor)))
+                .with(csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"REJECTED\",\"feedback\":\" \"}"))
+            .andExpect(status().isBadRequest());
+        mvc.perform(put("/api/lecturer/reports/{id}/review", finalReport.id)
+                .with(authentication(auth(fixture.otherLecturer)))
+                .with(csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"APPROVED\",\"feedback\":\"Sai quyền\"}"))
+            .andExpect(status().isForbidden());
+
+        var studentState = mvc.perform(get("/api/student/me")
+                .param("groupId", fixture.group.getId().toString())
+                .with(authentication(auth(fixture.student))))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        var studentReports = new com.fasterxml.jackson.databind.ObjectMapper()
+            .readTree(studentState).path("reports");
+        for (Report expected : reports) {
+            var returned = java.util.stream.StreamSupport.stream(studentReports.spliterator(), false)
+                .filter(item -> item.path("id").asLong() == expected.id)
+                .findFirst().orElseThrow();
+            assertEquals("REJECTED", returned.path("status").asText());
+            assertEquals("Cần sửa " + expected.stage, returned.path("advisorFeedback").asText());
+        }
+
+        reportService.updateStudentReport(fixture.student, midterm.id, "Đã sửa báo cáo giữa kỳ", null);
+        entityManager.flush();
+        entityManager.clear();
+        assertEquals(ReportStatus.PENDING, reportRepository.findById(midterm.id).orElseThrow().status);
+        assertEquals(ReportStatus.REJECTED, reportRepository.findById(outline.id).orElseThrow().status);
+        assertEquals(ReportStatus.REJECTED, reportRepository.findById(finalReport.id).orElseThrow().status);
+        assertEquals(1, reportService.editHistoryForAdvisor(fixture.advisor, midterm.id).size());
+    }
+
+    @Test
+    void lecturerGroupRosterContainsRealMembersForSizesOneToThreeAndIsAssignmentScoped() {
+        Fixture fixture = fixture(true);
+        User second = user("roster2", Role.STUDENT, fixture.department);
+        second.setStudentClass("24110CTNB");
+        User third = user("roster3", Role.STUDENT, fixture.department);
+        User fourth = user("roster4", Role.STUDENT, fixture.department);
+        User fifth = user("roster5", Role.STUDENT, fixture.department);
+        User sixth = user("roster6", Role.STUDENT, fixture.department);
+
+        StudentGroup two = group(second, "G2-" + suffix());
+        two.setTopic(fixture.topic);
+        two.setStatus(GroupStatus.APPROVED);
+        two.setMemberCount(2);
+        groups.save(two);
+        GroupMember thirdMember = new GroupMember(two, third, "MEMBER");
+        members.save(thirdMember);
+        two.getMembers().add(thirdMember);
+
+        StudentGroup three = new StudentGroup();
+        three.setGroupCode("G3-" + suffix());
+        three.setGroupName("Nhóm ba thành viên");
+        three.setTopic(fixture.topic);
+        three.setLeader(sixth);
+        three.setMemberCount(3);
+        three.setStatus(GroupStatus.APPROVED);
+        groups.save(three);
+        GroupMember firstMember = new GroupMember(three, fourth, "MEMBER");
+        GroupMember secondMember = new GroupMember(three, fifth, "MEMBER");
+        GroupMember leaderMember = new GroupMember(three, sixth, "LEADER");
+        members.save(firstMember);
+        members.save(secondMember);
+        members.save(leaderMember);
+        three.getMembers().add(firstMember);
+        three.getMembers().add(secondMember);
+        three.getMembers().add(leaderMember);
+
+        var visibleGroups = studentGroupService.getGroupsForLecturer(fixture.advisor);
+        var oneResponse = visibleGroups.stream().filter(item -> item.getId().equals(fixture.group.getId())).findFirst().orElseThrow();
+        var twoResponse = visibleGroups.stream().filter(item -> item.getId().equals(two.getId())).findFirst().orElseThrow();
+        var threeResponse = visibleGroups.stream().filter(item -> item.getId().equals(three.getId())).findFirst().orElseThrow();
+
+        assertEquals(1, oneResponse.getMembers().size());
+        assertEquals(2, twoResponse.getMembers().size());
+        assertEquals(3, threeResponse.getMembers().size());
+        assertEquals("24110CTNB", twoResponse.getMembers().stream()
+            .filter(member -> member.id().equals(second.getId())).findFirst().orElseThrow().studentClass());
+        assertEquals(sixth.getId(), threeResponse.getLeader().id());
+        assertEquals(java.util.List.of(fourth.getId(), fifth.getId(), sixth.getId()),
+            threeResponse.getMembers().stream().map(member -> member.id()).toList(),
+            "API roster deliberately returns the leader last; the UI must identify the role by leader ID.");
+        assertEquals(1, threeResponse.getMembers().stream()
+            .filter(member -> member.id().equals(sixth.getId())).count(),
+            "Nhóm trưởng phải có mặt một lần trong danh sách thành viên.");
+        assertFalse(studentGroupService.getGroupsForLecturer(fixture.otherLecturer).stream()
+            .anyMatch(item -> item.getId().equals(three.getId())),
+            "Giảng viên không được phân công không thấy nhóm trong roster API.");
+    }
+
+    @Test
     void advisorCanViewAndDownloadButAnotherLecturerGets403() throws Exception {
         Fixture fixture = fixture(true);
         Report report = upload(fixture);
@@ -324,6 +474,27 @@ class SystemImprovementTest {
         entityManager.flush();
         return reportRepository.findAll().stream().filter(item -> item.group.getId().equals(fixture.group.getId()))
             .findFirst().orElseThrow();
+    }
+
+    private Report uploadStage(Fixture fixture, String stage) throws Exception {
+        byte[] bytes = ("%PDF-1.4\n1 0 obj\n(" + stage + ")\nendobj\ntrailer\n<<>>\n%%EOF").getBytes();
+        reportService.upload(fixture.student, fixture.group, stage, "Bản kiểm thử " + stage,
+            new MockMultipartFile("file", "report-" + stage + ".pdf", "application/pdf", bytes));
+        entityManager.flush();
+        return reportRepository.findByGroupIdOrderBySubmittedAtDesc(fixture.group.getId()).stream()
+            .filter(report -> stage.equals(report.stage)).findFirst().orElseThrow();
+    }
+
+    private void reviewReportViaApi(Fixture fixture, Report report, String status, String feedback) throws Exception {
+        mvc.perform(put("/api/lecturer/reports/{id}/review", report.id)
+                .with(authentication(auth(fixture.advisor)))
+                .with(csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"" + status + "\",\"feedback\":\"" + feedback + "\"}"))
+            .andExpect(status().isOk())
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.data.id").value(report.id))
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.data.stage").value(report.stage))
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.data.status").value(status));
     }
 
     private Fixture fixture(boolean approvedGroup) {

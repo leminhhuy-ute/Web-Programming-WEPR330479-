@@ -26,6 +26,7 @@ erDiagram
     users ||--o{ council_members : "tham gia hội đồng"
     users ||--o{ defense_grades : "chấm điểm bảo vệ"
     users ||--o{ student_reports : "nộp báo cáo / GVHD nhận xét"
+    users ||--o{ student_report_edits : "lưu phiên bản trước khi chỉnh sửa"
     users ||--o{ announcements : "tác giả thông báo"
     users ||--o{ announcement_reads : "đánh dấu đã đọc"
     users ||--o{ email_notifications : "nhận email kết quả"
@@ -59,6 +60,7 @@ erDiagram
 
     defenses ||--o{ defense_grades : "chi tiết điểm thành viên"
     defenses ||--o{ email_notifications : "email công bố điểm"
+    student_reports ||--o{ student_report_edits : "lịch sử phiên bản"
 ```
 
 ---
@@ -172,8 +174,24 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
 - `advisor_feedback` (`TEXT`, NULL): Nhận xét của giảng viên hướng dẫn (V8).
 - `feedback_by_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): GVHD viết nhận xét (V8).
 - `feedback_at` (`DATETIME(6)`, NULL): Thời điểm nhận xét (V8).
+- `status` (`VARCHAR(20)`, NOT NULL, DEFAULT `PENDING`): Trạng thái duyệt (`PENDING`, `REJECTED`, `APPROVED`), có ràng buộc `ck_student_report_status` (V9).
+- `edit_count` (`INT`, NOT NULL, DEFAULT 0): Số lần nhóm trưởng chỉnh sửa (V9).
+- `status_updated_at` (`DATETIME(6)`, NULL), `status_updated_by_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)`): Thời điểm và người cập nhật trạng thái (V9).
+- `storage_path` (`VARCHAR(500)`, NULL): Đường dẫn lưu trữ riêng nếu chuyển nội dung tệp khỏi CSDL.
 
-### 3.8 `councils` & `council_members` (Hội đồng bảo vệ & Thành viên)
+### 3.8 `student_report_edits` (Lịch sử chỉnh sửa báo cáo)
+Lưu snapshot phiên bản báo cáo ngay trước mỗi lần nhóm trưởng chỉnh sửa; snapshot và cập nhật báo cáo được ghi trong cùng giao dịch (V9).
+- `id` (`BIGINT`, PK, Auto-increment)
+- `report_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `student_reports(id)` ON DELETE CASCADE): Báo cáo gốc.
+- `changed_by_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`): Người thực hiện chỉnh sửa.
+- `edited_at` (`DATETIME(6)`, NOT NULL): Thời điểm lưu snapshot.
+- `filename` (`VARCHAR(180)`, NOT NULL), `content_type` (`VARCHAR(255)`, NOT NULL), `note` (`VARCHAR(1000)`, NOT NULL): Metadata phiên bản cũ.
+- `report_size` (`BIGINT`, NOT NULL), `checksum` (`VARCHAR(64)`, NULL): Kích thước và checksum SHA-256 nếu có.
+- `content` (`LONGBLOB`, NOT NULL): Nội dung đầy đủ của phiên bản cũ.
+
+**Ràng buộc:** Xóa báo cáo sẽ xóa lịch sử phiên bản theo `ON DELETE CASCADE`; tài khoản người chỉnh sửa được tham chiếu bằng khóa ngoại không cascade.
+
+### 3.9 `councils` & `council_members` (Hội đồng bảo vệ & Thành viên)
 - **`councils`**:
   - `id` (`BIGINT`, PK, Auto-increment)
   - `code` (`VARCHAR(30)`, NOT NULL, UNIQUE): Mã hội đồng (ví dụ: `HD-CNTT-01`).
@@ -188,7 +206,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
   - `role` (`VARCHAR(20)`, NOT NULL): Vai trò (`CHAIRPERSON`, `SECRETARY`, `REVIEWER`, `MEMBER`).
   - **Ràng buộc**: `uk_council_lecturer UNIQUE (council_id, lecturer_id)`.
 
-### 3.9 `defenses` & `defense_grades` (Lịch bảo vệ & Chi tiết chấm điểm)
+### 3.10 `defenses` & `defense_grades` (Lịch bảo vệ & Chi tiết chấm điểm)
 - **`defenses`**:
   - `id` (`BIGINT`, PK, Auto-increment)
   - `group_id` (`BIGINT`, NOT NULL, UNIQUE, FK $\rightarrow$ `student_groups(id)`)
@@ -207,7 +225,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
   - `comment` (`VARCHAR(2000)`, NOT NULL): Nhận xét chuyên môn.
   - **Ràng buộc**: `uk_defense_evaluator UNIQUE (defense_id, evaluator_id)`.
 
-### 3.10 `group_invitations` (Lời mời vào nhóm)
+### 3.11 `group_invitations` (Lời mời vào nhóm)
 - `id` (`BIGINT`, PK, Auto-increment)
 - `group_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `student_groups(id)` ON DELETE CASCADE)
 - `student_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `users(id)`): Sinh viên được mời.
@@ -215,7 +233,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
 - `created_at` (`DATETIME(6)`, NOT NULL)
 - **Ràng buộc**: `uk_group_invitation UNIQUE (group_id, student_id)`.
 
-### 3.11 `advisor_quotas` (Chỉ tiêu hướng dẫn)
+### 3.12 `advisor_quotas` (Chỉ tiêu hướng dẫn)
 - `id` (`BIGINT`, PK, Auto-increment)
 - `version` (`BIGINT`, Khóa lạc quan)
 - `registration_period_id` (`BIGINT`, NOT NULL, FK $\rightarrow$ `registration_periods(id)`)
@@ -223,7 +241,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
 - `max_groups` (`INT`, NOT NULL): Số nhóm tối đa giảng viên được hướng dẫn trong đợt (1 đến 100).
 - **Ràng buộc**: `uk_quota_period_lecturer UNIQUE (registration_period_id, lecturer_id)`.
 
-### 3.12 `announcements` & `announcement_reads` (Thông báo & Lượt đọc)
+### 3.13 `announcements` & `announcement_reads` (Thông báo & Lượt đọc)
 - **`announcements`**:
   - `id` (`BIGINT`, PK, Auto-increment)
   - `title` (`VARCHAR(255)`, NOT NULL): Tiêu đề thông báo.
@@ -239,7 +257,7 @@ Lưu trữ tệp tài liệu và báo cáo do nhóm sinh viên nộp qua các gi
   - `read_at` (`DATETIME(6)`, NOT NULL): Thời điểm đọc.
   - **Ràng buộc**: `uk_announcement_read UNIQUE (announcement_id, user_id)`, mỗi người chỉ có một lượt đọc cho mỗi thông báo.
 
-### 3.13 `email_notifications` (Hàng đợi email công bố điểm)
+### 3.14 `email_notifications` (Hàng đợi email công bố điểm)
 Mỗi khi Trưởng khoa công bố kết quả, hệ thống tạo một thư cho từng sinh viên trong nhóm trong cùng giao dịch; worker gửi qua SMTP và thử lại khi lỗi (V6).
 - `id` (`BIGINT`, PK, Auto-increment)
 - `version` (`BIGINT`, Khóa lạc quan)
@@ -254,7 +272,7 @@ Mỗi khi Trưởng khoa công bố kết quả, hệ thống tạo một thư c
 - `last_error` (`VARCHAR(300)`, NULL): Lỗi gần nhất khi gửi.
 - **Ràng buộc**: `uk_result_email UNIQUE (defense_id, student_id)` chống gửi trùng; chỉ mục `idx_email_due (status, next_attempt_at)` phục vụ worker.
 
-### 3.14 `audit_logs` (Nhật ký thao tác)
+### 3.15 `audit_logs` (Nhật ký thao tác)
 - `id` (`BIGINT`, PK, Auto-increment)
 - `user_id` (`BIGINT`, NULL, FK $\rightarrow$ `users(id)` ON DELETE SET NULL): Người thực hiện.
 - `action` (`VARCHAR(80)`, NOT NULL): Hành động (ví dụ: `APPROVE_TOPIC`, `PUBLISH_RESULT`).

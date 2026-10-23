@@ -463,7 +463,7 @@ const LecturerCrud = {
                     <td>${escapeHtml(g.groupName)}</td>
                     <td><a href="detail.html?id=${g.topic.id}"><strong>${escapeHtml(g.topic.title)}</strong></a></td>
                     <td><strong>${escapeHtml(cleanLecturerName(g.leader ? g.leader.fullName : '—'))}</strong></td>
-                    <td>${g.memberCount} sinh viên</td>
+                    <td><button type="button" class="member-details-button" data-member-group-id="${escapeHtml(g.id)}" aria-haspopup="dialog" aria-label="Xem ${Number(g.memberCount ?? g.members?.length ?? 0)} thành viên nhóm ${escapeHtml(g.groupCode)}">${Number(g.memberCount ?? g.members?.length ?? 0)} sinh viên</button></td>
                     <td><span class="badge ${g.status.toLowerCase()}">${escapeHtml(lecturerLabel(g.status))}</span></td>
                     <td class="action-cell">
                         <div class="action-group">
@@ -478,9 +478,63 @@ const LecturerCrud = {
                     </td>
                 </tr>
             `).join('');
+            tbody.onclick = event => {
+                const button = event.target.closest('[data-member-group-id]');
+                if (!button) return;
+                const group = groups.find(item => String(item.id) === button.dataset.memberGroupId);
+                if (group) this.showGroupMembers(group);
+            };
         } catch (e) {
             await showAppMessage(e.message);
         }
+    },
+
+    showGroupMembers(group) {
+        const members = Array.isArray(group.members) ? [...group.members] : [];
+        const leaderId = group.leader?.id;
+        members.sort((a, b) => {
+            const aIsLeader = leaderId != null && String(a.id) === String(leaderId);
+            const bIsLeader = leaderId != null && String(b.id) === String(leaderId);
+            return Number(bIsLeader) - Number(aIsLeader);
+        });
+        let dialog = document.getElementById('lecturer-group-members-dialog');
+        if (!dialog) {
+            dialog = document.createElement('dialog');
+            dialog.id = 'lecturer-group-members-dialog';
+            dialog.className = 'lecturer-members-dialog';
+            document.body.appendChild(dialog);
+        }
+
+        const memberRows = members.length ? members.map((member, index) => {
+            const isLeader = leaderId != null && String(member.id) === String(leaderId);
+            return `<tr>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(member.userCode || '—')}</td>
+                <td>${escapeHtml(member.fullName || '—')}</td>
+                <td>${escapeHtml(member.studentClass || '—')}</td>
+                <td>${isLeader ? 'Nhóm trưởng' : 'Thành viên'}</td>
+            </tr>`;
+        }).join('') : '<tr><td colspan="5" class="empty-cell">Chưa có dữ liệu thành viên.</td></tr>';
+        const topicTitle = group.topic?.title || 'Chưa đăng ký đề tài';
+        const statusText = lecturerLabel(group.status || '');
+        dialog.innerHTML = `<div class="lecturer-members-dialog__header">
+                <div><h2 id="lecturer-group-members-title">Chi tiết thành viên nhóm</h2><p>${escapeHtml(group.groupCode || '—')} · ${escapeHtml(group.groupName || '—')}</p></div>
+                <button type="button" class="button outline" data-members-close aria-label="Đóng chi tiết thành viên">Đóng</button>
+            </div>
+            <dl class="lecturer-members-summary">
+                <div><dt>Đề tài đăng ký</dt><dd>${escapeHtml(topicTitle)}</dd></div>
+                <div><dt>Trạng thái nhóm</dt><dd>${escapeHtml(statusText || '—')}</dd></div>
+                <div><dt>Tổng số thành viên</dt><dd>${members.length}</dd></div>
+            </dl>
+            <div class="lecturer-members-table-wrap"><table class="data-table lecturer-members-table">
+                <thead><tr><th>STT</th><th>MSSV</th><th>Họ và tên</th><th>Lớp</th><th>Vai trò trong nhóm</th></tr></thead>
+                <tbody>${memberRows}</tbody>
+            </table></div>`;
+        dialog.setAttribute('aria-labelledby', 'lecturer-group-members-title');
+        dialog.onclick = event => {
+            if (event.target.closest('[data-members-close]')) dialog.close();
+        };
+        if (!dialog.open) dialog.showModal();
     },
 
     async viewReports(groupId) {
@@ -509,7 +563,7 @@ const LecturerCrud = {
             const statusLabels = {PENDING: 'Chờ duyệt', REJECTED: 'Từ chối', APPROVED: 'Đã duyệt'};
             dialog.innerHTML = `<div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><h2>Báo cáo — ${escapeHtml(groupName)}</h2><p style="color:#64748b">Giao nhiệm vụ, xem lịch sử báo cáo và nhận xét cho sinh viên.</p></div><button type="button" class="button outline" data-report-dialog-close>Đóng</button></div>` +
                 `<section class="card" style="padding:18px;border:1px solid #e2e8f0;border-radius:10px;margin:16px 0"><h3>Nhiệm vụ và yêu cầu cho nhóm</h3>${guidance.canManage ? `<form id="advisor-guidance-form"><label>Nhiệm vụ được giao<textarea name="tasks" maxlength="10000" rows="5" placeholder="Nhập nhiệm vụ, sản phẩm dự kiến hoặc kế hoạch thực hiện">${escapeHtml(guidance.tasks || '')}</textarea></label><label>Yêu cầu thực hiện<textarea name="requirements" maxlength="10000" rows="5" placeholder="Nhập yêu cầu cụ thể đối với sinh viên">${escapeHtml(guidance.requirements || '')}</textarea></label><button class="button primary" type="submit">Lưu nhiệm vụ và yêu cầu</button></form>` : `<p style="white-space:pre-wrap">${escapeHtml(guidance.tasks || 'Chưa có nhiệm vụ.')}</p><p style="white-space:pre-wrap">${escapeHtml(guidance.requirements || 'Chưa có yêu cầu.')}</p>`}<div style="border-top:1px solid #e2e8f0;margin-top:16px;padding-top:16px"><strong>Hoàn thành đề tài:</strong> ${guidance.completedAt ? `Đã xác nhận lúc ${new Date(guidance.completedAt).toLocaleString('vi-VN')}` : 'Chưa xác nhận'} ${guidance.canManage && !guidance.completedAt ? '<button type="button" class="button secondary" data-confirm-topic-complete>Xác nhận hoàn thành đề tài</button>' : ''}</div></section>` +
-                (reports.length ? `<div style="display:grid;gap:16px">${reports.map(r => `<article class="card" style="padding:18px;border:1px solid #e2e8f0;border-radius:10px"><div style="display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap"><div><strong>${escapeHtml(r.filename)}</strong><div style="color:#64748b;font-size:13px">${(Number(r.size || 0) / 1024).toFixed(1)} KB · ${escapeHtml(r.stage)} · ${new Date(r.submittedAt).toLocaleString('vi-VN')}</div></div><span class="badge ${(r.status || 'PENDING').toLowerCase()}">${statusLabels[r.status] || 'Chờ duyệt'}</span></div><p style="white-space:pre-wrap;margin:12px 0">${escapeHtml(r.note || 'Sinh viên chưa thêm nội dung ghi chú.')}</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải báo cáo hiện tại</a><button type="button" class="button secondary" data-report-history="${r.id}">Xem lịch sử chỉnh sửa (${Number(r.editCount || 0)})</button></div><div id="report-history-${r.id}" hidden></div><form class="report-review-form" data-report-id="${r.id}" style="border-top:1px solid #e2e8f0;padding-top:12px"><label>Trạng thái<select name="status"><option value="PENDING" ${r.status === 'PENDING' ? 'selected' : ''}>Chờ duyệt</option><option value="REJECTED" ${r.status === 'REJECTED' ? 'selected' : ''}>Từ chối</option><option value="APPROVED" ${r.status === 'APPROVED' ? 'selected' : ''}>Đã duyệt</option></select></label><label>Nhận xét của giảng viên hướng dẫn<textarea name="feedback" maxlength="2000" placeholder="Nhập nhận xét hoặc lý do từ chối">${escapeHtml(r.advisorFeedback || '')}</textarea></label><small style="display:block;color:#64748b;margin:-8px 0 12px">Khi từ chối, cần ghi rõ lý do để nhóm biết nội dung cần sửa.</small><button class="button primary" type="submit">Lưu trạng thái và nhận xét</button></form></article>`).join('')}</div>` : '<p>Nhóm chưa nộp báo cáo.</p>');
+                (reports.length ? `<div style="display:grid;gap:16px">${reports.map(r => `<article class="card" style="padding:18px;border:1px solid #e2e8f0;border-radius:10px"><div style="display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap"><div><strong>${escapeHtml(r.filename)}</strong><div style="color:#64748b;font-size:13px">${(Number(r.size || 0) / 1024).toFixed(1)} KB · ${escapeHtml(r.stage)} · ${new Date(r.submittedAt).toLocaleString('vi-VN')}</div></div><span class="badge ${(r.status || 'PENDING').toLowerCase()}" data-report-status>${statusLabels[r.status] || 'Chờ duyệt'}</span></div><p style="white-space:pre-wrap;margin:12px 0">${escapeHtml(r.note || 'Sinh viên chưa thêm nội dung ghi chú.')}</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><a class="button primary" href="${App.getContextPath()}/api/lecturer/reports/${r.id}/download">Tải báo cáo hiện tại</a><button type="button" class="button secondary" data-report-history="${r.id}">Xem lịch sử chỉnh sửa (${Number(r.editCount || 0)})</button></div><div id="report-history-${r.id}" hidden></div><form id="report-review-${escapeHtml(r.id)}" class="report-review-form" data-report-id="${escapeHtml(r.id)}" data-report-stage="${escapeHtml(r.stage)}" style="border-top:1px solid #e2e8f0;padding-top:12px"><label>Trạng thái<select name="status"><option value="PENDING" ${r.status === 'PENDING' ? 'selected' : ''}>Chờ duyệt</option><option value="REJECTED" ${r.status === 'REJECTED' ? 'selected' : ''}>Từ chối</option><option value="APPROVED" ${r.status === 'APPROVED' ? 'selected' : ''}>Đã duyệt</option></select></label><label>Nhận xét của giảng viên hướng dẫn<textarea name="feedback" maxlength="2000" placeholder="Nhập nhận xét hoặc lý do từ chối">${escapeHtml(r.advisorFeedback || '')}</textarea></label><small style="display:block;color:#64748b;margin:-8px 0 12px">Khi từ chối, cần ghi rõ lý do để nhóm biết nội dung cần sửa.</small><button class="button primary" type="submit">Lưu trạng thái và nhận xét</button></form></article>`).join('')}</div>` : '<p>Nhóm chưa nộp báo cáo.</p>');
             dialog.onclick = async event => {
                 if (event.target.closest('[data-report-dialog-close]')) { dialog.close(); return; }
                 const completeButton = event.target.closest('[data-confirm-topic-complete]');
@@ -540,6 +594,11 @@ const LecturerCrud = {
                     button.disabled = false;
                 }
             };
+            dialog.onchange = event => {
+                if (!event.target.matches('.report-review-form [name="status"]')) return;
+                const form = event.target.form;
+                form.elements.feedback.required = event.target.value === 'REJECTED';
+            };
             dialog.onsubmit = async event => {
                 if (event.target.id === 'advisor-guidance-form') {
                     event.preventDefault();
@@ -554,23 +613,43 @@ const LecturerCrud = {
                     } catch (error) { await showAppMessage(error.message); } finally { button.disabled = false; }
                     return;
                 }
-                const form = event.target.closest('.report-review-form');
-                if (!form) return;
+                const form = event.target;
+                if (!(form instanceof HTMLFormElement) || !form.matches('.report-review-form')) return;
                 event.preventDefault();
-                const button = form.querySelector('button');
+                if (form.dataset.submitting === 'true') return;
+                const reportId = form.dataset.reportId;
+                if (!reportId) {
+                    await showAppMessage('Không xác định được báo cáo cần cập nhật.');
+                    return;
+                }
+                const button = form.querySelector('button[type="submit"]');
+                form.dataset.submitting = 'true';
                 button.disabled = true;
                 try {
-                    await App.fetchApi(`${App.getContextPath()}/api/lecturer/reports/${form.dataset.reportId}/review`, {
+                    const response = await App.fetchApi(`${App.getContextPath()}/api/lecturer/reports/${encodeURIComponent(reportId)}/review`, {
                         method: 'PUT', body: JSON.stringify({status: form.elements.status.value, feedback: form.elements.feedback.value})
                     });
-                    dialog.close();
-                    await this.viewReports(groupId);
+                    const saved = response.data;
+                    if (!saved || String(saved.id) !== String(reportId) || saved.stage !== form.dataset.reportStage) {
+                        throw new Error('Phản hồi không khớp với báo cáo đang chọn. Vui lòng tải lại dữ liệu trước khi tiếp tục.');
+                    }
+                    form.elements.status.value = saved.status;
+                    form.elements.feedback.value = saved.advisorFeedback || '';
+                    form.elements.feedback.required = saved.status === 'REJECTED';
+                    const statusBadge = form.closest('article').querySelector('[data-report-status]');
+                    statusBadge.className = `badge ${(saved.status || 'PENDING').toLowerCase()}`;
+                    statusBadge.textContent = statusLabels[saved.status] || 'Chờ duyệt';
                     await showAppMessage('Đã cập nhật trạng thái và nhận xét báo cáo.', 'success');
                 } catch (error) {
                     await showAppMessage(error.message);
+                } finally {
+                    form.dataset.submitting = 'false';
                     button.disabled = false;
                 }
             };
+            dialog.querySelectorAll('.report-review-form').forEach(form => {
+                form.elements.feedback.required = form.elements.status.value === 'REJECTED';
+            });
             dialog.showModal();
         } catch (e) {
             await showAppMessage(e.message);

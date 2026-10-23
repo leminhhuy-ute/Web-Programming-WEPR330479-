@@ -829,6 +829,50 @@ tbody tr:last-child td {
     color: #334155;
 }
 
+.date-time-field,
+.period-milestone-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.date-time-field__title {
+    color: #334155;
+    font-weight: 600;
+}
+
+.date-time-field__controls {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) 88px 88px;
+    gap: 8px;
+}
+
+.date-time-field .date-time-part {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.date-time-part input,
+.date-time-part select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+}
+
+.date-time-field input[type="hidden"] {
+    display: none;
+}
+
 .form-grid small,
 .entity-form small {
     font-size: 12px;
@@ -1028,6 +1072,16 @@ tbody tr:last-child td {
     font-size: 13px;
 }
 
+body[data-module="departments"] .table-pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body[data-module="departments"] .table-pagination > span {
+    white-space: nowrap;
+}
+
 @media (max-width: 480px) {
     .dashboard-links {
         grid-template-columns: 1fr;
@@ -1042,5 +1096,20 @@ tbody tr:last-child td {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    body[data-module="departments"] .table-pagination {
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    body[data-module="departments"] .table-pagination .button {
+        min-height: 36px;
+        padding: 8px 10px;
+    }
+
+    .date-time-field__controls {
+        grid-template-columns: minmax(0, 1fr) 72px 72px;
+        gap: 6px;
     }
 }

@@ -363,6 +363,103 @@ table.data-table tbody tr:hover {
   padding-bottom: 0;
 }
 
+.member-details-button {
+  border: 0;
+  padding: 6px 2px;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.member-details-button:hover {
+  color: var(--primary-dark, #1d4ed8);
+}
+
+.member-details-button:focus-visible,
+.lecturer-members-dialog button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.lecturer-members-dialog {
+  width: min(920px, calc(100vw - 32px));
+  max-width: none;
+  max-height: min(88vh, 800px);
+  overflow: auto;
+  margin: auto;
+  padding: clamp(16px, 3vw, 28px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2);
+}
+
+.lecturer-members-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.lecturer-members-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.lecturer-members-dialog__header h2 {
+  margin: 0 0 6px;
+  color: var(--navy);
+  font-size: clamp(18px, 3vw, 22px);
+}
+
+.lecturer-members-dialog__header p {
+  margin: 0;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.lecturer-members-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.lecturer-members-summary > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+}
+
+.lecturer-members-summary dt {
+  margin-bottom: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lecturer-members-summary dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lecturer-members-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.lecturer-members-table {
+  min-width: 620px;
+}
+
 /* --------------------------------------------------------------------------
    5. RESPONSIVE
    -------------------------------------------------------------------------- */
@@ -387,5 +484,17 @@ table.data-table tbody tr:hover {
   .filter-bar select {
     width: 100% !important;
     max-width: none !important;
+  }
+
+  .lecturer-members-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .lecturer-members-dialog__header {
+    flex-direction: column;
+  }
+
+  .lecturer-members-dialog__header button {
+    align-self: flex-end;
   }
 }
