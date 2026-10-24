@@ -52,19 +52,4 @@ class EmailDeliveryTest {
         delivery.retry(1L);assertEquals(EmailNotification.Status.PENDING,email.status);
         assertEquals(0,email.attempts);assertNull(email.lastError);assertFalse(email.nextAttemptAt.isAfter(LocalDateTime.now()));
     }
-    @Test void testMessageContainsNoFakeGradeAndOnlyGoesToConfiguredSender() {
-        delivery.sendTest();
-        var captor=ArgumentCaptor.forClass(SimpleMailMessage.class);verify(sender).send(captor.capture());
-        var message=captor.getValue();
-        assertArrayEquals(new String[]{"faculty@example.test"},message.getTo());
-        assertTrue(message.getSubject().contains("Kiểm tra SMTP"));
-        assertTrue(message.getText().contains("không chứa điểm"));
-        assertFalse(message.getText().contains("8.00"));
-        assertFalse(message.getText().contains("Nhóm kiểm thử"));
-        assertEquals("faculty@example.test",delivery.testRecipient());
-    }
-    @Test void disabledMailCannotSendTestMessage() {
-        assertThrows(IllegalStateException.class,()->new EmailDeliveryService(repository,sender,false,"faculty@example.test").sendTest());
-        verifyNoInteractions(sender);
-    }
 }

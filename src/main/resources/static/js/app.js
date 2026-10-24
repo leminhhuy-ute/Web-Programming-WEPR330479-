@@ -293,8 +293,8 @@ function reportsPage() {
       ${state.reports.filter(r => r.advisorFeedback).length ? `<div class="stack">${state.reports.filter(r => r.advisorFeedback).map(r => `<article class="notice advisor-feedback"><b>${esc(r.stage)} · ${esc(r.filename)}</b><p>${esc(r.advisorFeedback)}</p><small>${esc(cleanName(r.feedbackBy))} · ${date(r.feedbackAt)}</small></article>`).join('')}</div>` : '<p class="muted">Chưa có nhận xét cho các báo cáo của nhóm.</p>'}
     </section>
     <section class="panel section-gap">
-      <h2>Phản biện &amp; Hội đồng</h2>
-      ${!state.guidance?.completed ? '<p class="muted">Thông tin phản biện và lịch hội đồng sẽ hiển thị sau khi giảng viên hướng dẫn xác nhận hoàn thành đề tài.</p>' : state.defense ? `<div class="project-meta" style="grid-template-columns:1fr"><div><small>Giảng viên phản biện</small><strong>${esc(state.defense.reviewer)}</strong></div><div><small>Hội đồng</small><strong>${esc(state.defense.council)}</strong></div><div><small>Ngày giờ báo cáo hội đồng</small><strong>${date(state.defense.defenseDate)}</strong></div><div><small>Địa chỉ / phòng báo cáo</small><strong>${esc(state.defense.room)}</strong></div></div>` : '<p class="muted">Đề tài đã được xác nhận hoàn thành. Khoa chưa phân công giảng viên phản biện và lịch hội đồng.</p>'}
+      <h2>Lịch báo cáo hội đồng</h2>
+      ${!state.guidance?.completed ? '<p class="muted">Lịch báo cáo hội đồng sẽ hiển thị sau khi giảng viên hướng dẫn xác nhận hoàn thành đề tài.</p>' : state.defense ? `<div class="project-meta" style="grid-template-columns:1fr"><div><small>Hội đồng</small><strong>${esc(state.defense.council)}</strong></div><div><small>Ngày giờ báo cáo</small><strong>${date(state.defense.defenseDate)}</strong></div><div><small>Địa điểm / phòng báo cáo</small><strong>${esc(state.defense.room)}</strong></div></div>` : '<p class="muted">Đề tài đã được xác nhận hoàn thành. Khoa chưa cập nhật lịch hội đồng.</p>'}
     </section>`;
 }
 

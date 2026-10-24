@@ -1,4 +1,4 @@
-# Email thông báo điểm – cấu hình và kiểm thử
+# Email thông báo điểm – cấu hình và vận hành
 
 Ứng dụng gửi **điểm thật** qua hàng đợi sau khi Trưởng khoa công bố kết quả đã tổng hợp. Mỗi sinh viên nhận một email tại địa chỉ trong tài khoản; hệ thống không tạo điểm hoặc người nhận mẫu.
 
@@ -25,10 +25,6 @@ $env:MAIL_ENABLED = "true"
 Thiết lập các biến này ở môi trường chạy ứng dụng. `.env.example` chỉ là mẫu; Spring Boot không tự đọc `.env`. Không commit thông tin đăng nhập. Mailjet hỗ trợ port 2525 với STARTTLS; timeout kết nối/đọc/ghi 3 giây. Các tên `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_AUTH` và `SMTP_STARTTLS` cũ vẫn là giá trị dự phòng nếu chưa đặt biến `MAIL_*` tương ứng.
 
 Trong cấu hình production, đặt `SPRING_PROFILES_ACTIVE=cloud` để tránh nạp tài khoản/đề tài mẫu. `.env.example` đang để `cloud` làm cấu hình khuyến nghị; chỉ thêm profile demo khi chủ động muốn dữ liệu minh họa trên một cơ sở dữ liệu trống.
-
-## Gửi email điểm thử
-
-Trưởng khoa mở **Email thông báo điểm** và bấm **Gửi email kiểm tra SMTP**. Thư được gửi tới địa chỉ `MAIL_FROM` và không chứa điểm hoặc dữ liệu sinh viên. Thao tác này không công bố điểm và không tạo bản ghi trong hàng đợi. Nút chỉ hoạt động khi `MAIL_ENABLED=true`. Thông báo thành công chỉ xác nhận SMTP đã nhận lệnh gửi, không xác nhận email vào Inbox.
 
 ## Quy trình
 

@@ -14,18 +14,6 @@ public class EmailDeliveryService {
             @Value("${app.mail.enabled:false}") boolean enabled,@Value("${app.mail.from}") String from) {
         this.notifications=notifications;this.sender=sender;this.enabled=enabled;this.from=from;
     }
-    public String testRecipient() { return from; }
-    public void sendTest() {
-        if(!enabled) throw new IllegalStateException("Gửi email đang tắt.");
-        var message=new SimpleMailMessage();message.setFrom(from);message.setTo(from);
-        message.setSubject("[Kiểm tra SMTP] Hệ thống quản lý đề tài sinh viên");
-        message.setText("Đây là thư kiểm tra kết nối gửi email của Hệ thống quản lý đề tài sinh viên."
-            +"\nThư này không chứa điểm hoặc thông tin sinh viên."
-            +"\n\nThư kiểm tra chỉ xác nhận máy chủ SMTP đã nhận yêu cầu gửi; điều đó không xác nhận thư đã vào Hộp thư đến."
-            +"\n\nEmail điểm thật được tạo riêng cho từng sinh viên từ kết quả đã tổng hợp khi Trưởng khoa công bố."
-            +"\nKhoa Công nghệ Thông tin");
-        sender.send(message);
-    }
     @Transactional public void deliver(Long id) {
         if(!enabled) return;
         var email=notifications.lockById(id).orElse(null);

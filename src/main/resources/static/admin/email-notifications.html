@@ -6,10 +6,8 @@
 <body data-admin data-module="email-notifications"><main class="main-content">
 <div class="page-header"><div><h1>Email thông báo điểm</h1><p class="page-subtitle">Mỗi sinh viên nhận một thông báo khi kết quả được công bố.</p></div></div>
 <p id="mail-state" class="alert" role="status">Đang tải…</p><p id="message" class="alert error" hidden role="alert"></p>
-<p class="alert">Email điểm thật được tạo cho từng sinh viên từ kết quả đã tổng hợp khi Trưởng khoa công bố. Nút bên dưới chỉ kiểm tra SMTP, không gửi điểm giả hay dữ liệu sinh viên.</p>
+<p class="alert">Email điểm thật được gửi đến địa chỉ trong tài khoản của từng sinh viên sau khi Trưởng khoa công bố kết quả đã tổng hợp. Trạng thái gửi được theo dõi ở bảng bên dưới.</p>
 <p class="alert">Nếu dùng Mailjet, hãy gửi từ tên miền bạn sở hữu và xác thực SPF/DKIM (cùng DMARC nếu có). Gửi qua Mailjet với địa chỉ Gmail cá nhân có thể bị Gmail đưa vào Spam; ứng dụng không thể bảo đảm vị trí nhận thư.</p>
-<div class="toolbar"><button id="mail-test" class="button primary" type="button" disabled>Gửi email kiểm tra SMTP</button><span id="mail-test-recipient"></span></div>
-<p id="mail-test-message" class="alert" role="status" hidden></p>
 <form id="mail-filter" class="toolbar"><select name="status" aria-label="Trạng thái email"><option value="">Tất cả trạng thái</option><option value="PENDING">Đang chờ</option><option value="SENT">Đã gửi</option><option value="FAILED">Thất bại</option></select><button class="button secondary">Làm mới</button></form>
 <div class="card table-scroll"><table><thead><tr><th>Sinh viên / Nhóm</th><th>Email</th><th>Trạng thái</th><th>Số lần thử</th><th>Thời gian</th><th>Thao tác</th></tr></thead><tbody id="mail-rows"></tbody></table></div>
 <div class="toolbar"><button id="mail-prev" class="button secondary">Trang trước</button><span id="mail-count"></span><button id="mail-next" class="button secondary">Trang sau</button></div>
